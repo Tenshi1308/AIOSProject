@@ -1,0 +1,35 @@
+<mxfile host="app.diagrams.net" modified="2026-08-11T00:00:00.000Z" agent="aios" version="24.0.0" type="device">
+  <diagram name="Arsitektur Sistem AIOS" id="arsitektur-sistem-aios">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="2000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+<mxCell id="3" value="SISTEM CLIENT (tidak diubah)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="300" y="20" width="400" height="40" as="geometry"/></mxCell>
+<mxCell id="4" value="Client Application (existing)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="60" y="90" width="180" height="50" as="geometry"/></mxCell>
+<mxCell id="5" value="Client Authentication / Role / Permission" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="270" y="90" width="200" height="50" as="geometry"/></mxCell>
+<mxCell id="6" value="Client Business Logic (existing)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="500" y="90" width="200" height="50" as="geometry"/></mxCell>
+<mxCell id="7" value="AIOS PLUGIN (layer AI)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="300" y="180" width="400" height="40" as="geometry"/></mxCell>
+<mxCell id="8" value="AIOS Interface" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="60" y="250" width="160" height="50" as="geometry"/></mxCell>
+<mxCell id="9" value="AI Manager (orchestrator)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="250" y="250" width="180" height="50" as="geometry"/></mxCell>
+<mxCell id="10" value="Plugin Manager / Registry" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="460" y="250" width="190" height="50" as="geometry"/></mxCell>
+<mxCell id="11" value="Specialized Workers" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="60" y="340" width="160" height="60" as="geometry"/></mxCell>
+<mxCell id="12" value="Inventory Worker" style="text;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="60" y="405" width="160" height="20" as="geometry"/></mxCell>
+<mxCell id="13" value="Document Worker" style="text;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="60" y="425" width="160" height="20" as="geometry"/></mxCell>
+<mxCell id="14" value="Analytics Worker" style="text;html=1;align=center;" vertex="1" parent="1"><mxGeometry x="60" y="445" width="160" height="20" as="geometry"/></mxCell>
+<mxCell id="15" value="Tool System" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="260" y="340" width="160" height="60" as="geometry"/></mxCell>
+<mxCell id="16" value="Canonical Data Model" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1"><mxGeometry x="460" y="340" width="190" height="60" as="geometry"/></mxCell>
+<mxCell id="17" value="AI Schema Analyzer" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="60" y="450" width="160" height="50" as="geometry"/></mxCell>
+<mxCell id="18" value="Database Adapter" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="260" y="450" width="160" height="50" as="geometry"/></mxCell>
+<mxCell id="19" value="RAG Pipeline
+(parse-&gt;chunk-&gt;embed-&gt;retrieve)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1"><mxGeometry x="460" y="450" width="190" height="60" as="geometry"/></mxCell>
+<mxCell id="20" value="SISTEM DATA CLIENT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="300" y="560" width="400" height="40" as="geometry"/></mxCell>
+<mxCell id="21" value="Client Database
+(SQLite / PostgreSQL / MySQL)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="100" y="630" width="200" height="70" as="geometry"/></mxCell>
+<mxCell id="22" value="Vector Database
+(lokal, embedding)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="600" y="630" width="200" height="70" as="geometry"/></mxCell>
+<mxCell id="23" value="Local LLM (Ollama - qwen2.5:7b)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="340" y="700" width="240" height="50" as="geometry"/></mxCell>
+<mxCell id="24" value="Catatan: worker tidak pernah direct-access database client; semua akses data lewat canonical model + tool." style="text;html=1;align=center;wrap=1;" vertex="1" parent="1"><mxGeometry x="100" y="780" width="700" height="40" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
