@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home — AIOS</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> AIOS</div>
+    <div class="nav">
+      <span class="user" id="userBox"></span>
+    </div>
+  </div>
+
+  <div class="home-body">
+    <h1>Pilih Bidang</h1>
+    <p class="sub">
+      AIOS adalah "otak" yang terhubung ke 9 bidang (40° tiap bidang).
+      Arahkan kursor ke titik bidang untuk melihat koneksinya ke worker.
+      Klik bidang untuk masuk.
+    </p>
+
+    <div class="hub-stage" id="hubStage">
+      <!-- Garis dari AIOS (otak) ke 9 bidang -->
+      <svg class="hub-lines" id="hubLines"></svg>
+
+      <div class="hub-core">
+        <div class="name">AIOS</div>
+        <div class="caption">OTAK</div>
+      </div>
+      <div id="branchNodes"></div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/topbar.js"></script>
+  <script>
+    // Onboarding gate: perusahaan harus paid + terhubung + mapping tervalidasi
+    (function guard() {
+      const session = getSession();
+      if (!session.companyId) {
+        window.location.href = 'login.html';
+        return;
+      }
+      if (session.role === 'company') {
+        const step = getOnboardingStep(session.companyId);
+        if (step === 'payment') { window.location.href = 'payment.html'; return; }
+        if (step === 'connect') { window.location.href = 'connect.html'; return; }
+        if (step === 'validate') { window.location.href = 'validate-mapping.html'; return; }
+      }
+    })();
+
+    const stage = document.getElementById('hubStage');
+    const nodesWrap = document.getElementById('branchNodes');
+    const hubLines = document.getElementById('hubLines');
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+
+    const WORKER_R = 95;   // radius sebaran worker (gap penuh)
+    const MARGIN = 55;     // jarak aman worker ke tepi stage (seragam)
+
+    // ------------------------------------------------------------------
+    // Semua geometri dihitung ulang setiap kali dipanggil (load & resize),
+    // sehingga garis SELALU nyambung dengan titik-titik saat zoom/resize.
+    // ------------------------------------------------------------------
+    function render() {
+      const W = stage.clientWidth;
+      const H = stage.clientHeight;
+      const hubX = W / 2;
+      const hubY = H / 2;
+
+      // 9 bidang tersebar merata: 360° / 9 = 40° per bidang, mulai dari atas.
+      // R dihitung adaptif: garis otak → bidang sepanjang mungkin, tapi semua
+      // worker yang mengarah KELUAR tetap muat di dalam stage.
+      const R = Math.max(90, Math.min(W, H) / 2 - WORKER_R - MARGIN);
+
+      const POS = [];
+      for (let i = 0; i < 9; i++) {
+        const angleDeg = -90 + i * 40;
+        const a = angleDeg * Math.PI / 180;
+        POS.push({
+          x: hubX + R * Math.cos(a),
+          y: hubY + R * Math.sin(a),
+          angle: angleDeg
+        });
+      }
+
+      // ---- Garis dari otak (AIOS) ke 9 bidang ----
+      hubLines.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      hubLines.setAttribute('width', W);
+      hubLines.setAttribute('height', H);
+      hubLines.innerHTML = '';
+      BRANCHES.forEach((b, i) => {
+        const line = document.createElementNS(SVG_NS, 'line');
+        line.setAttribute('class', 'hub-line');
+        line.setAttribute('x1', hubX);
+        line.setAttribute('y1', hubY);
+        line.setAttribute('x2', POS[i].x);
+        line.setAttribute('y2', POS[i].y);
+        hubLines.appendChild(line);
+      });
+
+      // ---- Render 9 titik bidang + cluster worker ----
+      nodesWrap.innerHTML = '';
+      BRANCHES.forEach((b, i) => {
+        const node = document.createElement('div');
+        node.className = 'branch-node';
+        node.style.left = POS[i].x + 'px';
+        node.style.top = POS[i].y + 'px';
+        node.innerHTML =
+          `<div class="branch-dot"></div>` +
+          `<div class="branch-name">${b.name}</div>`;
+
+        node.addEventListener('click', () => {
+          sessionStorage.setItem('aios_branch', JSON.stringify(b));
+          window.location.href = 'chat.html';
+        });
+
+        const { hit, cluster } = buildCluster(b, i, POS);
+        node.appendChild(hit);
+        node.appendChild(cluster);
+
+        nodesWrap.appendChild(node);
+      });
+    }
+
+    // Fan worker SELALU berpusat di arah keluar (menjauhi otak) —
+    // tidak pernah diputar ke dalam. R sudah dihitung agar semua muat.
+    function buildCluster(branch, index, POS) {
+      const cluster = document.createElement('div');
+      cluster.className = 'branch-cluster';
+
+      const n = branch.workers.length;
+      const step = 30;
+      const half = ((n - 1) * step) / 2;
+      const center = POS[index].angle;   // arah keluar radial
+
+      const points = [];
+      branch.workers.forEach((w, i) => {
+        const angle = (center - half + i * step) * Math.PI / 180;
+        points.push({
+          x: Math.cos(angle) * WORKER_R,
+          y: Math.sin(angle) * WORKER_R,
+          name: w
+        });
+      });
+
+      // hit area transparan: dari titik bidang sampai titik-titik worker
+      const xs = points.map(p => p.x);
+      const ys = points.map(p => p.y);
+      const minX = Math.min(0, ...xs);
+      const minY = Math.min(0, ...ys);
+      const maxX = Math.max(0, ...xs);
+      const maxY = Math.max(0, ...ys);
+      const hit = document.createElement('div');
+      hit.className = 'branch-hit';
+      hit.style.left = minX + 'px';
+      hit.style.top = minY + 'px';
+      hit.style.width = (maxX - minX) + 'px';
+      hit.style.height = (maxY - minY) + 'px';
+
+      // SVG garis (koordinat piksel relatif ke titik bidang)
+      const svg = document.createElementNS(SVG_NS, 'svg');
+      svg.setAttribute('class', 'cluster-svg');
+      svg.setAttribute('width', WORKER_R * 2 + 80);
+      svg.setAttribute('height', WORKER_R * 2 + 80);
+      svg.setAttribute('viewBox', `0 0 ${WORKER_R * 2 + 80} ${WORKER_R * 2 + 80}`);
+      const off = WORKER_R + 40;
+
+      points.forEach((p) => {
+        const line = document.createElementNS(SVG_NS, 'line');
+        line.setAttribute('class', 'cluster-line');
+        line.setAttribute('x1', off);
+        line.setAttribute('y1', off);
+        line.setAttribute('x2', off + p.x);
+        line.setAttribute('y2', off + p.y);
+        svg.appendChild(line);
+
+        const wd = document.createElement('div');
+        wd.className = 'worker-dot';
+        wd.style.left = p.x + 'px';
+        wd.style.top = p.y + 'px';
+        wd.innerHTML = `<span class="wd-dot"></span><span class="wd-name">${p.name}</span>`;
+        cluster.appendChild(wd);
+      });
+
+      svg.style.left = -off + 'px';
+      svg.style.top = -off + 'px';
+      cluster.appendChild(svg);
+      return { hit, cluster };
+    }
+
+    // Render awal + render ulang saat resize/zoom browser
+    render();
+    window.addEventListener('resize', () => render());
+
+    // Label user ditangani oleh js/topbar.js (profile dropdown)
+  </script>
+</body>
+</html>

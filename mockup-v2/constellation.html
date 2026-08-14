@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AIOS — Constellation | Home &amp; Branch</title>
+<style>
+/* ============================================================
+   AIOS Constellation — standalone mockup (VIEW 1: Home / VIEW 2: Branch)
+   Dark command center: navy gelap, glow, label gold/pudar.
+   ============================================================ */
+:root{
+  --bg:#03050d; --surface:#0a1122; --line:#1b2a4a;
+  --cyan:#22d3ee; --gold:#f5f0e0; --white:#eefbff;
+  --muted:#a5b4cc; --accent:#a78bfa;
+  --font:"Segoe UI",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--font); background:var(--bg); color:var(--white);
+  overflow:hidden; user-select:none;
+}
+button{font-family:inherit;cursor:pointer}
+
+/* ---------- Stage ---------- */
+.stage{
+  position:fixed; inset:0; overflow:hidden; isolation:isolate;
+  background:
+    radial-gradient(120% 120% at 50% 42%, rgba(37,99,235,.14), rgba(34,211,238,.07) 46%, rgba(1,4,14,.15) 100%),
+    linear-gradient(180deg,#04060f 0%,#0a1122 55%,#03050d 100%);
+}
+.stage::after{ /* vignette */
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:1;
+  background:radial-gradient(120% 120% at 50% 44%, transparent 55%, rgba(1,4,14,.55) 100%);
+}
+/* Lattice technical grid */
+.grid{
+  position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:
+    linear-gradient(rgba(148,163,184,.07) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(148,163,184,.07) 1px,transparent 1px),
+    linear-gradient(rgba(148,163,184,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(148,163,184,.035) 1px,transparent 1px);
+  background-size:216px 216px,216px 216px,36px 36px,36px 36px;
+  mask-image:radial-gradient(130% 130% at 50% 42%,#000 40%,transparent 88%);
+  -webkit-mask-image:radial-gradient(130% 130% at 50% 42%,#000 40%,transparent 88%);
+}
+#stars{position:absolute; inset:0; z-index:1; pointer-events:none}
+
+/* ---------- WORLD (VIEW 1) ---------- */
+#world{
+  position:absolute; left:0; top:0; width:0; height:0;
+  transform-origin:0 0; will-change:transform;
+  transition:transform .6s cubic-bezier(.22,1,.36,1), opacity .25s ease;
+}
+#world.away{opacity:0; pointer-events:none}
+#lines1{position:absolute; left:0; top:0; overflow:visible; pointer-events:none}
+
+/* --- Nucleus AIOS --- */
+.nucleus{position:absolute; transform:translate(-50%,-50%); z-index:6; cursor:pointer; outline:none}
+.nucleus .core{
+  position:relative; width:96px; height:96px; border-radius:50%;
+  background:radial-gradient(circle at 32% 26%, rgba(224,242,254,.95) 0%, #0891b2 46%, #0c2d52 100%);
+  border:2px solid rgba(224,242,254,.7);
+  box-shadow:0 0 30px rgba(8,145,178,.75),0 0 70px rgba(34,211,238,.3), inset 0 -16px 26px rgba(1,4,14,.55);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.nucleus:hover .core{transform:scale(1.07); box-shadow:0 0 40px rgba(34,211,238,.9),0 0 90px rgba(34,211,238,.4), inset 0 -16px 26px rgba(1,4,14,.5)}
+.nucleus .ring{position:absolute; inset:-10px; border-radius:50%; border:1px dashed rgba(34,211,238,.35); animation:spin 26s linear infinite}
+.nucleus .orbit{position:absolute; inset:14px; border-radius:50%; border:1px solid rgba(34,211,238,.14); border-top-color:rgba(34,211,238,.8); animation:spin 7s linear infinite}
+.nucleus .pld{position:absolute; top:6px; right:10px; width:7px; height:7px; border-radius:50%; background:#22d3ee; box-shadow:0 0 9px #22d3ee; animation:blink 2.4s ease-in-out infinite}
+.nucleus .nm{font-weight:800; font-size:19px; letter-spacing:4px; color:#eafcff; text-shadow:0 0 12px rgba(34,211,238,.6)}
+.nucleus .cap{font-size:7px; font-weight:700; letter-spacing:2.5px; opacity:.85; color:#eafcff}
+.nucleus .hint{
+  position:absolute; top:116px; left:50%; transform:translateX(-50%);
+  white-space:nowrap; font-size:10px; letter-spacing:1px; text-transform:uppercase;
+  color:rgba(175,169,240,.85); background:rgba(10,17,30,.7); border:1px solid rgba(34,211,238,.2);
+  border-radius:99px; padding:3px 10px; opacity:0; transition:opacity .2s;
+}
+.nucleus:hover .hint{opacity:1}
+#nucleusParticles{position:absolute; inset:-44px; border-radius:50%; pointer-events:none}
+.np{position:absolute; border-radius:50%; background:radial-gradient(circle,#e6fbff,#22d3ee 70%,transparent 74%)}
+
+/* --- Branch nodes (level 1) --- */
+.node{
+  position:absolute; transform:translate(-50%,-50%);
+  width:60px; height:60px; z-index:3; cursor:pointer; outline:none;
+}
+.node .socket{
+  position:absolute; inset:0; border-radius:50%; font-weight:800; font-size:13px; letter-spacing:1px;
+  color:#e6fbff; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(165deg, rgba(23,42,66,.92) 0%, #0c2d52 55%, rgba(9,34,60,.95) 100%);
+  border:2px solid var(--acc-ln, rgba(103,232,249,.55));
+  box-shadow:0 4px 18px rgba(1,4,14,.55), 0 0 12px var(--acc-gw, rgba(34,211,238,.28)), inset 0 -7px 14px rgba(1,4,14,.55);
+  transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+.node .ring{
+  position:absolute; inset:-8px; border-radius:50%;
+  border:1px solid rgba(34,211,238,.26); border-top-color:var(--acc, #22d3ee);
+  animation:spin 9s linear infinite; opacity:.9;
+}
+.node .aura{
+  position:absolute; inset:-26px; border-radius:50%;
+  background:radial-gradient(circle, var(--acc-soft, rgba(34,211,238,.25)) 0%, transparent 68%);
+  pointer-events:none; animation:breathe 4.5s ease-in-out infinite;
+}
+.node .led{
+  position:absolute; right:2px; top:2px; width:8px; height:8px; border-radius:50%;
+  background:#34d399; box-shadow:0 0 7px #34d399; animation:blink 3s ease-in-out infinite;
+}
+.node:hover .socket,
+.node.lit .socket{ transform:scale(1.1); border-color:var(--acc,#22d3ee); box-shadow:0 0 0 8px var(--acc-soft,rgba(34,211,238,.14)), 0 0 26px var(--acc-gw,rgba(34,211,238,.5)), inset 0 -7px 14px rgba(1,4,14,.5)}
+.node.lit{z-index:30}
+
+/* --- Worker dots (level 2) --- */
+.wnode{
+  position:absolute; transform:translate(-50%,-50%); z-index:2;
+  display:flex; flex-direction:column; align-items:center; gap:3px; pointer-events:none; cursor:default;
+}
+.wnode .dot{
+  width:20px; height:20px; border-radius:50%;
+  background:radial-gradient(circle at 40% 35%, #e6fbff, #123a5e 60%, #060b16);
+  border:1.5px solid var(--acc,#67e8f9); box-shadow:0 0 7px var(--acc-gw,rgba(34,211,238,.5));
+  transition:width .18s, height .18s, box-shadow .18s;
+}
+.wnode.lit .dot{width:26px; height:26px; box-shadow:0 0 12px var(--acc-gw,rgba(34,211,238,.85))}
+
+/* --- Label chips --- */
+.bchip{
+  position:absolute; transform:translate(-50%,-50%); z-index:5; pointer-events:none;
+  max-width:170px; text-align:center; font-size:10.5px; font-weight:700; line-height:1.25; color:#d6f5ff;
+  background:rgba(10,17,30,.84); border:1px solid rgba(34,211,238,.28); border-radius:9px; padding:4px 9px;
+  box-shadow:0 4px 14px rgba(1,4,14,.45); transition:border-color .15s, background .15s;
+}
+.bchip b{display:block}
+.bchip span{display:block; margin-top:1px; font-size:8.5px; font-weight:600; letter-spacing:.6px; text-transform:uppercase; color:#22d3ee; opacity:.85}
+.bchip.lit{border-color:var(--acc,#22d3ee); background:rgba(34,211,238,.18)}
+
+.wchip{
+  position:absolute; transform:translate(-50%,-50%); z-index:4; pointer-events:none;
+  font-size:9px; font-weight:600; color:#eaf4fb; white-space:nowrap;
+  background:rgba(10,17,30,.92); border:1px solid rgba(34,211,238,.4); border-radius:99px;
+  padding:2px 8px; box-shadow:0 2px 8px rgba(1,4,14,.45);
+  opacity:0; transition:opacity .15s;
+}
+.wchip.lit{opacity:1}
+
+/* --- Connector lines (dim; terang hanya di dekat node) --- */
+.gl1{stroke:rgba(148,163,184,.30); stroke-width:1; opacity:.7; fill:none}
+.gl2{stroke:var(--lc,#67e8f9); stroke-width:1.6; opacity:0; fill:none; filter:drop-shadow(0 0 4px var(--lc,#67e8f9))}
+
+/* Hover: fokus satu branch */
+.stage.hov .grow{opacity:.22}
+.stage.hov .grow.lit{opacity:1}
+.stage.hov .gl1{opacity:.14}
+.stage.hov .gl1.on{opacity:.75}
+.stage.hov .gl2.on{opacity:.65}
+
+/* ---------- VIEW 2 overlay ---------- */
+.branchview{position:absolute; inset:0; z-index:2; opacity:0; pointer-events:none; transition:opacity .3s ease}
+.stage.branch-ready .branchview{opacity:1}
+.stage.branch-ready #world{pointer-events:none}
+.branch-scene{
+  position:absolute; left:50%; top:54%; width:0; height:0; z-index:2; pointer-events:none;
+  opacity:0; transform:translate(-50%,-50%) scale(.9);
+  transition:transform .55s cubic-bezier(.22,1,.36,1), opacity .3s ease;
+}
+.stage.branch-ready .branch-scene{opacity:1; transform:translate(-50%,-50%) scale(1)}
+.stage.chat-open .branch-scene{transform:translate(calc(-50% - var(--chatw,380px)/2), -50%) scale(1)}
+
+/* VIEW 2: agent primary + worker fan (anak ke atas) */
+.bagent{position:absolute; transform:translate(-50%,-50%); pointer-events:auto; cursor:pointer; outline:none}
+.bagent .bsocket{
+  position:absolute; left:0; top:0; transform:translate(-50%,-50%);
+  width:88px; height:88px; border-radius:50%;
+  background:radial-gradient(circle at 32% 26%, #0f2f52, #0c2d52 55%, #060b16 100%);
+  border:2px solid var(--acc-ln); box-shadow:0 0 24px var(--acc-gw), 0 0 60px var(--acc-soft), inset 0 -12px 22px rgba(1,4,14,.6);
+  display:flex; align-items:center; justify-content:center;
+  color:#e9f6ff; font-weight:800; font-size:19px; letter-spacing:1.5px;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.bagent:hover .bsocket{transform:translate(-50%,-50%) scale(1.09); box-shadow:0 0 0 14px var(--acc-soft), 0 0 38px var(--acc-gw), inset 0 -12px 22px rgba(1,4,14,.55)}
+.bagent .baring{position:absolute; left:0; top:0; transform:translate(-50%,-50%); width:104px; height:104px; border-radius:50%; border:1px dashed var(--acc-line,rgba(34,211,238,.35)); animation:spin 12s linear infinite}
+.bagent .baaura{position:absolute; left:0; top:0; transform:translate(-50%,-50%); width:180px; height:180px; border-radius:50%; background:radial-gradient(circle,var(--acc-soft) 0%, transparent 68%); animation:breathe 4.5s ease-in-out infinite}
+.bagent .baname{
+  position:absolute; left:0; top:92px; transform:translateX(-50%);
+  width:max-content; max-width:320px; text-align:center;
+  font-size:15px; font-weight:800; color:var(--gold); letter-spacing:1.2px; text-transform:uppercase;
+  text-shadow:0 0 16px rgba(34,211,238,.4);
+}
+.bagent .bahint{
+  position:absolute; left:0; top:118px; transform:translateX(-50%);
+  font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:var(--muted);
+  white-space:nowrap; background:rgba(10,17,30,.6); border:1px solid rgba(34,211,238,.22);
+  border-radius:99px; padding:3px 10px;
+}
+.bworker{position:absolute; transform:translate(-50%,-50%); display:flex; flex-direction:column; align-items:center; gap:4px}
+.bworker .dot{
+  width:30px; height:30px; border-radius:50%;
+  background:radial-gradient(circle at 40% 32%, #e6fbff, #123a5e 60%, #060b16);
+  border:1.6px solid var(--acc,#67e8f9); box-shadow:0 0 10px var(--acc-gw,rgba(34,211,238,.6)), inset 0 -6px 12px rgba(1,4,14,.5);
+}
+.bworker .wnm{
+  font-size:10.5px; font-weight:600; color:#eaf4fb; white-space:nowrap;
+  background:rgba(10,17,30,.86); border:1px solid rgba(34,211,238,.3); border-radius:99px;
+  padding:3px 9px; box-shadow:0 2px 10px rgba(1,4,14,.4);
+  max-width:170px; overflow:hidden; text-overflow:ellipsis;
+}
+#lines2{position:absolute; left:0; top:0; overflow:visible; pointer-events:none}
+.bl1{stroke:var(--lc,rgba(148,163,184,.3)); stroke-width:1; opacity:.5; fill:none}
+.bl2{stroke:var(--lc,#67e8f9); stroke-width:1.5; opacity:.55; fill:none; filter:drop-shadow(0 0 4px var(--lc,#67e8f9))}
+
+/* VIEW 2 label pojok atas */
+.v2label{
+  position:absolute; left:22px; top:20px; z-index:6; pointer-events:none;
+  font-size:22px; font-weight:800; letter-spacing:4px; text-transform:uppercase;
+  color:var(--gold); text-shadow:0 0 16px rgba(34,211,238,.35); opacity:0; transform:translateY(-6px);
+  transition:opacity .3s ease, transform .3s ease;
+}
+.stage.branch-ready .v2label{opacity:1; transform:none}
+.v2label small{display:block; margin-top:3px; font-size:10px; font-weight:600; letter-spacing:1.5px; color:var(--muted); opacity:.8}
+
+/* ---------- Controls (VIEW 2) ---------- */
+.ui{
+  position:absolute; left:14px; bottom:14px; z-index:6;
+  display:flex; flex-direction:column; gap:8px; opacity:0; pointer-events:none;
+  transition:opacity .2s ease, visibility 0s .2s; visibility:hidden;
+}
+.stage.branch-ready .ui{opacity:1; pointer-events:auto; visibility:visible; transition:opacity .2s ease}
+.uib{width:40px; height:40px; border-radius:11px; border:1px solid rgba(34,211,238,.28); background:rgba(10,17,30,.86); color:#67e8f9; font-size:18px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(1,4,14,.55); transition:background .15s, transform .15s}
+.uib:hover{background:rgba(34,211,238,.18)}
+.uib:active{transform:scale(.94)}
+
+.hint-home{
+  position:absolute; left:50%; bottom:16px; transform:translateX(-50%); z-index:4; pointer-events:none;
+  font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted);
+  background:rgba(10,17,30,.55); border:1px solid rgba(34,211,238,.16); border-radius:99px; padding:5px 14px;
+  opacity:0; transition:opacity .3s;
+}
+.stage:not(.branch-ready) .hint-home{opacity:1}
+
+/* ---------- Chat dock (slide-in kanan) ---------- */
+.chat{
+  position:absolute; top:0; right:0; bottom:0; width:var(--chatw,380px); max-width:88%; z-index:8;
+  display:flex; flex-direction:column; visibility:hidden;
+  background:rgba(9,15,28,.96); backdrop-filter:blur(14px);
+  border-left:1px solid rgba(34,211,238,.22);
+  box-shadow:-18px 0 46px rgba(1,4,14,.55);
+  transform:translateX(102%);
+  transition:transform .45s cubic-bezier(.22,1,.36,1), visibility 0s .45s;
+}
+.stage.chat-open .chat{transform:translateX(0); visibility:visible; transition:transform .45s cubic-bezier(.22,1,.36,1), visibility 0s}
+.chat-head{display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid rgba(34,211,238,.16); background:rgba(10,17,30,.6)}
+.chat-close{
+  width:34px; height:34px; flex:0 0 auto; border-radius:50%; border:1px solid rgba(34,211,238,.3);
+  background:transparent; color:#67e8f9; font-size:20px; line-height:1; transition:background .15s;
+}
+.chat-close:hover{background:rgba(34,211,238,.14)}
+.chat-avatar{width:42px; height:42px; flex:0 0 auto; border-radius:50%; background:linear-gradient(135deg,#2563eb,#a78bfa,#e879f9); color:#fff; display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 0 14px rgba(34,211,238,.35)}
+.chat-title{min-width:0}
+.chat-title .nm{font-weight:800; font-size:14.5px; color:#f8fbff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.chat-title .st{font-size:12px; color:#34d399; margin-top:2px}
+.chat-msgs{flex:1; overflow-y:auto; padding:18px 16px; display:flex; flex-direction:column; gap:12px; min-height:0}
+.msg{max-width:88%; padding:12px 16px; border-radius:14px; font-size:14px; line-height:1.55}
+.msg.user{align-self:flex-end; background:linear-gradient(135deg,#2563eb,#1d4ed8); color:#fff; border-bottom-right-radius:4px}
+.msg.ai{align-self:flex-start; background:#0a1122; border-bottom-left-radius:4px}
+.msg .who{font-size:12px; font-weight:700; color:var(--cyan); margin-bottom:4px; display:flex; align-items:center; gap:6px}
+.msg .who .dl{font-size:11px; color:var(--muted); font-weight:500}
+.delegate-note{align-self:flex-start; display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); background:rgba(34,211,238,.09); border:1px solid rgba(34,211,238,.22); border-radius:99px; padding:6px 14px}
+.spin{width:12px; height:12px; border:2px solid var(--cyan); border-top-color:transparent; border-radius:50%; animation:spin .9s linear infinite}
+.chat-suggest{padding:10px 16px 4px; display:flex; flex-wrap:wrap; gap:8px; border-top:1px solid rgba(34,211,238,.08)}
+.chip{background:#0a1122; border:1px solid rgba(34,211,238,.22); border-radius:99px; padding:8px 14px; font-size:13px; color:#e6fbff; transition:all .15s}
+.chip:hover{border-color:var(--cyan); background:rgba(34,211,238,.10); color:#67e8f9}
+.chat-in{display:flex; gap:10px; padding:12px 16px 16px; border-top:1px solid rgba(34,211,238,.16)}
+.chat-in input{flex:1; min-width:0; padding:11px 14px; border:1px solid rgba(34,211,238,.22); border-radius:11px; font-size:14px; font-family:inherit; background:#0a1122; color:#f4f8ff; caret-color:var(--cyan)}
+.chat-in input:focus{outline:none; border-color:var(--cyan); box-shadow:0 0 0 3px rgba(34,211,238,.18)}
+.chat-in button{padding:11px 18px; border:none; border-radius:11px; font-size:14px; font-weight:700; background:linear-gradient(135deg,#2563eb,#1d4ed8); color:#fff}
+
+/* ---------- Kelola Database overlay ---------- */
+.overlay{
+  position:absolute; inset:0; z-index:10; display:none; align-items:center; justify-content:center;
+  background:rgba(3,5,13,.7); backdrop-filter:blur(6px);
+}
+.overlay.show{display:flex; animation:fade .25s ease}
+.odata{
+  width:min(560px, 92%); background:rgba(12,19,34,.97); border:1px solid rgba(34,211,238,.25);
+  border-radius:16px; padding:24px; box-shadow:0 20px 60px rgba(1,4,14,.7);
+  animation:pop .3s cubic-bezier(.22,1,.36,1);
+}
+.odata h2{font-size:20px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:4px}
+.odata .sub{font-size:12.5px; color:var(--muted); margin-bottom:18px}
+.oconn{display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; margin-bottom:18px}
+.ochip{background:#0a1122; border:1px solid rgba(34,211,238,.2); border-radius:10px; padding:10px 12px; font-size:12px; color:#cffafe}
+.ochip small{display:block; font-size:9.5px; letter-spacing:.8px; text-transform:uppercase; color:var(--muted); margin-bottom:2px}
+.omap{margin-bottom:20px}
+.omap .r{display:flex; justify-content:space-between; gap:10px; font-size:12.5px; color:#e6fbff; padding:8px 0; border-bottom:1px solid rgba(34,211,238,.08)}
+.omap .r:last-child{border:none}
+.omap .r .ok{color:#34d399}
+.omap .r .low{color:#fbbf24}
+.odata .foot{display:flex; gap:10px; justify-content:flex-end}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes breathe{0%,100%{opacity:.7; transform:scale(1)}50%{opacity:1; transform:scale(1.16)}}
+@keyframes fade{from{opacity:0}}
+@keyframes pop{from{transform:scale(.92); opacity:0}}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important; transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="grid"></div>
+  <canvas id="stars"></canvas>
+
+  <!-- ============ VIEW 1 : HOME (nucleus + 9 branches + workers) ============ -->
+  <div id="world">
+    <svg id="lines1"></svg>
+    <div id="nucleusBox"></div>
+  </div>
+
+  <!-- ============ VIEW 2 : ZOOMED BRANCH (tree anak mengarah ke atas) ============ -->
+  <div class="branchview">
+    <div class="v2label" id="v2label"><b id="v2name">—</b><small id="v2meta">—</small></div>
+    <div class="branch-scene" id="bsScene">
+      <svg id="lines2"></svg>
+      <div id="bsContent"></div>
+    </div>
+  </div>
+
+  <div class="hint-home">Klik sebuah bidang untuk masuk · Klik inti AIOS untuk Kelola Database</div>
+
+  <!-- Kontrol VIEW 2 : ‹ › navigasi + kembali ke Home -->
+  <div class="ui" id="ui">
+    <button class="uib" id="btnPrev" title="Bidang sebelumnya" aria-label="Bidang sebelumnya">‹</button>
+    <button class="uib" id="btnNext" title="Bidang berikutnya" aria-label="Bidang berikutnya">›</button>
+    <button class="uib" id="btnHome" title="Kembali ke Home" aria-label="Kembali ke Home">⌂</button>
+  </div>
+
+  <!-- Chat dock -->
+  <aside class="chat" id="chat">
+    <div class="chat-head">
+      <button class="chat-close" id="chatClose" title="Tutup chat" aria-label="Tutup chat">✕</button>
+      <div class="chat-avatar" id="chatAvatar">🤖</div>
+      <div class="chat-title">
+        <div class="nm" id="chatName">AI Manager</div>
+        <div class="st">● Online — Agent Primary</div>
+      </div>
+    </div>
+    <div class="chat-msgs" id="chatMsgs"></div>
+    <div class="chat-suggest" id="chatSuggest"></div>
+    <div class="chat-in">
+      <input type="text" id="chatInput" placeholder="Tulis pertanyaan Anda…" aria-label="Tulis pertanyaan" />
+      <button id="chatSend">Kirim</button>
+    </div>
+  </aside>
+
+  <!-- Kelola Database overlay (dummy, tanpa backend) -->
+  <div class="overlay" id="dbOverlay">
+    <div class="odata">
+      <h2>Kelola Database</h2>
+      <p class="sub">Koneksi database perusahaan — dummy untuk mockup. (Data Access Agent · C7 / C14)</p>
+      <div class="oconn" id="dbChips"></div>
+      <div class="omap" id="dbMap"></div>
+      <div class="foot">
+        <button class="uib" style="width:auto;padding:0 18px;font-size:13px" id="dbReanalyze">⚡ Simulasikan Perubahan Skema</button>
+        <button class="uib" style="width:auto;padding:0 18px;font-size:13px" id="dbClose">Kembali</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ============================================================
+   DATA — nama bidang & worker dari AGENTS.md (verbatim)
+   ============================================================ */
+var BRANCHES = [
+  { id:'strategic',     name:'Strategic & Operational Planning', manager:'AI Manager Strategic & Operational Planning', monogram:'SOP', accent:'#6ee7b7', icon:'📊',
+    workers:['BI Analyst','Report Developer','Data Steward'] },
+  { id:'finance',       name:'Finance', manager:'AI Manager Finance', monogram:'FIN', accent:'#38bdf8', icon:'💰',
+    workers:['Finance Staff','Financial Analyst','Budgeting Staff','Treasurer','CFO'] },
+  { id:'hr',            name:'Human Resource', manager:'AI Manager HR', monogram:'HR', accent:'#e879f9', icon:'👥',
+    workers:['HR Staff','Recruiter','Payroll Officer','Training Specialist','HR Manager'] },
+  { id:'logistic',      name:'Logistic Management', manager:'AI Manager Logistic Management', monogram:'LOG', accent:'#fbbf24', icon:'🚚',
+    workers:['Logistics Coordinator','Shipping & Receiving Clerk','Fleet Manager'] },
+  { id:'maintenance',   name:'Maintenance Management', manager:'AI Manager Maintenance Management', monogram:'MNT', accent:'#f87171', icon:'🔧',
+    workers:['Maintenance Planner','Reliability Engineer','Maintenance Technician'] },
+  { id:'sales',         name:'Sales and Distribution', manager:'AI Manager Sales', monogram:'SAL', accent:'#a78bfa', icon:'📈',
+    workers:['Sales Representative','Customer Service','Sales Data Analyst','Marketing Specialist'] },
+  { id:'quality',       name:'Quality Management', manager:'AI Manager Quality Management', monogram:'QLT', accent:'#34d399', icon:'✅',
+    workers:['Quality Inspector','Quality Engineer','Quality Auditor','Quality Control Officer'] },
+  { id:'material',      name:'Material Management', manager:'AI Manager Material Management', monogram:'MAT', accent:'#fb923c', icon:'📦',
+    workers:['Procurement Staff','Senior Procurement Specialist','Purchasing Officer','Inventory Control Manager','Warehouse Inventory Manager','Retail Inventory Manager'] },
+  { id:'manufacturing', name:'Manufacturing', manager:'AI Manager Manufacturing', monogram:'MFG', accent:'#2dd4bf', icon:'🏭',
+    workers:['Production Planner','Production Scheduler','Production Supervisor'] }
+];
+var SUGGESTIONS = {
+  strategic:['Rangkum KPI kuartal ini','Analisis tren pertumbuhan','Ringkas laporan BI'],
+  finance:['Ringkas laporan keuangan bulan ini','Analisis cash flow','Bandingkan budget vs realisasi'],
+  hr:['Ringkas kehadiran bulan ini','Status rekrutmen','Analisis turnover'],
+  logistic:['Status pengiriman hari ini','Utilisasi armada','Rute paling lambat'],
+  maintenance:['Jadwal maintenance minggu ini','Downtime mesin','Rekomendasi spare part'],
+  sales:['Rangkum penjualan minggu ini','Produk terlaris?','Analisis tren pelanggan'],
+  quality:['Ringkas hasil inspeksi','Rekomendasi perbaikan kualitas','Audit terbaru'],
+  material:['Cek stok gudang','Rekomendasi reorder point','Analisis supplier terbaik'],
+  manufacturing:['Status produksi hari ini','Kapasitas mesin?','Rencana produksi minggu depan'],
+  default:['Ringkas kondisi terkini','Apa yang bisa Anda bantu?','Analisis data terbaru']
+};
+
+var SVG='http://www.w3.org/2000/svg';
+var stage=document.getElementById('stage');
+var world=document.getElementById('world');
+var lines1=document.getElementById('lines1');
+var nucleusBox=document.getElementById('nucleusBox');
+var bsScene=document.getElementById('bsScene');
+var bsContent=document.getElementById('bsContent');
+var lines2=document.getElementById('lines2');
+var chat=document.getElementById('chat');
+var chatMsgs=document.getElementById('chatMsgs');
+var chatSuggest=document.getElementById('chatSuggest');
+var chatInput=document.getElementById('chatInput');
+
+var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var mode='home';        // 'home' | 'branch'
+var BRANCH_I=0;
+var chatOpen=false;
+var geo=null;           // {nuc:{x,y}, branch:[{x,y}]}
+
+function W(){return stage.clientWidth}
+function H(){return stage.clientHeight}
+function rgba(hex,a){
+  var n=parseInt(hex.slice(1),16);
+  return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+}
+function el(name,cls,html){
+  var d=document.createElement(name);
+  if(cls) d.className=cls;
+  if(html) d.innerHTML=html;
+  return d;
+}
+function line(svgE,x1,y1,x2,y2,cls,style){
+  var l=document.createElementNS(SVG,'line');
+  l.setAttribute('class',cls);
+  l.setAttribute('x1',x1); l.setAttribute('y1',y1);
+  l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+  if(style) for(var k in style) l.style.setProperty(k,style[k]);
+  svgE.appendChild(l); return l;
+}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+var rng=mulberry32(20260813);
+
+/* ============================================================
+   VIEW 1 : HOME — nucleus, 9 branch radial 360°, worker level 2
+   ============================================================ */
+var WORKERS=[]; // posisi worker hasil relaxasi: {x,y,b,k}
+
+function buildHome(){
+  world.innerHTML='';
+  lines1=document.createElementNS(SVG,'svg'); lines1.id='lines1';
+  nucleusBox=document.createElement('div'); nucleusBox.id='nucleusBox';
+  world.appendChild(lines1); world.appendChild(nucleusBox);
+  WORKERS=[];
+  var w=W(), h=H();
+  var cx=w/2, cy=h/2;
+  var compact=w<720;
+
+  // JARAK 1 (nucleus -> branch) dan JARAK 3 (branch -> worker) besar & lega
+  var R1=Math.max(175, Math.min(w,h)* (compact?0.27:0.34));
+  var R2=Math.max(64, Math.min(w,h)* (compact?0.075:0.085));
+  var workerRing=R1+R2;
+
+  geo={nuc:{x:cx,y:cy}, branch:[]};
+
+  lines1.setAttribute('viewBox','0 0 '+w+' '+h);
+  lines1.setAttribute('width',w); lines1.setAttribute('height',h);
+
+  /* ---- nucleus + particle cluster ---- */
+  var nuc=el('div','nucleus');
+  nuc.setAttribute('role','button'); nuc.setAttribute('tabindex','0');
+  nuc.style.left=cx+'px'; nuc.style.top=cy+'px';
+  nuc.innerHTML=
+    '<span class="ring"></span><span class="orbit"></span>'+
+    '<div id="nucleusParticles"></div>'+
+    '<div class="core"><span class="pld"></span><span class="nm">AIOS</span><span class="cap">AI CORE</span></div>'+
+    '<span class="hint">Kelola Database</span>';
+  nucleusBox.appendChild(nuc);
+  nuc.addEventListener('click',goNucleus);
+  nuc.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();goNucleus();}});
+
+  var np=nuc.querySelector('#nucleusParticles');
+  for(var i=0;i<34;i++){
+    var a=rng()*Math.PI*2, rad=Math.pow(rng(),1.7)*64+8;
+    var s=(2.2+rng()*2.6).toFixed(1);
+    var d=el('span','np');
+    d.style.width=s+'px'; d.style.height=s+'px';
+    d.style.left=(50+Math.cos(a)*rad)+'%'; d.style.top=(50+Math.sin(a)*rad)+'%';
+    d.style.opacity=(0.5+rng()*0.5).toFixed(2);
+    if(!reduced){
+      var dur=(3+rng()*4).toFixed(1);
+      d.style.animation='breathe '+dur+'s ease-in-out '+(-rng()*4).toFixed(1)+'s infinite';
+    }
+    np.appendChild(d);
+  }
+
+  /* ---- posisi branch (radial 360°, mulai dari atas) ---- */
+  var positions=[];
+  BRANCHES.forEach(function(b,i){
+    var ang=-90+i*40, a=ang*Math.PI/180;
+    positions.push({x:cx+Math.cos(a)*R1, y:cy+Math.sin(a)*R1, ang:a, acc:b.accent});
+    geo.branch.push({x:cx+Math.cos(a)*R1, y:cy+Math.sin(a)*R1});
+  });
+
+  /* ---- garis nucleus -> branch (dim + segmen terang dekat node) ---- */
+  positions.forEach(function(p,i){
+    var dx=p.x-cx, dy=p.y-cy, L=Math.hypot(dx,dy)||1, ux=dx/L, uy=dy/L;
+    var gl1=line(lines1,(cx+ux*52),(cy+uy*52),(p.x-ux*30),(p.y-uy*30),'gl1');
+    gl1.setAttribute('data-branch',i);
+    var gl2=line(lines1,(cx+ux*20),(cy+uy*20),(p.x-ux*14),(p.y-uy*14),'gl2',{'--lc':p.acc});
+    gl2.setAttribute('data-branch',i);
+  });
+
+  /* ---- worker level 2 di sektor masing-masing bidang ---- */
+  // posisi worker di ring workerRing, sudut tersebar dalam sektor bidang
+  var pre=[];
+  BRANCHES.forEach(function(b,i){
+    var n=b.workers.length, start=-90+i*40;
+    var span=Math.min(26, Math.max(14, 40/(Math.max(1,n))));
+    b.workers.forEach(function(wk,k){
+      var rel=(n===1)?0:((k/(n-1))*2-1);
+      var ang=(start + rel*span)*Math.PI/180;
+      var rad=workerRing + ((k%2)? 8:-8);
+      pre.push({x:cx+Math.cos(ang)*rad, y:cy+Math.sin(ang)*rad, b:i, k:k});
+    });
+  });
+  // anti-tumpuk: dorong bila worker saling terlalu dekat
+  for(var pass=0; pass<30; pass++){
+    var moved=false;
+    for(var a=0;a<pre.length;a++) for(var b2=a+1;b2<pre.length;b2++){
+      var dx=pre[b2].x-pre[a].x, dy=pre[b2].y-pre[a].y, d=Math.hypot(dx,dy);
+      if(d>0&&d<32){
+        var push=(32-d)/2, ux=dx/d, uy=dy/d;
+        pre[a].x-=ux*push; pre[a].y-=uy*push;
+        pre[b2].x+=ux*push; pre[b2].y+=uy*push; moved=true;
+      }
+    }
+    if(!moved) break;
+  }
+  WORKERS=pre;
+
+  /* ---- garis branch -> worker ---- */
+  WORKERS.forEach(function(wd){
+    var p=positions[wd.b];
+    var dx=wd.x-p.x, dy=wd.y-p.y, L=Math.hypot(dx,dy)||1, ux=dx/L, uy=dy/L;
+    var gl1=line(lines1,(p.x+ux*30),(p.y+uy*30),(wd.x),(wd.y),'gl1');
+    gl1.setAttribute('data-branch',wd.b);
+    var gl2=line(lines1,(wd.x-ux*16),(wd.y-uy*16),(wd.x),(wd.y),'gl2',{'--lc':p.acc});
+    gl2.setAttribute('data-branch',wd.b);
+  });
+
+  /* ---- DOM: branch nodes ---- */
+  BRANCHES.forEach(function(b,i){
+    var p=positions[i];
+    var node=el('div','node grow','<span class="aura"></span><span class="ring"></span><span class="socket">'+b.monogram+'</span><span class="led"></span>');
+    node.style.left=p.x+'px'; node.style.top=p.y+'px';
+    node.style.setProperty('--acc',p.acc);
+    node.style.setProperty('--acc-soft',rgba(p.acc,.28));
+    node.style.setProperty('--acc-ln',rgba(p.acc,.6));
+    node.style.setProperty('--acc-gw',rgba(p.acc,.85));
+    node.setAttribute('data-branch',i);
+    node.setAttribute('role','button'); node.setAttribute('tabindex','0');
+    node.addEventListener('click',function(){goView2(i);});
+    node.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();goView2(i);}});
+    node.addEventListener('mouseenter',function(){setHover(i);});
+    node.addEventListener('mouseleave',clearHover);
+    node.addEventListener('focus',function(){setHover(i);});
+    node.addEventListener('blur',clearHover);
+    world.appendChild(node);
+
+    var ox=Math.cos(p.ang), oy=Math.sin(p.ang);
+    var chip=el('div','bchip','<b>'+b.name+'</b><span>'+b.workers.length+' worker · Agent Primary</span>');
+    chip.style.left=(p.x+ox*46)+'px'; chip.style.top=(p.y+oy*46)+'px';
+    chip.setAttribute('data-branch',i);
+    world.appendChild(chip);
+  });
+
+  /* ---- DOM: worker dots + wchip ---- */
+  WORKERS.forEach(function(wd){
+    var b=BRANCHES[wd.b], p=positions[wd.b];
+    var wrap=el('div','wnode grow','<span class="dot"></span>');
+    wrap.style.left=wd.x+'px'; wrap.style.top=wd.y+'px';
+    wrap.style.setProperty('--acc',p.acc);
+    wrap.style.setProperty('--acc-gw',rgba(p.acc,.5));
+    wrap.setAttribute('data-branch',wd.b);
+    world.appendChild(wrap);
+
+    var wchip=el('div','wchip',b.workers[wd.k]);
+    wchip.style.left=wd.x+'px'; wchip.style.top=(wd.y+20)+'px';
+    wchip.setAttribute('data-branch',wd.b);
+    world.appendChild(wchip);
+  });
+}
+
+/* ---------- hover highlight ---------- */
+function setHover(i){
+  stage.classList.add('hov');
+  world.querySelectorAll('.node.grow').forEach(function(n){
+    n.classList.toggle('lit', parseInt(n.getAttribute('data-branch'),10)===i);
+  });
+  world.querySelectorAll('.wnode.grow,.wchip,.bchip').forEach(function(c){
+    var lit = parseInt(c.getAttribute('data-branch'),10)===i;
+    c.classList.toggle('lit', lit);
+  });
+  lines1.querySelectorAll('.gl1,.gl2').forEach(function(g){
+    g.classList.toggle('on', parseInt(g.getAttribute('data-branch'),10)===i);
+  });
+}
+function clearHover(){
+  stage.classList.remove('hov');
+  world.querySelectorAll('.lit').forEach(function(n){n.classList.remove('lit');});
+  lines1.querySelectorAll('.on').forEach(function(n){n.classList.remove('on');});
+}
+
+/* ============================================================
+   TRANSISI VIEW 1 -> VIEW 2 (zoom halus ke branch)
+   ============================================================ */
+function goView2(i){
+  if(mode==='branch'){ focusBranch(i); return; }
+  mode='branch';
+  var p=geo.branch[i];
+  var cx=W()/2, cy=H()/2;
+  var s=Math.max(2.0, Math.min(2.8, Math.min(W()*0.5,H()*0.62)/200));
+  world.style.transform='translate('+(cx-p.x*s)+'px,'+(cy-p.y*s)+'px) scale('+s+')';
+  setTimeout(function(){ world.classList.add('away'); },120);
+  setTimeout(function(){
+    stage.classList.add('branch-ready');
+    buildBranch(i);
+  },620);
+}
+function goHome(){
+  if(mode==='home') return;
+  closeChat(true);
+  mode='home';
+  stage.classList.remove('branch-ready','chat-open');
+  world.classList.remove('away');
+  world.style.transform='translate(0,0) scale(1)';
+}
+
+/* ============================================================
+   VIEW 2 : BRANCH — agent primary di tengah, worker FAN KE ATAS
+   ============================================================ */
+function buildBranch(i){
+  BRANCH_I=i;
+  var b=BRANCHES[i];
+  document.getElementById('v2name').textContent=b.name;
+  document.getElementById('v2meta').textContent=b.manager+' · '+b.workers.length+' worker · klik badge pusat untuk chat';
+
+  bsContent.innerHTML=''; lines2.innerHTML='';
+  bsScene.style.setProperty('--chatw', chat.offsetWidth+'px');
+
+  /* agent primary (pusat) */
+  var agent=el('div','bagent','<span class="baaura"></span><span class="baring"></span><span class="bsocket">'+b.monogram+'</span><span class="baname">'+b.name+'</span><span class="bahint">klik badge → buka chat</span>');
+  agent.style.left='0px'; agent.style.top='0px';
+  agent.style.setProperty('--acc',b.accent);
+  agent.style.setProperty('--acc-soft',rgba(b.accent,.3));
+  agent.style.setProperty('--acc-ln',rgba(b.accent,.6));
+  agent.style.setProperty('--acc-gw',rgba(b.accent,.9));
+  agent.style.setProperty('--acc-line',rgba(b.accent,.5));
+  agent.setAttribute('role','button'); agent.setAttribute('tabindex','0');
+  agent.addEventListener('click',toggleChat);
+  agent.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleChat();}});
+  bsContent.appendChild(agent);
+
+  /* worker fan ke atas (decision tree: anak-anak di atas) */
+  var n=b.workers.length;
+  var arc=Math.min(150, Math.max(64, n*24));
+  var R=Math.min(H()*0.30, W()*0.20, Math.max(150, Math.min(W(),H())*0.20));
+  var pts=[];
+  b.workers.forEach(function(wk,k){
+    var t=(n===1)?0.5:(k/(n-1));
+    var deg=-90 - arc/2 + t*arc;          // -90 = arah atas
+    var rad=deg*Math.PI/180;
+    var rr=R*(k%3===0?0.82:(k%3===1?0.94:1.0));
+    var x=Math.cos(rad)*rr, y=Math.sin(rad)*rr;
+    pts.push({x:x,y:y});
+    var wd=el('div','bworker','<span class="dot"></span><span class="wnm">'+wk+'</span>');
+    wd.style.left=x+'px'; wd.style.top=y+'px';
+    wd.style.setProperty('--acc',b.accent);
+    wd.style.setProperty('--acc-gw',rgba(b.accent,.6));
+    bsContent.appendChild(wd);
+  });
+
+  /* garis agent -> worker (ke atas), dim + terang dekat worker */
+  var aR=44;
+  pts.forEach(function(pt){
+    var dx=pt.x, dy=pt.y, L=Math.hypot(dx,dy)||1, ux=dx/L, uy=dy/L;
+    line(lines2,(ux*aR),(uy*aR),dx,dy,'bl1',{'--lc':rgba(b.accent,.3)});
+    line(lines2,(dx-ux*18),(dy-uy*18),dx,dy,'bl2',{'--lc':b.accent});
+  });
+  /* relai dot kecil di tengah jalur */
+  pts.forEach(function(pt){
+    var L=Math.hypot(pt.x,pt.y)||1, ux=pt.x/L, uy=pt.y/L, mid=L*0.5;
+    var rd=document.createElementNS(SVG,'circle');
+    rd.setAttribute('cx',(ux*mid)); rd.setAttribute('cy',(uy*mid));
+    rd.setAttribute('r','1.6');
+    rd.style.fill=b.accent; rd.style.stroke='none'; rd.style.opacity='.6';
+    lines2.appendChild(rd);
+  });
+
+  refreshChatHeader(b);
+}
+
+function focusBranch(i){
+  if(i===BRANCH_I) return;
+  if(chatOpen) closeChat(true);
+  buildBranch(i);
+}
+function nextBranch(d){ if(mode!=='branch')return; focusBranch((BRANCH_I+d+BRANCHES.length)%BRANCHES.length); }
+
+/* ============================================================
+   CHAT PANEL (slide-in kanan + tree geser ke kiri)
+   ============================================================ */
+var respIdx=0;
+var RESPONSES=[
+  {worker:'Financial Analyst', text:'Berdasarkan data yang tersedia, pendapatan bulan ini tumbuh 8% dibanding bulan lalu. Saya lampirkan rinciannya.', delay:900},
+  {worker:'CFO', text:'Secara keseluruhan kondisi keuangan sehat. Rekomendasi: jaga rasio likuiditas dan evaluasi utang jangka pendek.', delay:1100},
+  {worker:'Budgeting Staff', text:'Realisasi budget masih dalam batas wajar (92% dari alokasi). Ada potensi efisiensi di pos pengadaan.', delay:1400}
+];
+function refreshChatHeader(b){
+  document.getElementById('chatName').textContent=b.manager;
+  document.getElementById('chatAvatar').textContent=b.icon;
+}
+function openChat(b){
+  chatOpen=true;
+  stage.classList.add('chat-open');
+  chatMsgs.innerHTML='';
+  chatSuggest.innerHTML='';
+  respIdx=0;
+  var g=el('div','msg ai','<div class="who">'+b.icon+' '+b.manager+' <span class="dl">(Agent Primary)</span></div>'+
+    'Halo! Saya AI Manager bidang <b>'+b.name+'</b>. Saya akan membantu Anda dan meneruskan pertanyaan ke worker (sub-agent) yang paling sesuai.');
+  chatMsgs.appendChild(g);
+  var chips=SUGGESTIONS[b.id]||SUGGESTIONS.default;
+  chips.forEach(function(s){
+    var c=el('button','chip',s);
+    c.addEventListener('click',function(){sendMsg(s);});
+    chatSuggest.appendChild(c);
+  });
+  if(!reduced) setTimeout(function(){chatInput.focus();},500);
+}
+function closeChat(instant){
+  chatOpen=false;
+  stage.classList.remove('chat-open');
+  if(reduced||instant) stage.style.transition='none';
+}
+function toggleChat(){
+  var b=BRANCHES[BRANCH_I];
+  if(!b) return;
+  if(chatOpen) closeChat(false); else openChat(b);
+}
+function sendMsg(text){
+  var v=(text!==undefined?String(text):chatInput.value).trim();
+  if(!v) return;
+  chatInput.value='';
+  var mu=el('div','msg user',v);
+  chatMsgs.appendChild(mu); chatMsgs.scrollTop=chatMsgs.scrollHeight;
+  var r=RESPONSES[respIdx++%RESPONSES.length];
+  var note=el('div','delegate-note','<span class="spin"></span> AI Manager sedang berkonsultasi dengan sub-agent <b>&nbsp;'+r.worker+'&nbsp;</b>…');
+  chatMsgs.appendChild(note); chatMsgs.scrollTop=chatMsgs.scrollHeight;
+  setTimeout(function(){
+    note.remove();
+    var b=BRANCHES[BRANCH_I];
+    var ma=el('div','msg ai','<div class="who">'+b.icon+' '+b.manager+' <span class="dl">→ sub-agent: '+r.worker+'</span></div>'+r.text);
+    chatMsgs.appendChild(ma); chatMsgs.scrollTop=chatMsgs.scrollHeight;
+  },r.delay);
+}
+
+/* ============================================================
+   KELOLA DATABASE (overlay dummy — klik nucleus)
+   ============================================================ */
+var dbOverlay=document.getElementById('dbOverlay');
+function goNucleus(){
+  if(mode==='branch'||!geo) return;
+  var cx=W()/2, cy=H()/2, s=3.4;
+  world.style.transform='translate('+(cx-geo.nuc.x*s)+'px,'+(cy-geo.nuc.y*s)+'px) scale('+s+')';
+  setTimeout(function(){ dbOverlay.classList.add('show'); },500);
+}
+function buildDbPanel(){
+  var conn=[
+    {k:'Engine',v:'PostgreSQL'},{k:'Host',v:'db.ptalpha.co.id'},
+    {k:'Port',v:'5432'},{k:'Database',v:'alpha_erp'},{k:'User',v:'aios_reader'}
+  ];
+  var chips=document.getElementById('dbChips'); chips.innerHTML='';
+  conn.forEach(function(c){
+    chips.appendChild(el('div','ochip','<small>'+c.k+'</small>'+c.v));
+  });
+  var map=[
+    ['Product.name','products.product_name','0.96','ok'],
+    ['Product.price','products.price','0.91','ok'],
+    ['Product.stock','products.stock','0.93','ok'],
+    ['Order.number','sales_orders.so_no','0.62','low']
+  ];
+  var m=document.getElementById('dbMap'); m.innerHTML='';
+  map.forEach(function(r){
+    m.appendChild(el('div','r','<span>'+r[0]+' <small style="color:var(--muted)">← '+r[1]+'</small></span>'+
+      '<span class="'+r[3]+'">'+(r[3]==='low'?'⚠ ':'')+(r[2]*100).toFixed(0)+'%</span>'));
+  });
+}
+document.getElementById('dbClose').addEventListener('click',function(){
+  dbOverlay.classList.remove('show');
+  world.classList.remove('away');
+  world.style.transform='translate(0,0) scale(1)';
+});
+document.getElementById('dbReanalyze').addEventListener('click',function(){
+  var rows=document.getElementById('dbMap').querySelectorAll('.r');
+  rows.forEach(function(r,i){
+    setTimeout(function(){
+      r.style.animation='blink .6s ease';
+      setTimeout(function(){r.style.animation='';},700);
+    },i*220);
+  });
+  setTimeout(function(){
+    alert('Skema database berubah → AIOS mendeteksi, re-adaptasi mapping (C14). Mockup: versi mapping bertambah.');
+  },900);
+});
+
+/* ============================================================
+   STARFIELD ambient
+   ============================================================ */
+(function(){
+  var c=document.getElementById('stars'), ctx=c.getContext('2d');
+  var DPR=Math.min(window.devicePixelRatio||1,2);
+  var sw,sh,pts=[];
+  function resize(){
+    sw=c.clientWidth; sh=c.clientHeight;
+    c.width=sw*DPR; c.height=sh*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+    pts=[];
+    var n=Math.min(110,Math.floor(sw*sh/13000));
+    for(var i=0;i<n;i++) pts.push({x:Math.random()*sw,y:Math.random()*sh,r:.6+Math.random()*1.4,vx:(Math.random()-.5)*.14,vy:(Math.random()-.5)*.14,a:.15+Math.random()*.35,tw:Math.random()*.004+.001});
+  }
+  function step(){
+    ctx.clearRect(0,0,sw,sh);
+    for(var i=0;i<pts.length;i++){
+      var p=pts[i];
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<-5)p.x=sw+5; if(p.x>sw+5)p.x=-5;
+      if(p.y<-5)p.y=sh+5; if(p.y>sh+5)p.y=-5;
+      var alpha=p.a*(0.6+Math.sin(performance.now()*p.tw+p.x*.01)*0.4);
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='#38bdf8'; ctx.globalAlpha=Math.max(0,alpha);
+      ctx.fill();
+    }
+    ctx.globalAlpha=1;
+    if(!document.hidden && !reduced) requestAnimationFrame(step);
+  }
+  resize();
+  window.addEventListener('resize',resize);
+  if(reduced){ step(); } else requestAnimationFrame(step);
+})();
+
+/* ============================================================
+   NAVIGASI & EVENT
+   ============================================================ */
+document.getElementById('btnPrev').addEventListener('click',function(){nextBranch(-1);});
+document.getElementById('btnNext').addEventListener('click',function(){nextBranch(1);});
+document.getElementById('btnHome').addEventListener('click',goHome);
+document.getElementById('chatSend').addEventListener('click',function(){sendMsg();});
+document.getElementById('chatInput').addEventListener('keydown',function(e){if(e.key==='Enter')sendMsg();});
+document.getElementById('chatClose').addEventListener('click',function(){closeChat(false);});
+
+document.addEventListener('keydown',function(e){
+  if(mode!=='branch') return;
+  if(e.key==='Escape'){ if(chatOpen) closeChat(false); else goHome(); }
+  else if(e.key==='ArrowLeft'){ nextBranch(-1); }
+  else if(e.key==='ArrowRight'){ nextBranch(1); }
+});
+
+/* swipe untuk ganti branch */
+var swipeStart=null;
+stage.addEventListener('pointerdown',function(e){
+  if(mode!=='branch'||chatOpen||e.target.closest('.chat')) return;
+  swipeStart={x:e.clientX,y:e.clientY};
+});
+stage.addEventListener('pointerup',function(e){
+  if(!swipeStart) return;
+  var dx=e.clientX-swipeStart.x;
+  swipeStart=null;
+  if(mode!=='branch') return;
+  if(Math.abs(dx)>70) nextBranch(dx>0?-1:1);
+});
+
+window.addEventListener('resize',function(){
+  if(mode==='home'){ buildHome(); }
+  else { buildBranch(BRANCH_I); }
+});
+
+buildHome();
+buildDbPanel();
+})();
+</script>
+</body>
+</html>

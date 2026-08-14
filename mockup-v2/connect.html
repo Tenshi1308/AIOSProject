@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hubungkan Database — AIOS</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/onboarding.css" />
+</head>
+<body>
+  <div class="onboard-wrap">
+    <!-- Panel kiri -->
+    <div class="onboard-side">
+      <div class="logo-lg">AIOS</div>
+      <h2>Hubungkan database perusahaan</h2>
+      <p>
+        AIOS menyambung ke database Anda yang sudah ada — <strong>tanpa mengubah
+        tabel, kolom, atau struktur apa pun</strong>. Sistem Anda tetap.
+        AIOS yang beradaptasi. Tidak punya database? AIOS dapat membuatkannya.
+      </p>
+      <ul>
+        <li><span class="step-num">1</span> Daftar akun perusahaan</li>
+        <li><span class="step-num">2</span> Aktivasi langganan (pembayaran)</li>
+        <li><span class="step-num active">3</span> Hubungkan database perusahaan</li>
+        <li><span class="step-num">4</span> Validasi hasil pemetaan skema</li>
+        <li><span class="step-num">5</span> Gunakan AI Manager &amp; Workers</li>
+      </ul>
+    </div>
+
+    <!-- Form koneksi -->
+    <div class="onboard-main">
+      <div class="onboard-card">
+        <h1>Hubungkan Database</h1>
+        <p class="sub">Data Access Agent akan membaca skema &amp; menganalisisnya secara semantik. (Use case C4 &amp; C5)</p>
+
+        <div class="stepper">
+          <div class="step done"><span class="dot">✓</span><span class="up">Daftar</span></div>
+          <div class="step done"><span class="dot">✓</span><span class="up">Bayar</span></div>
+          <div class="step active"><span class="dot">3</span><span class="up">Database</span></div>
+          <div class="step"><span class="dot">4</span><span class="up">Mapping</span></div>
+        </div>
+
+        <!-- Pilihan jalur koneksi (FR-32A) -->
+        <div class="role-tabs" id="pathTabs" style="margin-bottom:20px;">
+          <button class="role-tab active" data-path="existing">Masukkan kredensial</button>
+          <button class="role-tab" data-path="provision">Buat database baru</button>
+        </div>
+
+        <!-- Jalur 1: kredensial database existing -->
+        <form id="form-connect" onsubmit="connectDb(event)">
+          <div class="form-group">
+            <label for="db-engine">Database Engine</label>
+            <select id="db-engine">
+              <option>PostgreSQL</option>
+              <option>MySQL</option>
+              <option>SQL Server</option>
+              <option>SQLite</option>
+            </select>
+          </div>
+          <div class="row-gap">
+            <div class="form-group">
+              <label for="db-host">Host</label>
+              <input type="text" id="db-host" required />
+            </div>
+            <div class="form-group">
+              <label for="db-port">Port</label>
+              <input type="text" id="db-port" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="db-name">Nama Database</label>
+            <input type="text" id="db-name" required />
+          </div>
+          <div class="row-gap">
+            <div class="form-group">
+              <label for="db-user">Username</label>
+              <input type="text" id="db-user" required />
+            </div>
+            <div class="form-group">
+              <label for="db-pass">Password</label>
+              <input type="password" id="db-pass" />
+            </div>
+          </div>
+
+          <div class="hint-box">
+            💡 Koneksi ini disimulasikan. Klik <strong>“Hubungkan”</strong> untuk
+            lanjut; AIOS akan mengekstrak skema lalu menganalisisnya.
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Hubungkan</button>
+        </form>
+
+        <!-- Jalur 2: buat database baru (disediakan Ekasa) — FR-32B/C -->
+        <div id="panel-provision" class="hidden">
+          <p style="font-size:13.5px;color:var(--text-muted);margin-bottom:14px;">
+            Pilih cara membuat database baru. Database dibuat di server Ekasa,
+            menjadi <b>database perusahaan Anda</b> (mengikuti jaringan yang sama
+            seperti database existing) — bukan database internal AIOS.
+          </p>
+
+          <div class="pay-method selected" id="modeTemplate" data-mode="template">
+            <span class="pm-icon">📋</span>
+            <div class="pm-name">Template standar Ekasa</div>
+            <div class="pm-note">Skema &amp; data contoh siap pakai</div>
+          </div>
+          <div class="pay-method" id="modeSelf" data-mode="self">
+            <span class="pm-icon">🧱</span>
+            <div class="pm-name">Buat sendiri</div>
+            <div class="pm-note">Tentukan tabel &amp; variabel (kolom) yang Anda butuhkan</div>
+          </div>
+
+          <div id="templatePreview" class="hint-box mt-16">
+            Skema template: <span id="templateSchema"></span>
+          </div>
+
+          <!-- Builder untuk mode "buat sendiri" -->
+          <div id="selfBuilder" class="hidden mt-16">
+            <div class="form-group">
+              <label>Tabel yang akan dibuat</label>
+            </div>
+            <div id="tableRows"></div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="addTableRow()">+ Tambah tabel</button>
+          </div>
+
+          <div class="hint-box mt-16">
+            🔐 Kredensial database dibuat otomatis oleh AIOS — Anda tidak perlu
+            mengisi apa pun. Klik <strong>"Buat Database"</strong> untuk lanjut.
+          </div>
+
+          <button type="button" class="btn btn-primary btn-block mt-8" onclick="provisionDb()">Buat Database</button>
+        </div>
+
+        <div id="connectingBox" class="status-box hidden mt-20">
+          <div class="step-list" id="analysisSteps">
+            <div class="step-row" data-step="0"><span class="step-ico"></span><span>Memvalidasi koneksi ke database client…</span></div>
+            <div class="step-row" data-step="1"><span class="step-ico"></span><span>Schema Extraction: membaca tabel, kolom, relasi, constraint…</span></div>
+            <div class="step-row" data-step="2"><span class="step-ico"></span><span>AI Schema Analyzer: memahami makna semantik (menggunakan Ollama)…</span></div>
+            <div class="step-row" data-step="3"><span class="step-ico"></span><span>Semantic Mapping ke Canonical Data Model…</span></div>
+          </div>
+        </div>
+
+        <div id="schemaInfo" class="mapping-note hidden mt-16"></div>
+        <div id="connectDone" class="alert alert-ok hidden mt-16"></div>
+
+        <p class="demo-cred mt-20">
+          <strong id="coLabel"></strong> · Contoh: <span id="demoConn" style="font-family:Consolas,monospace;"></span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/state.js"></script>
+  <script>
+    const session = getSession();
+    if (session.role !== 'company' || !session.companyId) window.location.href = 'login.html';
+    const s0 = getState(session.companyId);
+    if (!s0.paid) window.location.href = 'payment.html';
+    if (getOnboardingStep(session.companyId) === 'ready') window.location.href = 'home.html';
+
+    const demo = getDemoCompany(session.companyId);
+    const ek = getEkasaTemplate();
+    document.getElementById('coLabel').textContent = session.companyName || session.companyId;
+    document.getElementById('templateSchema').textContent = ek.schema.join(' · ');
+
+    // Prefill demo connection (jalur existing)
+    document.getElementById('db-engine').value = demo.connection.engine;
+    document.getElementById('db-host').value = demo.connection.host;
+    document.getElementById('db-port').value = demo.connection.port;
+    document.getElementById('db-name').value = demo.connection.name;
+    document.getElementById('db-user').value = demo.connection.user;
+
+    // ---------- Pilihan jalur (existing / buat database baru) ----------
+    let currentPath = 'existing';
+    function switchPath(p) {
+      currentPath = p;
+      document.querySelectorAll('#pathTabs .role-tab').forEach(t => t.classList.toggle('active', t.dataset.path === p));
+      document.getElementById('form-connect').classList.toggle('hidden', p !== 'existing');
+      document.getElementById('panel-provision').classList.toggle('hidden', p !== 'provision');
+      updateDemoConn();
+      if (p === 'provision') updateMode();
+    }
+    document.querySelectorAll('#pathTabs .role-tab').forEach(t => {
+      t.addEventListener('click', () => switchPath(t.dataset.path));
+    });
+
+    // ---------- Mode "buat database baru" (template / buat sendiri) ----------
+    let currentMode = 'template';
+    function updateMode() {
+      document.getElementById('templatePreview').classList.toggle('hidden', currentMode !== 'template');
+      document.getElementById('selfBuilder').classList.toggle('hidden', currentMode !== 'self');
+    }
+    function selectMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('#panel-provision .pay-method').forEach(m =>
+        m.classList.toggle('selected', m.dataset.mode === mode));
+      updateMode();
+    }
+    document.getElementById('modeTemplate').addEventListener('click', () => selectMode('template'));
+    document.getElementById('modeSelf').addEventListener('click', () => selectMode('self'));
+
+    // ---------- Builder tabel untuk mode "buat sendiri" ----------
+    function addTableRow(table, cols) {
+      const wrap = document.getElementById('tableRows');
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px;';
+      row.innerHTML =
+        '<input type="text" class="tb-name" placeholder="nama tabel" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);" value="' + (table || '') + '" />' +
+        '<input type="text" class="tb-cols" placeholder="kolom (pisahkan koma)" style="flex:2;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);" value="' + (cols || '') + '" />' +
+        '<button type="button" class="btn btn-outline btn-sm" onclick="this.parentElement.remove()">✕</button>';
+      wrap.appendChild(row);
+    }
+    addTableRow('products', 'id, name, price, stock');
+
+    function collectTables() {
+      const rows = document.querySelectorAll('#tableRows > div');
+      const tables = [];
+      rows.forEach(row => {
+        const name = row.querySelector('.tb-name').value.trim();
+        const cols = row.querySelector('.tb-cols').value.split(',').map(c => c.trim()).filter(Boolean);
+        if (name) tables.push({ table: name, columns: cols });
+      });
+      return tables;
+    }
+
+    // ---------- Koneksi informasi demo ----------
+    function provisionName() {
+      return 'aios_' + (session.companyId || 'co').replace(/[^a-z0-9]/gi, '').toLowerCase();
+    }
+    function updateDemoConn() {
+      const el = document.getElementById('demoConn');
+      if (currentPath === 'provision') {
+        el.textContent = ek.engine + ' · ' + ek.host + ':' + ek.port + '/' + provisionName();
+      } else {
+        el.textContent = demo.connection.engine + ' · ' + demo.connection.host + ':' +
+          demo.connection.port + '/' + demo.connection.name;
+      }
+    }
+    updateDemoConn();
+    updateMode();
+
+    // ---------- Pipeline adaptasi (C5) ----------
+    let running = false;
+    function runPipeline(kind, ctx) {
+      const box = document.getElementById('connectingBox');
+      box.classList.remove('hidden');
+      box.scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('schemaInfo').classList.add('hidden');
+      document.getElementById('connectDone').classList.add('hidden');
+
+      const rows = document.querySelectorAll('#analysisSteps .step-row');
+      rows.forEach(r => { r.classList.remove('active', 'done'); r.querySelector('.step-ico').innerHTML = ''; });
+      rows[0].querySelector('span:last-child').textContent =
+        kind === 'provision' ? 'Membuat database baru di server Ekasa…' : 'Memvalidasi koneksi ke database client…';
+
+      const ico = (i) => rows[i].querySelector('.step-ico');
+      ico(0).innerHTML = '<span class="spin-lg"></span>';
+      rows[0].classList.add('active');
+
+      setTimeout(() => {
+        ico(0).innerHTML = '✔'; rows[0].classList.remove('active'); rows[0].classList.add('done');
+        ico(1).innerHTML = '<span class="spin-lg"></span>'; rows[1].classList.add('active');
+      }, 1000);
+      setTimeout(() => {
+        ico(1).innerHTML = '✔'; rows[1].classList.remove('active'); rows[1].classList.add('done');
+        ico(2).innerHTML = '<span class="spin-lg"></span>'; rows[2].classList.add('active');
+      }, 2200);
+      setTimeout(() => {
+        ico(2).innerHTML = '✔'; rows[2].classList.remove('active'); rows[2].classList.add('done');
+        ico(3).innerHTML = '<span class="spin-lg"></span>'; rows[3].classList.add('active');
+      }, 3600);
+      setTimeout(() => {
+        ico(3).innerHTML = '✔'; rows[3].classList.remove('active'); rows[3].classList.add('done');
+
+        const info = document.getElementById('schemaInfo');
+        info.innerHTML = '<b>Skema terdeteksi:</b> ' + ctx.schema.join(' · ');
+        info.classList.remove('hidden');
+
+        const done = document.getElementById('connectDone');
+        if (kind === 'provision') {
+          done.innerHTML =
+            '✅ Database baru berhasil dibuat &amp; <b>' + ctx.schema.length + '</b> tabel teranalisis. ' +
+            'Berikutnya: validasi hasil pemetaan.';
+        } else {
+          done.innerHTML =
+            '✅ Koneksi berhasil &amp; <b>' + ctx.schema.length + '</b> tabel teranalisis. ' +
+            'Berikutnya: validasi hasil pemetaan.';
+        }
+        done.classList.remove('hidden');
+      }, 5000);
+      setTimeout(() => { window.location.href = 'validate-mapping.html'; }, 6400);
+    }
+
+    // Jalur 1 — menghubungkan database existing (C4)
+    function connectDb(e) {
+      e.preventDefault();
+      if (running) return;
+      running = true;
+
+      const connection = {
+        engine: document.getElementById('db-engine').value,
+        host: document.getElementById('db-host').value,
+        port: document.getElementById('db-port').value,
+        name: document.getElementById('db-name').value,
+        user: document.getElementById('db-user').value,
+        provisioned: false
+      };
+      setState(session.companyId, { connection, provisioned: false });
+      runPipeline('existing', { schema: demo.schema, mapping: demo.mapping });
+    }
+
+    // Jalur 2 — buat database baru disediakan Ekasa (FR-32B/C)
+    function provisionDb() {
+      if (running) return;
+      running = true;
+
+      const mode = currentMode;
+      let schema, tables;
+      if (mode === 'template') {
+        schema = ek.schema;
+      } else {
+        tables = collectTables();
+        schema = tables.map(t => t.columns.length ? (t.table + ' (' + t.columns.join(', ') + ')') : t.table);
+        if (!schema.length) { running = false; alert('Tambahkan minimal satu tabel terlebih dahulu.'); return; }
+      }
+
+      const connection = {
+        engine: ek.engine,
+        host: ek.host,
+        port: ek.port,
+        name: provisionName(),
+        user: ek.user,
+        provisioned: true,
+        provisionMode: mode
+      };
+      setState(session.companyId, {
+        connection,
+        provisioned: true,
+        provisionMode: mode,
+        schema,
+        mapping: ek.mapping,
+        mappingValidated: false,
+        mappingVersion: 1,
+        schemaChanged: false
+      });
+      runPipeline('provision', { schema, mapping: ek.mapping });
+    }
+  </script>
+</body>
+</html>

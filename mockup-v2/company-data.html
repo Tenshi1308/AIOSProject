@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Perusahaan — AIOS</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/onboarding.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> AIOS</div>
+    <div class="nav">
+      <a href="home.html" class="btn btn-outline btn-sm">← Kembali</a>
+      <span class="user" id="userBox"></span>
+    </div>
+  </div>
+
+  <div class="settings-layout">
+    <h1>Data Perusahaan</h1>
+    <p class="sub">Kelola informasi profil perusahaan Anda.</p>
+
+    <div id="msgBox" class="alert alert-ok hidden"></div>
+
+    <div class="card">
+      <div class="card-head"><h3>Profil Perusahaan</h3></div>
+      <div class="card-body">
+        <form id="form-company-data" onsubmit="saveCompanyData(event)">
+          <div class="form-group">
+            <label for="co-name">Nama Perusahaan</label>
+            <input type="text" id="co-name" required />
+          </div>
+          <div class="form-group">
+            <label for="co-email">Email Login</label>
+            <input type="email" id="co-email" required />
+          </div>
+          <div class="row-gap">
+            <div class="form-group">
+              <label for="co-pillar">Industri</label>
+              <select id="co-pillar">
+                <option>Manufacturing</option>
+                <option>Retail</option>
+                <option>F&B</option>
+                <option>Layanan</option>
+                <option>Distribusi</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="co-phone">Telepon</label>
+              <input type="text" id="co-phone" placeholder="021-0000-0000" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="co-address">Alamat</label>
+            <input type="text" id="co-address" placeholder="Jl. Raya No. 1, Jakarta" />
+          </div>
+          <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/state.js"></script>
+  <script src="js/topbar.js"></script>
+  <script>
+    const session = getSession();
+    if (session.role !== 'company' || !session.companyId) window.location.href = 'login.html';
+    const user = getUsers().find(u => u.id === session.companyId);
+    const demo = getDemoCompany(session.companyId);
+
+    if (user) {
+      document.getElementById('co-name').value = user.name;
+      document.getElementById('co-email').value = user.email;
+    }
+    document.getElementById('co-pillar').value = demo.pillar || 'Manufacturing';
+
+    function saveCompanyData(e) {
+      e.preventDefault();
+      const users = getUsers();
+      const u = users.find(x => x.id === session.companyId);
+      if (!u) return;
+      u.name = document.getElementById('co-name').value.trim();
+      u.email = document.getElementById('co-email').value.trim();
+      localStorage.setItem('aios_users', JSON.stringify(users));
+
+      // Nama perusahaan baru juga ikut update di sesi (topbar)
+      sessionStorage.setItem('aios_company_name', u.name);
+
+      const msg = document.getElementById('msgBox');
+      msg.textContent = 'Data perusahaan berhasil disimpan.';
+      msg.classList.remove('hidden');
+      setTimeout(() => msg.classList.add('hidden'), 2500);
+    }
+  </script>
+</body>
+</html>

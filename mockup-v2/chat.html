@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat — AIOS</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> AIOS</div>
+    <div class="nav">
+      <a href="home.html" class="btn btn-outline btn-sm">← Kembali ke Bidang</a>
+      <span class="user" id="userBox"></span>
+    </div>
+  </div>
+
+  <div class="chat-layout">
+    <!-- Panel kiri: placeholder -->
+    <aside class="side-panel">
+      <div class="branch-info">
+        <div class="bi-name" id="biBranch">Bidang</div>
+        <div class="bi-sub" id="biCompany"></div>
+        <div class="bi-sub" id="biMapping" style="margin-top:6px;"></div>
+      </div>
+      <h3>Panel Kiri <span class="muted">(placeholder)</span></h3>
+      <div class="placeholder-box">
+        <div class="pb-title">📈 Revenue</div>
+        <div class="pb-tag">Placeholder — kosong</div>
+      </div>
+      <div class="placeholder-box">
+        <div class="pb-title">🌱 Growth</div>
+        <div class="pb-tag">Placeholder — kosong</div>
+      </div>
+      <div class="placeholder-box">
+        <div class="pb-title">📋 Laporan</div>
+        <div class="pb-tag">Placeholder — kosong</div>
+      </div>
+      <div class="placeholder-box">
+        <div class="pb-title">⚙️ Pengaturan</div>
+        <div class="pb-tag">Placeholder — kosong</div>
+      </div>
+    </aside>
+
+    <!-- Area chat -->
+    <section class="chat-area">
+      <div class="chat-header">
+        <span class="avatar" id="chatAvatar">🤖</span>
+        <div>
+          <div class="ch-name" id="chatName">AI Manager</div>
+          <div class="ch-status">● Online — Agent Primary</div>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg msg-ai">
+          <div class="who">🤖 AI Manager <span class="delegate">(Agent Primary)</span></div>
+          Halo! Saya AI Manager bidang <b id="branchInMsg">ini</b>. Saya akan
+          membantu Anda dan meneruskan pertanyaan Anda ke worker (sub-agent)
+          yang paling sesuai di bidang ini.
+        </div>
+      </div>
+
+      <!-- Kotak saran (di dalam chat) -->
+      <div class="suggestions" id="suggestions"></div>
+
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Tulis pertanyaan Anda…" />
+        <button class="btn btn-primary" onclick="sendMessage()">Kirim</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/topbar.js"></script>
+  <script>
+    // Onboarding gate: hanya bisa masuk chat bila DB & mapping sudah siap
+    (function guard() {
+      const session = getSession();
+      if (session.role === 'company') {
+        const step = getOnboardingStep(session.companyId);
+        if (!session.companyId || step !== 'ready') {
+          window.location.href = 'home.html';
+        }
+      }
+    })();
+
+    // Ambil bidang dari sessionStorage (dipilih di home)
+    let branch = null;
+    try {
+      const raw = sessionStorage.getItem('aios_branch');
+      if (raw) branch = JSON.parse(raw);
+    } catch (e) {}
+    if (!branch) branch = getBranch('finance'); // fallback demo
+
+    const messagesEl = document.getElementById('chatMessages');
+    const suggestionsEl = document.getElementById('suggestions');
+
+    document.getElementById('chatName').textContent = branch.manager;
+    document.getElementById('chatAvatar').textContent = branch.icon;
+    document.getElementById('branchInMsg').textContent = branch.name;
+
+    // Sidebar: branch info + status mapping perusahaan
+    const session = getSession();
+    document.getElementById('biBranch').textContent = '🏢 ' + branch.name;
+    document.getElementById('biCompany').textContent =
+      'PT ' + session.companyName.replace(/^PT\s*/i, '') || session.companyName;
+    const st = getState(session.companyId);
+    document.getElementById('biMapping').textContent =
+      '🗂 Mapping skema: versi ' + (st.mappingVersion || 1) + ' · tervalidasi';
+
+    // Template saran per bidang (contoh)
+    const SUGGESTIONS = {
+      finance: ['Ringkas laporan keuangan bulan ini', 'Analisis cash flow', 'Bandingkan budget vs realisasi'],
+      sales: ['Rangkum penjualan minggu ini', 'Produk terlaris?', 'Analisis tren pelanggan'],
+      manufacturing: ['Status produksi hari ini', 'Kapasitas mesin?', 'Rencana produksi minggu depan'],
+      material: ['Cek stok gudang', 'Rekomendasi reorder point', 'Analisis supplier terbaik'],
+      hr: ['Ringkas kehadiran bulan ini', 'Status rekrutmen', 'Analisis turnover'],
+      logistic: ['Status pengiriman hari ini', 'Utilisasi armada', 'Rute paling lambat'],
+      maintenance: ['Jadwal maintenance minggu ini', 'Downtime mesin', 'Rekomendasi spare part'],
+      quality: ['Ringkas hasil inspeksi', 'Rekomendasi perbaikan kualitas', 'Audit terbaru'],
+      strategic: ['Rangkum KPI kuartal ini', 'Analisis tren pertumbuhan', 'Ringkas laporan BI'],
+      default: ['Ringkas kondisi terkini', 'Apa yang bisa Anda bantu?', 'Analisis data terbaru']
+    };
+    const chips = SUGGESTIONS[branch.id] || SUGGESTIONS.default;
+    chips.forEach((s, i) => {
+      const chip = document.createElement('button');
+      chip.className = 'suggestion-chip';
+      chip.textContent = s;
+      chip.onclick = () => sendMessage(s);
+      suggestionsEl.appendChild(chip);
+    });
+
+    const RESPONSES = [
+      {
+        worker: 'Financial Analyst',
+        text: 'Berdasarkan data yang tersedia, pendapatan bulan ini tumbuh 8% dibanding bulan lalu. Saya lampirkan rinciannya.',
+        delay: 900
+      },
+      {
+        worker: 'Budgeting Staff',
+        text: 'Realisasi budget masih dalam batas wajar (92% dari alokasi). Ada potensi efisiensi di pos pengadaan.',
+        delay: 1400
+      },
+      {
+        worker: 'CFO',
+        text: 'Secara keseluruhan kondisi keuangan sehat. Rekomendasi: jaga rasio likuiditas dan evaluasi utang jangka pendek.',
+        delay: 1100
+      }
+    ];
+    let respIdx = 0;
+
+    function sendMessage(text) {
+      const input = document.getElementById('chatInput');
+      const value = (text || input.value).trim();
+      if (!value) return;
+      input.value = '';
+
+      // pesan user
+      const mUser = document.createElement('div');
+      mUser.className = 'msg msg-user';
+      mUser.textContent = value;
+      messagesEl.appendChild(mUser);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      // indikator delegasi (transparan)
+      const r = RESPONSES[respIdx % RESPONSES.length];
+      respIdx++;
+      const note = document.createElement('div');
+      note.className = 'delegate-note';
+      note.innerHTML = `<span class="spin"></span> AI Manager sedang berkonsultasi dengan sub-agent <b>&nbsp;${r.worker}&nbsp;</b>…`;
+      messagesEl.appendChild(note);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      setTimeout(() => {
+        note.remove();
+        const mAI = document.createElement('div');
+        mAI.className = 'msg msg-ai';
+        mAI.innerHTML =
+          `<div class="who">🤖 AI Manager <span class="delegate">→ sub-agent: ${r.worker}</span></div>` + r.text;
+        messagesEl.appendChild(mAI);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }, r.delay);
+    }
+
+    // Enter untuk kirim
+    document.getElementById('chatInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    // Label user ditangani oleh js/topbar.js (profile dropdown)
+  </script>
+</body>
+</html>

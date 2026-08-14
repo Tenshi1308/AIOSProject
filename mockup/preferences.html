@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pengaturan — AIOS</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/onboarding.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> AIOS</div>
+    <div class="nav">
+      <a href="home.html" class="btn btn-outline btn-sm">← Kembali</a>
+      <span class="user" id="userBox"></span>
+    </div>
+  </div>
+
+  <div class="settings-layout">
+    <h1>Pengaturan</h1>
+    <p class="sub">Preferensi penggunaan AIOS untuk perusahaan Anda.</p>
+
+    <div id="msgBox" class="alert alert-ok hidden"></div>
+
+    <div class="card">
+      <div class="card-head"><h3>Preferensi Umum</h3></div>
+      <div class="card-body">
+        <div class="form-group">
+          <label for="pref-lang">Bahasa Tampilan</label>
+          <select id="pref-lang">
+            <option value="id">Bahasa Indonesia</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pref-llm">Model AI (Ollama)</label>
+          <select id="pref-llm">
+            <option>llama3 (default)</option>
+            <option>mistral</option>
+            <option>qwen2.5</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pref-notify" style="display:inline-flex;gap:8px;align-items:center;cursor:pointer;">
+            <input type="checkbox" id="pref-notify" checked style="width:auto;" />
+            Terima notifikasi perubahan skema database
+          </label>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="savePrefs()">Simpan Preferensi</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/state.js"></script>
+  <script src="js/topbar.js"></script>
+  <script>
+    const session = getSession();
+    if (session.role !== 'company' || !session.companyId) window.location.href = 'login.html';
+
+    // baca preferensi tersimpan dari state perusahaan
+    const prefs = getState(session.companyId).prefs || {};
+    document.getElementById('pref-lang').value = prefs.lang || 'id';
+    document.getElementById('pref-llm').value = prefs.llm || 'llama3 (default)';
+    document.getElementById('pref-notify').checked = prefs.notify !== false;
+
+    function savePrefs() {
+      const state = getState(session.companyId);
+      setState(session.companyId, {
+        ...state,
+        prefs: {
+          lang: document.getElementById('pref-lang').value,
+          llm: document.getElementById('pref-llm').value,
+          notify: document.getElementById('pref-notify').checked
+        }
+      });
+      const msg = document.getElementById('msgBox');
+      msg.textContent = 'Preferensi disimpan.';
+      msg.classList.remove('hidden');
+      setTimeout(() => msg.classList.add('hidden'), 2500);
+    }
+  </script>
+</body>
+</html>

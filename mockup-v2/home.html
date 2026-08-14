@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home — AIOS</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> AIOS</div>
+    <div class="nav">
+      <span class="user" id="userBox"></span>
+    </div>
+  </div>
+
+  <div class="home-body">
+    <div class="hub-stage" id="hubStage">
+      <!-- Lapisan "dunia": semua konten peta di-transform bersama saat zoom/pan -->
+      <div class="hub-world" id="hubWorld">
+        <!-- Lattice latar belakang + partikel ambient -->
+        <div class="hub-grid" id="hubGrid"></div>
+        <canvas class="hub-particles" id="hubParticles"></canvas>
+
+        <!-- Jaringan neural digital: web global + jalur data inti -> manager -->
+        <svg class="hub-lines" id="hubLines"></svg>
+
+        <div class="hub-core" id="hubCore">
+          <span class="core-ring"></span>
+          <span class="core-orbit"></span>
+          <div class="core-nucleus" id="coreNucleus"></div>
+          <div class="core-body">
+            <span class="core-name">AIOS</span>
+            <span class="core-caption">AI CORE</span>
+            <span class="core-core-dot"></span>
+          </div>
+        </div>
+        <div id="branchNodes"></div>
+      </div>
+
+      <!-- Kontrol zoom ala peta (tetap di atas dunia yang di-transform) -->
+      <div class="zoom-ui" id="zoomUi" aria-label="Kontrol zoom peta">
+        <button type="button" class="zoom-btn" id="prevManager" title="Sebelumnya" aria-label="AI Manager sebelumnya">◀</button>
+        <button type="button" class="zoom-btn" id="nextManager" title="Berikutnya" aria-label="AI Manager berikutnya">▶</button>
+        <button type="button" class="zoom-btn" id="zoomIn" title="Perbesar" aria-label="Perbesar">+</button>
+        <button type="button" class="zoom-btn" id="zoomOut" title="Perkecil" aria-label="Perkecil">−</button>
+        <button type="button" class="zoom-btn" id="zoomReset" title="Kembali ke jaringan penuh" aria-label="Kembali ke jaringan penuh">⌂</button>
+      </div>
+
+      <!-- Chat dock AI Manager (overlay kanan, tampil saat zoom-in) -->
+      <aside class="chat-dock" id="chatDock" aria-hidden="true">
+        <div class="dock-head">
+          <button type="button" class="dock-back" id="dockBack" aria-label="Kembali ke jaringan penuh">‹</button>
+          <span class="dock-avatar" id="dockAvatar">🤖</span>
+          <div class="dock-title">
+            <div class="dock-name" id="dockName">AI Manager</div>
+            <div class="dock-status">● Online — Agent Primary</div>
+          </div>
+        </div>
+        <div class="dock-messages" id="dockMessages"></div>
+        <div class="dock-suggestions" id="dockSuggestions"></div>
+        <div class="dock-input">
+          <input type="text" id="dockChatInput" placeholder="Tulis pertanyaan Anda…" aria-label="Tulis pertanyaan Anda" />
+          <button type="button" class="btn btn-primary" id="dockSend">Kirim</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/topbar.js"></script>
+  <script>
+    // Onboarding gate: perusahaan harus paid + terhubung + mapping tervalidasi
+    (function guard() {
+      const session = getSession();
+      if (!session.companyId) {
+        window.location.href = 'login.html';
+        return;
+      }
+      if (session.role === 'company') {
+        const step = getOnboardingStep(session.companyId);
+        if (step === 'payment') { window.location.href = 'payment.html'; return; }
+        if (step === 'connect') { window.location.href = 'connect.html'; return; }
+        if (step === 'validate') { window.location.href = 'validate-mapping.html'; return; }
+      }
+    })();
+
+    const stage = document.getElementById('hubStage');
+    const worldEl = document.getElementById('hubWorld');
+    const nodesWrap = document.getElementById('branchNodes');
+    const hubLines = document.getElementById('hubLines');
+    const particleCanvas = document.getElementById('hubParticles');
+    const dockEl = document.getElementById('chatDock');
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+
+    // Monogram singkatan per bidang (visual, diturunkan dari id/name yang sudah ada)
+    const MONOGRAMS = {
+      strategic: 'SOP', finance: 'FIN', hr: 'HR', logistic: 'LOG',
+      maintenance: 'MNT', sales: 'SAL', quality: 'QLT',
+      material: 'MAT', manufacturing: 'MFG'
+    };
+
+    // Aksen warna per AI Manager — cyan dominan; blue/purple/magenta selektif
+    const MAN_ACCENT = { finance: '#3b82f6', hr: '#e879f9', sales: '#a78bfa' };
+    const DEFAULT_ACCENT = '#22d3ee';
+    function accentOf(id) { return MAN_ACCENT[id] || DEFAULT_ACCENT; }
+    function rgbaOf(hex, a) {
+      const n = parseInt(hex.slice(1), 16);
+      return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+    }
+    // Generator acak deterministik (topologi jaringan stabil saat resize)
+    function mulberry32(seed) {
+      let t = seed >>> 0;
+      return function () {
+        t += 0x6D2B79F5;
+        let r = Math.imul(t ^ (t >>> 15), 1 | t);
+        r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    const SEED = 20260813;
+
+    const PREFERS_REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const NODE_CORE = 34;    // jari-jari inti node AI Manager
+    const TILE = 54;         // ukuran kartu node
+    const lineEls = [];
+    const pulseEls = [];
+
+    // ---------- State zoom ala Google Maps ----------
+    let view = { s: 1, tx: 0, ty: 0 };        // transform dunia: translate(tx,ty) scale(s)
+    let zoomedIndex = -1;                     // branch yang sedang focus (dok terbuka)
+    let lastGeo = null;                       // { W, H, POS, WORKER_R } dari render terakhir
+    let dockWidth = 400;
+
+    function applyTransform() {
+      worldEl.style.transform = `translate(${view.tx}px, ${view.ty}px) scale(${view.s})`;
+    }
+
+    // Posisi layar target node (x di-shift kiri sebesar dock agar tak tertutup panel)
+    function targetScreenPos(W, H) {
+      return { x: (W - dockWidth) / 2, y: H / 2 };
+    }
+
+    // Zoom ke branch i (klik node / keyboard). Chat dock terbuka di kanan.
+    function zoomTo(i) {
+      if (!lastGeo) return;
+      const { W, H, POS } = lastGeo;
+      dockWidth = dockEl.offsetWidth || Math.min(460, Math.max(280, W * 0.36));
+      const p = POS[i];
+      const base = Math.max(1.9, Math.min(3.0, Math.min(W * 0.42, H * 0.6) / 180));
+      view.s = base;
+      const c = targetScreenPos(W, H);
+      view.tx = c.x - p.x * view.s;
+      view.ty = c.y - p.y * view.s;
+      zoomedIndex = i;
+      applyTransform();
+      useZoomClasses(true);
+      setActive(i, true);
+      openDock(i);
+    }
+
+    // Kembali ke jaringan penuh
+    function zoomReset() {
+      if (zoomedIndex < 0) return;
+      zoomedIndex = -1;
+      stage.classList.remove('zoomed', 'dock-open');
+      document.querySelectorAll('.branch-node.selected').forEach(n => n.classList.remove('selected'));
+      document.querySelectorAll('.branch-name.selected').forEach(n => n.classList.remove('selected'));
+      view = { s: 1, tx: 0, ty: 0 };
+      applyTransform();
+      closeDock();
+    }
+
+    // Terapkan/mencabut kelas zoom pada node/chip (setelah render ulang juga)
+    function useZoomClasses(on) {
+      if (on) {
+        stage.classList.add('zoomed');
+        nodesWrap.querySelectorAll('.branch-node').forEach(n => n.classList.remove('selected'));
+        nodesWrap.querySelectorAll('.branch-name').forEach(n => n.classList.remove('selected'));
+        const ns = nodesWrap.querySelectorAll('.branch-node');
+        if (ns[zoomedIndex]) ns[zoomedIndex].classList.add('selected');
+        const chips = nodesWrap.querySelectorAll('.branch-name');
+        if (chips[zoomedIndex]) chips[zoomedIndex].classList.add('selected');
+      }
+    }
+
+    // Re-apply zoom setelah render() membangun ulang node/chip (resize dsb.)
+    function restoreZoom() {
+      if (zoomedIndex < 0) return;
+      stage.classList.add('zoomed');
+      useZoomClasses(true);
+      setActive(zoomedIndex, true);
+      // jaga dock + transform tetap konsisten dengan geometri baru
+      dockEl.classList.add('open');
+      if (lastGeo) {
+        const { W, H, POS } = lastGeo;
+        const c = targetScreenPos(W, H);
+        const p = POS[zoomedIndex];
+        view.tx = c.x - p.x * view.s;
+        view.ty = c.y - p.y * view.s;
+        applyTransform();
+      }
+    }
+
+    // ---------- Pan gesture (drag) saat zoom aktif ----------
+    let pan = null;
+    stage.addEventListener('pointerdown', (e) => {
+      if (zoomedIndex < 0 || e.target.closest('.chat-dock') || e.target.closest('.zoom-ui')) return;
+      pan = { x0: e.clientX, y0: e.clientY, tx0: view.tx, ty0: view.ty };
+      stage.setPointerCapture(e.pointerId);
+      stage.classList.add('panning');
+    });
+    stage.addEventListener('pointermove', (e) => {
+      if (!pan) return;
+      const dx = e.clientX - pan.x0;
+      const dy = e.clientY - pan.y0;
+      view.tx = pan.tx0 + dx;
+      view.ty = pan.ty0 + dy;
+      clampView();
+      applyTransform();
+    });
+    function endPan() {
+      if (pan) { pan = null; stage.classList.remove('panning'); }
+    }
+    stage.addEventListener('pointerup', endPan);
+    stage.addEventListener('pointercancel', endPan);
+
+    // Batasi posisi agar node fokus tetap di viewport (tidak lepas dari layar)
+    function clampView() {
+      if (zoomedIndex < 0 || !lastGeo) return;
+      const { W, H, POS } = lastGeo;
+      const p = POS[zoomedIndex];
+      const m = 60; // margin
+      const minTx = m - p.x * view.s;
+      const maxTx = (W - m) - p.x * view.s;
+      const minTy = m - p.y * view.s;
+      const maxTy = (H - m) - p.y * view.s;
+      view.tx = Math.max(minTx, Math.min(maxTx, view.tx));
+      view.ty = Math.max(minTy, Math.min(maxTy, view.ty));
+    }
+
+    // ---------- Zoom buttons ----------
+    // Zoom terhadap pusat viewport: titik yang sedang di tengah layar tetap di tengah.
+    function zoomByFactor(f) {
+      if (zoomedIndex < 0 || !lastGeo) return;
+      const c = { x: stage.clientWidth / 2, y: stage.clientHeight / 2 };
+      view.s = Math.min(6, Math.max(1.35, view.s * f));
+      view.tx = c.x - (c.x - view.tx) * f;
+      view.ty = c.y - (c.y - view.ty) * f;
+      clampView();
+      applyTransform();
+    }
+    document.getElementById('zoomIn').addEventListener('click', () => { if (zoomedIndex >= 0) zoomByFactor(1.35); });
+    document.getElementById('zoomOut').addEventListener('click', () => { if (zoomedIndex >= 0) zoomByFactor(1 / 1.35); });
+    document.getElementById('zoomReset').addEventListener('click', zoomReset);
+    document.getElementById('dockBack').addEventListener('click', zoomReset);
+    document.getElementById('prevManager').addEventListener('click', () => { if (zoomedIndex >= 0) zoomTo((zoomedIndex + 8) % 9); });
+    document.getElementById('nextManager').addEventListener('click', () => { if (zoomedIndex >= 0) zoomTo((zoomedIndex + 1) % 9); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && zoomedIndex >= 0) zoomReset(); });
+
+    // Wheel zoom ala Google Maps (hanya saat sedang zoom)
+    stage.addEventListener('wheel', (e) => {
+      if (zoomedIndex < 0) return;
+      e.preventDefault();
+      zoomByFactor(e.deltaY < 0 ? 1.12 : 1 / 1.12);
+    }, { passive: false });
+
+    // ---------- Chat dock (AI Manager di kanan) ----------
+    const dockMessages = document.getElementById('dockMessages');
+    const dockSuggest = document.getElementById('dockSuggestions');
+    const dockInput = document.getElementById('dockChatInput');
+    let dockRespIdx = 0;
+
+    const SUGGESTIONS = {
+      finance: ['Ringkas laporan keuangan bulan ini', 'Analisis cash flow', 'Bandingkan budget vs realisasi'],
+      sales: ['Rangkum penjualan minggu ini', 'Produk terlaris?', 'Analisis tren pelanggan'],
+      manufacturing: ['Status produksi hari ini', 'Kapasitas mesin?', 'Rencana produksi minggu depan'],
+      material: ['Cek stok gudang', 'Rekomendasi reorder point', 'Analisis supplier terbaik'],
+      hr: ['Ringkas kehadiran bulan ini', 'Status rekrutmen', 'Analisis turnover'],
+      logistic: ['Status pengiriman hari ini', 'Utilisasi armada', 'Rute paling lambat'],
+      maintenance: ['Jadwal maintenance minggu ini', 'Downtime mesin', 'Rekomendasi spare part'],
+      quality: ['Ringkas hasil inspeksi', 'Rekomendasi perbaikan kualitas', 'Audit terbaru'],
+      strategic: ['Rangkum KPI kuartal ini', 'Analisis tren pertumbuhan', 'Ringkas laporan BI'],
+      default: ['Ringkas kondisi terkini', 'Apa yang bisa Anda bantu?', 'Analisis data terbaru']
+    };
+
+    const RESPONSES = [
+      { worker: 'Financial Analyst',
+        text: 'Berdasarkan data yang tersedia, pendapatan bulan ini tumbuh 8% dibanding bulan lalu. Saya lampirkan rinciannya.',
+        delay: 900 },
+      { worker: 'Budgeting Staff',
+        text: 'Realisasi budget masih dalam batas wajar (92% dari alokasi). Ada potensi efisiensi di pos pengadaan.',
+        delay: 1400 },
+      { worker: 'CFO',
+        text: 'Secara keseluruhan kondisi keuangan sehat. Rekomendasi: jaga rasio likuiditas dan evaluasi utang jangka pendek.',
+        delay: 1100 }
+    ];
+
+    function openDock(i) {
+      const b = BRANCHES[i];
+      document.getElementById('dockName').textContent = b.manager;
+      document.getElementById('dockAvatar').textContent = b.icon;
+      dockEl.classList.add('open');
+      stage.classList.add('dock-open');
+      dockEl.setAttribute('aria-hidden', 'false');
+      dockRespIdx = 0;
+
+      // Pesan sambutan
+      dockMessages.innerHTML = '';
+      const g = document.createElement('div');
+      g.className = 'msg msg-ai';
+      g.innerHTML = '<div class="who">' + b.icon + ' ' + b.manager +
+        ' <span class="delegate">(Agent Primary)</span></div>' +
+        'Halo! Saya AI Manager bidang <b>' + b.name + '</b>. Saya akan membantu Anda ' +
+        'dan meneruskan pertanyaan ke worker (sub-agent) yang paling sesuai.';
+      dockMessages.appendChild(g);
+
+      // Suggestion chips
+      dockSuggest.innerHTML = '';
+      const chips = SUGGESTIONS[b.id] || SUGGESTIONS.default;
+      chips.forEach((s) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'suggestion-chip';
+        chip.textContent = s;
+        chip.addEventListener('click', () => dockSend(s));
+        dockSuggest.appendChild(chip);
+      });
+
+      if (!PREFERS_REDUCED_MOTION) {
+        setTimeout(() => dockInput.focus(), 500);
+      }
+    }
+
+    function closeDock() {
+      dockEl.classList.remove('open');
+      stage.classList.remove('dock-open');
+      dockEl.setAttribute('aria-hidden', 'true');
+    }
+
+    function dockSend(text) {
+      const b = BRANCHES[zoomedIndex];
+      if (!b) return;
+      const value = (text !== undefined ? String(text) : dockInput.value).trim();
+      if (!value) return;
+      dockInput.value = '';
+
+      const mUser = document.createElement('div');
+      mUser.className = 'msg msg-user';
+      mUser.textContent = value;
+      dockMessages.appendChild(mUser);
+      dockMessages.scrollTop = dockMessages.scrollHeight;
+
+      const r = RESPONSES[dockRespIdx % RESPONSES.length];
+      dockRespIdx++;
+      const note = document.createElement('div');
+      note.className = 'delegate-note';
+      note.innerHTML = '<span class="spin"></span> ' + b.manager +
+        ' sedang berkonsultasi dengan sub-agent <b>&nbsp;' + r.worker + '&nbsp;</b>…';
+      dockMessages.appendChild(note);
+      dockMessages.scrollTop = dockMessages.scrollHeight;
+
+      setTimeout(() => {
+        note.remove();
+        const mAI = document.createElement('div');
+        mAI.className = 'msg msg-ai';
+        mAI.innerHTML = '<div class="who">' + b.icon + ' ' + b.manager +
+          ' <span class="delegate">→ sub-agent: ' + r.worker + '</span></div>' + r.text;
+        dockMessages.appendChild(mAI);
+        dockMessages.scrollTop = dockMessages.scrollHeight;
+      }, r.delay);
+    }
+
+    document.getElementById('dockSend').addEventListener('click', () => dockSend());
+    dockInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') dockSend(); });
+
+    // Highlight koneksi inti -> manager: garis aktif + pulse dot
+    function setActive(i, on) {
+      if (zoomedIndex >= 0) on = (i === zoomedIndex); // saat zoom, hanya node fokus yang aktif
+      stage.classList.toggle('hub-hover', on);
+      if (lineEls[i]) lineEls[i].classList.toggle('active', on);
+      if (pulseEls[i]) pulseEls[i].classList.toggle('active', on);
+    }
+
+    // ---------- Partikel ambient (air abu-abu/netral, alpha rendah) ----------
+    function initParticles() {
+      const ctx = particleCanvas.getContext('2d');
+      const DPR = Math.min(window.devicePixelRatio || 1, 2);
+      let W, H, parts = [];
+      const COUNT = Math.min(90, Math.floor((particleCanvas.offsetWidth * particleCanvas.offsetHeight) / 14000));
+
+      function resize() {
+        W = particleCanvas.clientWidth;
+        H = particleCanvas.clientHeight;
+        particleCanvas.width = W * DPR;
+        particleCanvas.height = H * DPR;
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        parts = [];
+        for (let i = 0; i < COUNT; i++) {
+          parts.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: 0.6 + Math.random() * 1.5,
+            vx: (Math.random() - 0.5) * 0.16,
+            vy: (Math.random() - 0.5) * 0.16,
+            a: 0.12 + Math.random() * 0.4,
+            tw: Math.random() * 0.004 + 0.001
+          });
+        }
+      }
+
+      const ACENT = getComputedStyle(document.documentElement).getPropertyValue('--particle-accent').trim() || '#38bdf8';
+
+      function step() {
+        ctx.clearRect(0, 0, W, H);
+        for (const p of parts) {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < -5) p.x = W + 5; if (p.x > W + 5) p.x = -5;
+          if (p.y < -5) p.y = H + 5; if (p.y > H + 5) p.y = -5;
+          const alpha = p.a * (0.6 + Math.sin(performance.now() * p.tw + p.x * 0.01) * 0.4);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = ACENT;
+          ctx.globalAlpha = alpha;
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        if (!document.hidden) requestAnimationFrame(step);
+      }
+
+      resize();
+      window.addEventListener('resize', resize);
+      if (PREFERS_REDUCED_MOTION) {
+        ctx.clearRect(0, 0, W, H);
+        for (const p of parts) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.globalAlpha = p.a * 0.5;
+          ctx.fillStyle = ACENT;
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        particleCanvas.style.display = 'block';
+        return;
+      }
+      requestAnimationFrame(step);
+    }
+
+    render();
+
+    // Throttle render ulang saat resize/zoom via requestAnimationFrame
+    let resizeRaf = null;
+    window.addEventListener('resize', () => {
+      if (resizeRaf) return;
+      resizeRaf = requestAnimationFrame(() => { resizeRaf = null; render(); });
+    });
+
+    // ---------- Estimasi lebar label (tanpa dependency) ----------
+    function textWidth(txt) {
+      const c = document.createElement('canvas');
+      const m = c.getContext('2d');
+      m.font = '600 11px "Segoe UI", system-ui, sans-serif';
+      return m.measureText(txt).width;
+    }
+
+    // ---------- Nucleus inti AIOS (cluster node kecil yang makin rapat ke pusat) ----------
+    function buildNucleus(rng) {
+      const core = document.getElementById('coreNucleus');
+      if (!core) return;
+      core.innerHTML = '';
+      const N = 26;
+      for (let i = 0; i < N; i++) {
+        const a = rng() * Math.PI * 2;
+        const rad = Math.pow(rng(), 1.8) * 56 + 6;
+        const d = document.createElement('div');
+        d.className = 'core-node' + (rng() < 0.14 ? ' core-node-bright' : '');
+        const s = (2 + rng() * 2.4).toFixed(1);
+        d.style.width = s + 'px';
+        d.style.height = s + 'px';
+        d.style.left = (50 + Math.cos(a) * rad) + '%';
+        d.style.top = (50 + Math.sin(a) * rad * 0.82) + '%';
+        d.style.color = rng() < 0.18 ? '#a78bfa' : '#22d3ee';
+        core.appendChild(d);
+      }
+    }
+
+    // ---------- Worker network: mini-cluster neural per AI Manager ----------
+    // Worker bersifat informasi saja (tidak bisa diklik).
+    function buildWorkerNet(branch, index, POS, WORKER_R, rng) {
+      const cluster = document.createElement('div');
+      cluster.className = 'branch-cluster';
+
+      const p = POS[index];
+      const center = p.angle;          // arah keluar dari inti (derajat)
+      const n = branch.workers.length;
+      const S = WORKER_R + 44;
+      const off = S;
+
+      const svg = document.createElementNS(SVG_NS, 'svg');
+      svg.setAttribute('class', 'cluster-svg');
+      svg.setAttribute('width', S * 2);
+      svg.setAttribute('height', S * 2);
+      svg.setAttribute('viewBox', '0 0 ' + (S * 2) + ' ' + (S * 2));
+      svg.style.left = (-off) + 'px';
+      svg.style.top = (-off) + 'px';
+
+      // Posisi worker: tak beraturan mengelilingi manager, di lapisan luar
+      const spread = n >= 5 ? 40 : n >= 4 ? 36 : 30;
+      const pts = [];
+      branch.workers.forEach((w, k) => {
+        const tt = n === 1 ? 0 : (k / (n - 1)) * 2 - 1;
+        const aOff = tt * spread + (rng() - 0.5) * 10;
+        const ang = (center + aOff) * Math.PI / 180;
+        const span = Math.max(10, WORKER_R - 44);
+        const rad = Math.min(WORKER_R - 8, Math.max(34, 34 + ((k * 37 + index * 11) % span)));
+        pts.push({ x: Math.cos(ang) * rad, y: Math.sin(ang) * rad, name: w });
+      });
+
+      const lnColor = p.accent;
+
+      // Tautan manager -> worker
+      pts.forEach((pt) => {
+        const L = Math.hypot(pt.x, pt.y) || 1;
+        const ux = pt.x / L, uy = pt.y / L;
+        const line = document.createElementNS(SVG_NS, 'line');
+        line.setAttribute('class', 'worker-line');
+        line.setAttribute('x1', off + ux * (NODE_CORE + 8));
+        line.setAttribute('y1', off + uy * (NODE_CORE + 8));
+        line.setAttribute('x2', off + pt.x);
+        line.setAttribute('y2', off + pt.y);
+        line.style.color = lnColor;
+        svg.appendChild(line);
+      });
+
+      // Tautan antar worker (jaring kecil)
+      for (let k = 0; k < n - 1; k++) {
+        const A = pts[k], B = pts[k + 1];
+        const line = document.createElementNS(SVG_NS, 'line');
+        line.setAttribute('class', 'worker-line');
+        line.setAttribute('x1', off + A.x);
+        line.setAttribute('y1', off + A.y);
+        line.setAttribute('x2', off + B.x);
+        line.setAttribute('y2', off + B.y);
+        line.style.color = lnColor;
+        svg.appendChild(line);
+      }
+
+      // Node ambien samar di sekitar manager (sub-jaring dekoratif)
+      for (let k = 0; k < 3; k++) {
+        const aOff = (k === 0 ? -1 : 1) * (30 + rng() * 32);
+        const ang = (center + aOff) * Math.PI / 180;
+        const rad = Math.max(46, WORKER_R - 18);
+        const ax = Math.cos(ang) * rad, ay = Math.sin(ang) * rad;
+        const line = document.createElementNS(SVG_NS, 'line');
+        line.setAttribute('class', 'amb-line');
+        line.setAttribute('x1', off + Math.cos(ang) * (NODE_CORE + 8));
+        line.setAttribute('y1', off + Math.sin(ang) * (NODE_CORE + 8));
+        line.setAttribute('x2', off + ax);
+        line.setAttribute('y2', off + ay);
+        svg.appendChild(line);
+        const dot = document.createElementNS(SVG_NS, 'circle');
+        dot.setAttribute('class', 'amb-dot');
+        dot.setAttribute('cx', off + ax);
+        dot.setAttribute('cy', off + ay);
+        dot.setAttribute('r', 1.6);
+        svg.appendChild(dot);
+      }
+
+      cluster.appendChild(svg);
+
+      pts.forEach((pt) => {
+        const wd = document.createElement('div');
+        wd.className = 'worker-dot';
+        wd.style.left = pt.x + 'px';
+        wd.style.top = pt.y + 'px';
+        wd.innerHTML = '<span class="wd-dot"></span><span class="wd-name">' + pt.name + '</span>';
+        cluster.appendChild(wd);
+      });
+
+      cluster.setAttribute('aria-hidden', 'true');
+      return cluster;
+    }
+
+    // ---------- Geometri jaringan neural (selalu dihitung ulang saat load & resize) ----------
+    function render() {
+      // Haplis: init parts canvas cukup sekali
+      if (!window.__aiosParticlesInit) { window.__aiosParticlesInit = true; initParticles(); }
+
+      // Bersihkan node & label lama sebelum render ulang (zoom/resize)
+      nodesWrap.innerHTML = '';
+
+      const W = stage.clientWidth;
+      const H = stage.clientHeight;
+      const hubX = W / 2;
+      const hubY = H / 2;
+      const rng = mulberry32(SEED);
+
+      // Radius fan worker adaptif terhadap ukuran stage
+      const WORKER_R = Math.min(84, Math.min(W, H) * 0.13);
+      const isCompact = W < 700;
+
+      // Elips radial yang memenuhi kanvas (layout sama dengan sebelumnya)
+      const rx = Math.max(150, W / 2 - (WORKER_R + 40)) * (isCompact ? 0.72 : 1);
+      const ry = Math.max(120, H / 2 - (WORKER_R + 58)) * (isCompact ? 0.8 : 1);
+
+      // Faktor radius organik (asimetri ringan, bukan lingkaran sempurna)
+      const RF = [0.92, 1.0, 0.86, 0.97, 1.0, 0.88, 0.98, 0.9, 1.02];
+
+      // Sudut tiap bidang: 40° per bidang, mulai dari atas (sama dengan sebelumnya)
+      const POS = [];
+      BRANCHES.forEach((b, i) => {
+        const angleDeg = -90 + i * 40;
+        const a = angleDeg * Math.PI / 180;
+        const eR = (rx * ry) / Math.sqrt(Math.pow(ry * Math.cos(a), 2) + Math.pow(rx * Math.sin(a), 2));
+        const R = Math.min(eR, W / 2 - NODE_CORE - 12) * RF[i];
+        const x = hubX + R * Math.cos(a);
+        const y = hubY + R * Math.sin(a);
+        const outX = Math.cos(a);   // arah keluar radial
+        const outY = Math.sin(a);
+        const tx = -Math.sin(a);    // vektor singgung
+        const ty = Math.cos(a);
+        POS.push({ x, y, angle: angleDeg, a, outX, outY, tx, ty, R, accent: accentOf(b.id) });
+      });
+
+      lastGeo = { W, H, POS, WORKER_R };
+
+      // ---------- SVG latar jaringan ----------
+      hubLines.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      hubLines.setAttribute('width', W);
+      hubLines.setAttribute('height', H);
+      hubLines.innerHTML = '';
+      lineEls.length = 0;
+      pulseEls.length = 0;
+
+      // Nucleus inti AIOS
+      buildNucleus(rng);
+
+      // ---- Web global: node-node kecil menyebar radial dari inti ----
+      const webNodes = [];
+      const want = Math.round(Math.min(250, Math.max(90, (W * H) / 6200)));
+      let made = 0, safety = 0;
+      while (made < want && safety < want * 22) {
+        safety++;
+        const a = rng() * Math.PI * 2;
+        const rr = Math.pow(rng(), 2.1);   // padat dekat pusat, renggang ke tepi
+        const x = hubX + Math.cos(a) * rr * (rx * 1.05);
+        const y = hubY + Math.sin(a) * rr * (ry * 1.05);
+        if (x < 12 || x > W - 12 || y < 12 || y > H - 12) continue;
+        if (Math.hypot(x - hubX, y - hubY) < 64) continue;
+        let near = false;
+        for (const pp of POS) {
+          if (Math.hypot(x - pp.x, y - pp.y) < NODE_CORE + 14) { near = true; break; }
+        }
+        if (near) continue;
+        webNodes.push({ x, y });
+        made++;
+      }
+
+      // Hubungan antar node terdekat (ridge jaringan)
+      const webLinks = new Map();
+      for (let i = 0; i < webNodes.length; i++) {
+        const hits = [];
+        for (let j = 0; j < webNodes.length; j++) {
+          if (i === j) continue;
+          const dx = webNodes[i].x - webNodes[j].x;
+          const dy = webNodes[i].y - webNodes[j].y;
+          hits.push([dx * dx + dy * dy, j]);
+        }
+        hits.sort((a, b) => a[0] - b[0]);
+        const take = Math.min(2 + (i % 2), hits.length);
+        for (let k = 0; k < take; k++) {
+          const j = hits[k][1];
+          const key = i < j ? i + '_' + j : j + '_' + i;
+          if (!webLinks.has(key)) webLinks.set(key, Math.sqrt(hits[k][0]));
+        }
+      }
+
+      const maxLink = Math.min(W, H) * 0.3;
+      webLinks.forEach((dlen, key) => {
+        if (dlen > maxLink) return;
+        const ids = key.split('_');
+        const A = webNodes[ids[0]], B = webNodes[ids[1]];
+        const ln = document.createElementNS(SVG_NS, 'line');
+        ln.setAttribute('class', 'web-link');
+        ln.setAttribute('x1', A.x); ln.setAttribute('y1', A.y);
+        ln.setAttribute('x2', B.x); ln.setAttribute('y2', B.y);
+        hubLines.appendChild(ln);
+      });
+
+      webNodes.forEach((nn, i) => {
+        const dot = document.createElementNS(SVG_NS, 'circle');
+        dot.setAttribute('class', 'web-node' + (i % 7 === 0 ? ' web-node-bright' : ''));
+        dot.setAttribute('cx', nn.x); dot.setAttribute('cy', nn.y);
+        dot.setAttribute('r', (1 + (i % 3) * 0.7).toFixed(2));
+        if (!PREFERS_REDUCED_MOTION && i % 3 === 0) {
+          const an = document.createElementNS(SVG_NS, 'animate');
+          an.setAttribute('attributeName', 'opacity');
+          an.setAttribute('values', '0.3;0.9;0.3');
+          an.setAttribute('dur', (2 + (i % 5) * 0.6) + 's');
+          an.setAttribute('repeatCount', 'indefinite');
+          dot.appendChild(an);
+        }
+        hubLines.appendChild(dot);
+      });
+
+      // Tautan pendek nucleus -> web terdekat (data mengalir keluar dari inti)
+      const byCore = webNodes
+        .map((n, i) => ({ n, i, d: Math.hypot(n.x - hubX, n.y - hubY) }))
+        .filter(o => o.d < Math.min(W, H) * 0.3)
+        .sort((a, b) => a.d - b.d)
+        .slice(0, 16);
+      byCore.forEach((o) => {
+        const dx = o.n.x - hubX, dy = o.n.y - hubY;
+        const L = Math.hypot(dx, dy) || 1;
+        const ln = document.createElementNS(SVG_NS, 'line');
+        ln.setAttribute('class', 'core-web');
+        ln.setAttribute('x1', hubX + (dx / L) * 52);
+        ln.setAttribute('y1', hubY + (dy / L) * 52);
+        ln.setAttribute('x2', o.n.x);
+        ln.setAttribute('y2', o.n.y);
+        hubLines.appendChild(ln);
+      });
+
+      // Jalur data inti -> manager (curve), dengan pulse dot yang selalu mengalir
+      POS.forEach((p, i) => {
+        const startX = hubX + p.outX * 52;
+        const startY = hubY + p.outY * 52;
+        const endX = p.x - p.outX * NODE_CORE;
+        const endY = p.y - p.outY * NODE_CORE;
+        const bend = (i % 2 === 0 ? 1 : -1) * Math.min(Math.hypot(endX - startX, endY - startY) * 0.16, 56);
+        const bx = (startX + endX) / 2 + p.tx * bend;
+        const by = (startY + endY) / 2 + p.ty * bend;
+        const d = `M ${startX} ${startY} Q ${bx} ${by} ${endX} ${endY}`;
+
+        const pathEl = document.createElementNS(SVG_NS, 'path');
+        pathEl.setAttribute('class', 'man-link');
+        pathEl.setAttribute('d', d);
+        pathEl.style.color = p.accent;
+        hubLines.appendChild(pathEl);
+        lineEls.push(pathEl);
+
+        const pulse = document.createElementNS(SVG_NS, 'circle');
+        pulse.setAttribute('class', 'pulse-dot');
+        pulse.setAttribute('r', 2.6);
+        pulse.style.color = p.accent;
+        if (!PREFERS_REDUCED_MOTION) {
+          const anim = document.createElementNS(SVG_NS, 'animateMotion');
+          anim.setAttribute('dur', (2.4 + i * 0.14) + 's');
+          anim.setAttribute('repeatCount', 'indefinite');
+          anim.setAttribute('path', d);
+          pulse.appendChild(anim);
+        }
+        hubLines.appendChild(pulse);
+        pulseEls.push(pulse);
+
+        // relay dot statis di tengah jalur
+        const mx = (startX + 2 * bx + endX) / 4;
+        const my = (startY + 2 * by + endY) / 4;
+        const relay = document.createElementNS(SVG_NS, 'circle');
+        relay.setAttribute('class', 'relay-dot');
+        relay.setAttribute('cx', mx); relay.setAttribute('cy', my);
+        relay.setAttribute('r', 2);
+        hubLines.appendChild(relay);
+      });
+
+      // ---------- Label chip + anti-tabrakan ----------
+      const chips = POS.map((p, i) => {
+        const nameW = textWidth(BRANCHES[i].name) + 24;
+        const estW = Math.min(nameW, 172);
+        const wrap = nameW > 172;
+        // tinggi realistis: title (1 line ~16 / 2 line ~31) + meta (~13) + padding (12) + border
+        const estH = (wrap ? 31 : 16) + 13 + 12 + 2;
+        const gap = NODE_CORE + 24;
+        let cx = p.x + p.outX * gap;
+        let cy = p.y + p.outY * gap;
+        return { i, cx, cy, estW, estH, outX: p.outX, outY: p.outY, tx: p.tx, ty: p.ty, wrap };
+      });
+
+      // Resolver tabrakan: dorong label menjauh dari label lain & dari socket node
+      for (let pass = 0; pass < 60; pass++) {
+        let movedChip = false;
+        let movedSocket = false;
+
+        // chip vs chip
+        for (let a = 0; a < chips.length; a++) {
+          for (let b = a + 1; b < chips.length; b++) {
+            const A = chips[a], B = chips[b];
+            const ox = B.cx - A.cx, oy = B.cy - A.cy;
+            const overlapX = (A.estW + B.estW) / 2 - Math.abs(ox);
+            const overlapY = (A.estH + B.estH) / 2 - Math.abs(oy);
+            if (overlapX > 0 && overlapY > 0) {
+              const push = Math.min(overlapX, overlapY) + 8;
+              const sgnX = ox >= 0 ? 1 : -1;
+              const sgnY = oy >= 0 ? 1 : -1;
+              if (overlapX <= overlapY) {
+                A.cx -= sgnX * push / 2; B.cx += sgnX * push / 2;
+              } else {
+                A.cy -= sgnY * push / 2; B.cy += sgnY * push / 2;
+              }
+              movedChip = true;
+            }
+          }
+        }
+
+        // chip (rect) vs socket node (circle): dorong keluar agar tidak menutupi node
+        for (let c = 0; c < chips.length; c++) {
+          const C = chips[c];
+          const cr = { l: C.cx - C.estW / 2, t: C.cy - C.estH / 2, r: C.cx + C.estW / 2, b: C.cy + C.estH / 2 };
+          for (let n = 0; n < POS.length; n++) {
+            if (n === C.i) continue;
+            const p = POS[n];
+            // titik terdekat socket (lingkaran) ke persegi label
+            const cx = Math.max(cr.l, Math.min(p.x, cr.r));
+            const cy = Math.max(cr.t, Math.min(p.y, cr.b));
+            let dx = p.x - cx, dy = p.y - cy;
+            const distSq = dx * dx + dy * dy;
+            const socR = NODE_CORE * 0.85 + 2; // ~ radius visual socket
+            if (distSq < socR * socR) {
+              const dist = Math.sqrt(distSq) || 0.001;
+              const push = (socR - dist) + 5;
+              dx /= dist; dy /= dist;
+              C.cx -= dx * push * 0.5;
+              C.cy -= dy * push * 0.5;
+              movedSocket = true;
+            }
+          }
+        }
+
+        // chip vs stage boundary (jangan sampai label keluar kanvas)
+        for (let c = 0; c < chips.length; c++) {
+          const C = chips[c];
+          const margin = 8;
+          let nx = C.cx, ny = C.cy;
+          nx = Math.max(margin + C.estW / 2, Math.min(W - margin - C.estW / 2, nx));
+          ny = Math.max(margin + C.estH / 2, Math.min(H - margin - C.estH / 2, ny));
+          if (Math.abs(nx - C.cx) > 0.1 || Math.abs(ny - C.cy) > 0.1) {
+            C.cx = nx; C.cy = ny; movedSocket = true;
+          }
+        }
+
+        if (!movedChip && !movedSocket) break;
+      }
+
+      // ---------- Render 9 node AI Manager ----------
+      BRANCHES.forEach((b, i) => {
+        const p = POS[i];
+        const node = document.createElement('div');
+        node.className = 'branch-node';
+        node.style.left = p.x + 'px';
+        node.style.top = p.y + 'px';
+        node.style.setProperty('--acc', p.accent);
+        node.style.setProperty('--acc-soft', rgbaOf(p.accent, 0.28));
+        node.style.setProperty('--acc-line', rgbaOf(p.accent, 0.55));
+        node.style.setProperty('--acc-glow', rgbaOf(p.accent, 0.85));
+        node.setAttribute('role', 'button');
+        node.setAttribute('tabindex', '0');
+        node.setAttribute('aria-label', b.name + ' — AI Manager, zoom ke bidang & buka chat');
+
+        node.innerHTML =
+          `<span class="b-aura"></span>` +
+          `<span class="b-ring"></span>` +
+          `<span class="b-socket"><span class="b-code">${MONOGRAMS[b.id] || b.id.slice(0, 3).toUpperCase()}</span></span>` +
+          `<span class="b-led"></span>` +
+          `<span class="b-port"></span>`;
+
+        node.addEventListener('click', () => zoomTo(i));
+        node.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); zoomTo(i); }
+        });
+        node.addEventListener('mouseenter', () => setActive(i, true));
+        node.addEventListener('mouseleave', () => setActive(i, false));
+        node.addEventListener('focus', () => setActive(i, true));
+        node.addEventListener('blur', () => setActive(i, false));
+
+        const cluster = buildWorkerNet(b, i, POS, WORKER_R, rng);
+        node.appendChild(cluster);
+
+        // Area hover lebar di sekitar node (worker tetap non-interaktif)
+        const hs = WORKER_R * 1.8;
+        const hit = document.createElement('div');
+        hit.className = 'branch-hit';
+        hit.style.width = hs + 'px';
+        hit.style.height = hs + 'px';
+        hit.style.left = (-hs / 2) + 'px';
+        hit.style.top = (-hs / 2) + 'px';
+        node.appendChild(hit);
+
+        nodesWrap.appendChild(node);
+      });
+
+      // Buat elemen chip (dipindah ke posisi hasil resolver)
+      chips.forEach((c) => {
+        const el = document.createElement('div');
+        el.className = 'branch-name';
+        el.setAttribute('inert', '');
+        el.style.left = c.cx + 'px';
+        el.style.top = c.cy + 'px';
+        el.innerHTML =
+          `<span class="bn-title">${BRANCHES[c.i].name}</span>` +
+          `<span class="bn-meta">${BRANCHES[c.i].workers.length} worker</span>`;
+        nodesWrap.appendChild(el);
+      });
+
+      // SVG label link: garis pendek node -> chip
+      chips.forEach((c) => {
+        const p = POS[c.i];
+        const ln = document.createElementNS(SVG_NS, 'line');
+        ln.setAttribute('class', 'label-link');
+        ln.setAttribute('x1', p.x + p.outX * NODE_CORE);
+        ln.setAttribute('y1', p.y + p.outY * NODE_CORE);
+        ln.setAttribute('x2', c.cx - p.outX * 8);
+        ln.setAttribute('y2', c.cy - p.outY * 8);
+        hubLines.appendChild(ln);
+      });
+
+      // Pulihkan state zoom bila sedang zoom (mis. setelah resize render ulang)
+      if (zoomedIndex >= 0) restoreZoom();
+    }
+
+    // Label user ditangani oleh js/topbar.js (profile dropdown)
+  </script>
+</body>
+</html>

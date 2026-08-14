@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Validasi Mapping — AIOS</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/onboarding.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> AIOS</div>
+    <div class="nav">
+      <span class="user" id="userBox"></span>
+    </div>
+  </div>
+
+  <div class="settings-layout" style="max-width:900px;">
+    <h1>Validasi Pemetaan Skema</h1>
+    <p class="sub">Tinjau hasil analisis Data Access Agent. Konfirmasi mapping yang benar, edit yang kurang tepat. (Use case C6)</p>
+
+    <!-- Popup schema change (C14) muncul jika skema berubah -->
+    <div id="schemaChangeBackdrop" class="modal-backdrop hidden">
+      <div class="modal">
+        <div class="m-title">⚠️ Skema Database Berubah</div>
+        <div class="m-body">
+          AIOS mendeteksi perubahan pada struktur database perusahaan Anda
+          (tabel/kolom baru, relasi berubah, atau tipe data berbeda).
+          Data Access Agent telah melakukan re-analisis dan memperbarui mapping.
+        </div>
+        <ul class="m-list">
+          <li>Mapping otomatis diperbarui oleh AIOS (re-adaptasi).</li>
+          <li>Mohon konfirmasi ulang, dan edit manual bila diperlukan.</li>
+          <li>Perubahan ini hanya memengaruhi metadata &amp; mapping AIOS — sistem Anda tidak berubah.</li>
+        </ul>
+        <div class="m-actions">
+          <button class="btn btn-primary" onclick="closeSchemaPopup()">Konfirmasi &amp; Tinjau Mapping</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="mappingNote" class="mapping-note"></div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Hasil Semantic Mapping</h3>
+        <span class="badge badge-info" id="verBadge">Versi —</span>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <table class="mapping-table" id="mappingTable">
+          <thead>
+            <tr>
+              <th>Konsep Canonical</th>
+              <th>Struktur Client</th>
+              <th>Confidence</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="mappingBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="alert alert-warn" id="lowWarn" style="display:none;">
+      <b>Perlu perhatian:</b> mapping ber-label <span class="flag-badge low">Low confidence</span>
+      ditandai otomatis untuk dikonfirmasi. Pastikan pemetaannya tepat sebelum digunakan.
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <p style="font-size:13.5px;color:var(--text-muted);margin-bottom:16px;">
+          Setelah dikonfirmasi, mapping ini dipakai seluruh AI Manager &amp; Worker
+          untuk menerjemahkan konsep ke struktur database Anda — tanpa menyimpan
+          salinan data bisnis Anda.
+        </p>
+        <button class="btn btn-primary" onclick="confirmMapping()">Konfirmasi &amp; Simpan Mapping</button>
+      </div>
+    </div>
+
+    <p class="demo-cred">
+      <a href="settings.html">Kelola Koneksi Database (Edit / Simulasi perubahan skema)</a>
+    </p>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/topbar.js"></script>
+  <script>
+    const session = getSession();
+    if (session.role !== 'company' || !session.companyId) window.location.href = 'login.html';
+
+    let mapping;
+
+    // Guard: routing gate (login -> payment -> connect -> validate)
+    (function guard() {
+      const state = getState(session.companyId);
+      if (!state.paid) { window.location.href = 'payment.html'; return; }
+      if (!state.connection) { window.location.href = 'connect.html'; return; }
+      if (state.mappingValidated) { window.location.href = 'home.html'; return; }
+
+      const demo = getDemoCompany(session.companyId);
+      mapping = state.mapping || demo.mapping;
+      const lowCount = mapping.filter(m => m.flag === 'low').length;
+
+      document.getElementById('verBadge').textContent = 'Versi ' + (state.mappingVersion || 1);
+      document.getElementById('mappingNote').innerHTML =
+        '📊 <b>' + session.companyName + '</b> · Database <code>' + state.connection.engine + ' · ' + state.connection.name + '</code> — ' +
+        'konsep dipetakan dari struktur client ke Canonical Data Model.';
+      document.getElementById('lowWarn').style.display = lowCount ? 'block' : 'none';
+
+      // Popup schema change (C14) — tampil bila flag di-set dari settings
+      if (state.schemaChanged) {
+        document.getElementById('schemaChangeBackdrop').classList.remove('hidden');
+      }
+
+      // Render mapping
+      const body = document.getElementById('mappingBody');
+      mapping.forEach((m, i) => {
+        const tr = document.createElement('tr');
+        if (m.flag === 'low') tr.className = 'low';
+
+        const confPct = Math.round(m.confidence * 100);
+        const confCls = confPct >= 80 ? 'conf-high' : confPct >= 60 ? 'conf-med' : 'conf-low';
+
+        tr.innerHTML =
+          '<td class="m-concept">' + m.concept + '</td>' +
+          '<td class="m-source" id="src-' + i + '">' + m.source + '</td>' +
+          '<td><span class="conf-badge ' + confCls + '">' + confPct + '%</span></td>' +
+          '<td><span class="flag-badge ' + (m.flag === 'low' ? 'low' : 'ok') + '">' +
+            (m.flag === 'low' ? 'Low confidence' : 'OK') + '</span></td>' +
+          '<td class="edit-link" style="color:var(--primary);" onclick="editMapping(' + i + ', this)">Edit</td>';
+        body.appendChild(tr);
+      });
+    })();
+
+    function closeSchemaPopup() {
+      document.getElementById('schemaChangeBackdrop').classList.add('hidden');
+      setState(session.companyId, { schemaChanged: false });
+    }
+
+    // Edit manual mapping (C6) — ubah struktur client untuk konsep tsb
+    function editMapping(i, el) {
+      const cell = document.getElementById('src-' + i);
+      if (cell.querySelector('input')) return;
+      const current = cell.textContent;
+      cell.innerHTML = '<input class="m-input" value="' + current + '" />';
+      el.textContent = 'Selesai';
+      el.onclick = function () {
+        const inp = cell.querySelector('input');
+        mapping[i].source = inp.value.trim() || current;
+        cell.textContent = mapping[i].source;
+        el.textContent = 'Edit';
+      };
+    }
+
+    function confirmMapping() {
+      setState(session.companyId, { mapping, mappingValidated: true });
+      alert('Mapping tersimpan di AIOS Internal Database dan siap digunakan.');
+      window.location.href = 'home.html';
+    }
+  </script>
+</body>
+</html>

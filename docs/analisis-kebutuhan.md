@@ -4,27 +4,37 @@
 **Pelaksana:** Samuel Karel Augusta / 233016011
 **Mitra:** Ekasa Technology (software house)
 **Periode:** 10 Agustus 2026 – 12 Desember 2026 (18 minggu)
-**Status:** Draft v1 — untuk direview dan diverifikasi bersama mentor
+**Status:** Rev — disinkronkan dengan `AGENTS.md` dan `REQUIREMENTS.md`
+
+> Dokumen ini menyajikan **konteks proyek** (latar belakang, tujuan, manfaat,
+> cakupan, risiko, dan teknologi). Detail kebutuhan fungsional, acceptance
+> criteria, dan use case tidak diduplikasi di sini — sumber resminya adalah
+> `REQUIREMENTS.md` dan `docs/use-case-description.md`.
 
 ---
 
 ## 1. Ringkasan Eksekutif
 
-AIOS (*AI Operating System*) adalah prototype **platform AI berbasis plugin** yang
-dipasang sebagai *layer* di atas sistem perusahaan (*client*) yang sudah berjalan.
-Tujuannya bukan mengganti aplikasi client, melainkan menambahkan kemampuan AI
-(menjawab pertanyaan, menganalisis data, membaca dokumen) tanpa client harus
-membangun ulang sistemnya.
+AIOS (*AI Operating System*) adalah **platform AI multi-tenant SaaS** yang
+di-host Ekasa. Setiap perusahaan client login ke workspace-nya sendiri, tidak
+ada yang perlu dipasang atau di-embed di aplikasi client. AIOS berperan sebagai
+*layer* AI di atas sistem perusahaan yang sudah berjalan: tujuannya bukan
+mengganti aplikasi client, melainkan menambahkan kemampuan AI (menjawab
+pertanyaan, menganalisis data) tanpa client harus membangun ulang sistemnya.
 
-Prototype ini dibuat untuk membuktikan konsep **"plug in, adapt, use"**: AIOS
-harus bisa menempel ke *client* dengan struktur *database* yang berbeda-beda —
-bahkan yang nama tabel/kolomnya tidak bermakna — melalui analisis skema secara
-*semantic* berbasis *local LLM*.
+Prinsip utama: **CLIENT SYSTEM STAYS. AIOS ADAPTS.** AIOS harus bisa menempel
+pada client dengan struktur database yang berbeda-beda melalui analisis skema
+secara semantik berbasis *local LLM*, sesuai alur *plug in → adapt → understand
+→ persist metadata → use*.
 
-Hasil akhir yang ditargetkan: prototype berjalan lokal dengan banyak *worker*
-spesialis (pola menyerupai tubeanalytic) yang mampu membaca data dari beberapa
-*dataset* berbeda melalui *canonical data model*, plus *pipeline RAG* untuk
-dokumen/PDF, lengkap dengan dokumentasi dan demo presentasi.
+Model interaksi: AIOS **bukan chatbot umum tunggal**. AIOS dipandang seperti
+organisasi dengan **9 cabang bidang (modul ERP)**; setiap cabang dikepalai satu
+**AI Primary Agent** yang mengoordinasikan **sub-agents** (worker AI) pada
+bidangnya. Ada dua role eksternal: **Client** (perusahaan pemakai AIOS) dan
+**Ekasa Developer** (monitoring pemakaian).
+
+Pada prototype, penanganan dokumen (RAG) **di-defer**; fokus adalah data
+terstruktur dari Client Database.
 
 ---
 
@@ -44,19 +54,20 @@ dan tidak dapat digunakan kembali.
 1. Tidak ada *layer* AI yang **reusable** lintas *client*.
 2. Memahami struktur *database client* yang beragam biasanya dilakukan dengan
    *mapping* manual / *hardcoded* yang hanya berlaku untuk satu *client*.
-3. Data terstruktur (*database*) dan data tak terstruktur (dokumen/PDF) belum
-   diolah melalui satu jalur AI yang terpadu.
-4. Penerapan AI sering dikaitkan dengan *cloud LLM*, sementara banyak *client*
-   membutuhkan solusi yang berjalan lokal / menjaga privasi data.
+3. Penerapan AI sering dikaitkan dengan *cloud LLM*, sementara banyak *client*
+   membutuhkan solusi yang menjaga privasi data.
+4. Setiap *client* harus membangun solusi AI terpisah sehingga adopsi AI mahal.
 
 ### 2.3 Mengapa AIOS
 
-AIOS dirancang sebagai *plugin/layer* yang **beradaptasi terhadap client**,
+AIOS dirancang sebagai *plugin/layer* SaaS yang **beradaptasi terhadap client**,
 bukan sebaliknya. Dengan *AI Schema Analyzer* yang memahami struktur *database*
-secara *semantic*, AIOS dapat mengenali bahwa `products.product_name`,
+secara semantik, AIOS dapat mengenali bahwa `products.product_name`,
 `barang.nama_barang`, dan `m_01.x2` dapat berarti hal yang sama dalam bentuk
 *canonical data model*. Dengan begitu, satu platform dapat dipasang ke banyak
-*client* dengan upaya integrasi yang jauh lebih kecil.
+*client* dengan upaya integrasi yang jauh lebih kecil. Semua 9 cabang bidang
+selalu tersedia untuk setiap client; jawaban menyesuaikan data yang benar-benar
+tersedia pada database client.
 
 ---
 
@@ -66,10 +77,9 @@ secara *semantic*, AIOS dapat mengenali bahwa `products.product_name`,
    sistem client dengan cara yang sama.
 2. **Ketergantungan pada struktur** — analisis data hanya bisa dilakukan jika
    programmer memahami dan menulis query spesifik per *client*.
-3. **Ketidakterhubungan data** — *data terstruktur* (database) dan *data tak
-   terstruktur* (dokumen) diproses terpisah tanpa satu AI *layer*.
-4. **Privasi / lokalitas** — kebutuhan AI yang berjalan lokal tanpa *cloud*.
-5. **Mahalnya adopsi AI** — setiap *client* harus membangun solusi AI terpisah.
+3. **Privasi / lokalitas** — kebutuhan AI yang berjalan lokal (Ollama) tanpa
+   *cloud LLM*.
+4. **Mahalnya adopsi AI** — setiap *client* harus membangun solusi AI terpisah.
 
 ---
 
@@ -77,32 +87,35 @@ secara *semantic*, AIOS dapat mengenali bahwa `products.product_name`,
 
 ### 4.1 Tujuan Umum
 
-Membangun prototype AIOS Plugin Platform yang membuktikan bahwa satu AI *layer*
+Membangun prototype AIOS Plugin Platform yang membuktikan bahwa satu platform AI
 dapat dipasang ke sistem *client* yang berbeda-beda tanpa mengubah sistem
-*existing*, sesuai prinsip **"plug in, adapt, use."**
+*existing*, sesuai prinsip **"plug in, adapt, use"**.
 
 ### 4.2 Tujuan Khusus (Prototype Scope)
 
-Prototype dianggap berhasil jika mampu mendemonstrasikan **11 poin scope**:
+Prototype dianggap berhasil jika kriteria acceptance pada `REQUIREMENTS.md`
+(**AC-01 s.d. AC-21**) dapat didemonstrasikan, antara lain:
 
-1. **FR-01** — User dapat menggunakan AIOS.
-2. **FR-02** — AI Manager dapat mengarahkan *task* ke *worker* yang sesuai.
-3. **FR-03** — *Plugin* dapat memiliki *capability* yang berbeda.
-4. **FR-04** — *Worker* dapat menggunakan *tools*.
-5. **FR-05** — AIOS dapat membaca struktur *database client*.
-6. **FR-06** — AI Schema Analyzer dapat memahami struktur yang berbeda.
-7. **FR-07** — Struktur *client* dapat dipetakan ke *canonical model*.
-8. **FR-08** — *Worker* dapat menggunakan *canonical model*.
-9. **FR-09** — *RAG* dapat digunakan untuk dokumen/PDF.
-10. **FR-10** — *Local LLM* dapat menjalankan AI secara lokal.
-11. **FR-11** — AIOS terintegrasi sebagai *layer/plugin* tanpa mengubah sistem
-    *client*.
+1. AIOS terintegrasi sebagai plugin SaaS tanpa mengubah sistem client.
+2. Client dapat registrasi, login, membayar (gateway, aktivasi otomatis).
+3. Client menghubungkan database perusahaannya (onboarding gate) dan memvalidasi
+   hasil mapping di UI (confidence, konfirmasi, edit manual).
+4. Client memilih 1 dari 9 bidang ERP dan chat dengan AI Primary Agent.
+5. AI Primary Agent mendelegasikan pertanyaan ke sub-agent yang sesuai; sub-agent
+   tidak mengarang data yang tidak tersedia.
+6. Data Access Agent (per tenant) memahami skema client, menyimpan mapping di
+   AIOS Internal Database, dan menyediakan business data aktual.
+7. Memory Agent (per bidang) merangkum percakapan agar konteks terjaga.
+8. Ekasa Developer memantau pemakaian token per perusahaan (drill-down per
+   bidang/worker).
+9. Re-adaptasi otomatis saat skema client berubah (dengan pop-up konfirmasi).
+10. Seluruh alur dapat didemonstrasikan melalui interface.
 
 ### 4.3 Tujuan Magang
 
-1. Menguasai *AI orchestration*: AI Manager, *plugin registry*, *worker system*,
-   dan *tool system*.
-2. Menerapkan integrasi *local LLM* (Ollama) dan *RAG*.
+1. Menguasai *AI orchestration*: AI Manager, plugin registry, worker system,
+   dan tool system.
+2. Menerapkan integrasi *local LLM* (Ollama).
 3. Mempraktikkan pola arsitektur adaptif untuk *database* heterogen
    (*schema analyzer* + *canonical model*).
 4. Menghasilkan *prototype*, laporan, dan demo yang memenuhi penilaian mentor,
@@ -116,7 +129,7 @@ Prototype dianggap berhasil jika mampu mendemonstrasikan **11 poin scope**:
 
 - Menjadi **produk konsep** yang dapat ditawarkan kepada *client* sebagai
   tambahan AI *capability* pada sistem mereka.
-- Mengurangi biaya dan waktu integrasi AI karena memakai satu *layer* yang
+- Mengurangi biaya dan waktu integrasi AI karena memakai satu platform yang
   adaptif, bukan solusi sekali pakai per *client*.
 - Modal pembicaraan bisnis dengan *client*: "tambahkan AI tanpa mengubah
   sistem Anda."
@@ -124,14 +137,15 @@ Prototype dianggap berhasil jika mampu mendemonstrasikan **11 poin scope**:
 ### 5.2 Bagi Client
 
 - Mendapatkan kemampuan AI tanpa harus membangun ulang / mengubah sistem
-  *existing*, tanpa *double login* (memanfaatkan konteks *authentication* yang ada).
-- Data tetap berada di sistem mereka (solusi dapat berjalan lokal).
+  *existing*; cukup menghubungkan database perusahaannya.
+- Business data tetap berada di database mereka (Client Database tetap menjadi
+  source of truth; AIOS hanya menyimpan metadata, mapping, dan state).
 
 ### 5.3 Bagi Pemagang
 
 - Pengalaman nyata membangun arsitektur AI modular dan adaptif.
-- Kompetensi baru: *LLM integration*, *RAG*, *prompt engineering*,
-  analisis skema *database* berbasis AI.
+- Kompetensi baru: *LLM integration*, *prompt engineering*, analisis skema
+  *database* berbasis AI.
 - Portfolio prototype yang lengkap dan dapat didemonstrasikan.
 
 ### 5.4 Bagi Program Studi
@@ -146,13 +160,18 @@ Prototype dianggap berhasil jika mampu mendemonstrasikan **11 poin scope**:
 
 1. Arsitektur inti AIOS: AI Manager, Plugin Manager, Worker System, Tool System.
 2. Integrasi *local LLM* (Ollama) untuk semua peran.
-3. *Database Adapter*: SQLite, PostgreSQL, MySQL.
-4. *Schema Extraction* + AI Schema Analyzer (pemahaman semantik).
-5. *Canonical Data Model* + *mapping engine*.
-6. *Worker* spesialis: Inventory, Document, Analytics.
-7. *Pipeline RAG* untuk dokumen/PDF.
-8. *AIOS Interface*: antarmuka pengguna (chat) + API.
-9. Simulasi integrasi ke 4 *dataset* berbeda.
+3. *Database Adapter* + *Schema Extraction* + AI Schema Analyzer (pemahaman
+   semantik skema).
+4. *Canonical Data Model* + *semantic mapping* yang dipersistenkan di AIOS
+   Internal Database (versi/status/confidence).
+5. Data Access Agent (per tenant) untuk database adaptation dan penyediaan data
+   aktual.
+6. Memory Agent (per bidang) untuk ringkasan percakapan.
+7. Autentikasi multi-tenant (Client & Ekasa Developer), registrasi, dan
+   pembayaran via payment gateway.
+8. *AIOS Interface*: home 9 bidang, workspace chat, onboarding & validasi
+   mapping, dashboard monitoring Ekasa Developer.
+9. Simulasi integrasi ke beberapa struktur *database* client yang berbeda.
 10. *End-to-end testing* + dokumentasi + demo.
 
 ---
@@ -170,16 +189,20 @@ Prototype dianggap berhasil jika mampu mendemonstrasikan **11 poin scope**:
 
 ### 7.2 Non-Goals (yang TIDAK dilakukan)
 
-- **Bukan** chatbot biasa.
-- **Bukan** *single-purpose AI*.
-- **Bukan** *database-specific AI*.
+- **Bukan** chatbot generik tunggal; AIOS mengekspos kapabilitas/worker
+  spesifik.
 - **Bukan** pengganti (*replacement*) sistem *client*.
-- **Bukan** sistem *authentication* baru (tanpa JWT baru yang tidak perlu;
-  memanfaatkan konteks auth *client*).
+- **Bukan** *database-specific AI*; tidak ada asumsi hardcoded pada skema client.
+- **Bukan** *worker* yang *direct-access database*; akses lewat AIOS Data Layer /
+  canonical model / Database Adapter.
+- **Bukan** *hardcoded mapping* untuk setiap *client*.
+- **Bukan** sistem autentikasi pengganti aplikasi client — AIOS memiliki
+  autentikasi SaaS sendiri (login per perusahaan), sementara autentikasi
+  aplikasi client tetap berfungsi seperti sebelumnya.
 - **Bukan** *cloud-only AI*.
 - **Bukan** AI yang butuh *retraining* untuk setiap *client*.
-- **Bukan** *worker* yang *direct-access database*.
-- **Bukan** *hardcoded mapping* untuk setiap *client*.
+- **RAG / dokumen di-defer** — penanganan dokumen (unggah, sub-agent pembaca
+  dokumen) berada di luar scope prototype ini dan dapat menjadi fase berikutnya.
 - Tidak mengubah *database client* agar cocok dengan AIOS.
 
 ---
@@ -188,7 +211,8 @@ Prototype dianggap berhasil jika mampu mendemonstrasikan **11 poin scope**:
 
 | Stakeholder | Peran | Kebutuhan Utama |
 |---|---|---|
-| **Client** | Pengguna akhir sistem | AI *capability* tanpa mengubah sistem mereka |
+| **Client** | Perusahaan pengguna AIOS (satu role) | AI *capability* tanpa mengubah sistem mereka; validasi mapping sendiri |
+| **Ekasa Developer** | Internal Ekasa (monitoring) | Memantau pemakaian token per perusahaan (drill-down per bidang/worker) |
 | **Ekasa Technology** | Mitra / penyedia jasa | Produk AIOS yang bisa ditawarkan ke banyak client |
 | **Pemagang (Samuel)** | Pelaksana & pengembang | Prototype lengkap, kompetensi baru, portfolio |
 | **Mentor / Pemilik Ekasa** | Pembimbing & penilai | Kualitas prototype, kesesuaian kebutuhan |
@@ -198,38 +222,32 @@ Prototype dianggap berhasil jika mampu mendemonstrasikan **11 poin scope**:
 
 ## 9. Use Case / User Stories
 
-1. *"Sebagai staf gudang, saya bertanya 'stok barang X berapa?' dan AIOS
-   menjawab dari database client tanpa saya perlu memahami struktur database."*
-2. *"Sebagai manager, saya ingin ringkasan penjualan bulan ini dari sistem
-   yang sudah ada."*
-3. *"Sebagai staff admin, saya bertanya isi kontrak/PDF tanpa harus membuka
-   file-nya satu per satu."*
-4. *"Sebagai pemilik software house, saya ingin satu AIOS bisa dipasang ke
-   client mana pun tanpa menulis kode integrasi baru per client."*
+Daftar use case lengkap (aktor, alur, relasi) ada di
+`docs/use-case-description.md` (use case **C1–C14** dan **D1–D2**).
 
-Use case diagram dan flowchart lengkap dibuat sebagai file `.drawio` dan
-mermaid copy di dokumen diagram (lihat Lampiran A).
+Contoh user story yang menggambarkan inti pengalaman:
+
+1. *"Sebagai client, saya mendaftar, login, dan membayar, lalu menghubungkan
+   database perusahaan saya; AIOS memahami strukturnya dan saya memvalidasi
+   mapping di UI."*
+2. *"Sebagai client, saya memilih bidang Finance, lalu bertanya tentang data
+   penjualan; AI Primary Agent mendelegasikan ke sub-agent yang sesuai dan
+   jawabannya memakai data aktual dari database saya."*
+3. *"Sebagai client, ketika struktur database saya berubah, AIOS memberi tahu
+   dan meminta konfirmasi mapping yang diperbarui."*
+4. *"Sebagai Ekasa Developer, saya melihat dashboard pemakaian token tiap akun
+   client beserta AI Manager yang paling banyak dipakai."*
+
+Use case diagram dan flowchart disimpan sebagai file `.drawio` di
+`docs/diagrams/`.
 
 ---
 
 ## 10. Kebutuhan Fungsional (FR)
 
-Dipetakan langsung dari *Prototype Scope* (11 poin), dengan rincian
-*penerimaan* per fitur:
-
-| ID | Kebutuhan | Detail / Penerimaan |
-|---|---|---|
-| FR-01 | User dapat menggunakan AIOS | Terdapat *AIOS Interface* tempat user mengirim pertanyaan dan menerima jawaban |
-| FR-02 | AI Manager mengarahkan task ke worker | Pertanyaan user di-*route* ke worker yang sesuai (inventory/document/analytics) |
-| FR-03 | Plugin memiliki capability berbeda | Plugin Manager dapat mendaftarkan plugin dengan *capability* yang berbeda |
-| FR-04 | Worker dapat menggunakan tools | Worker memanggil *tools* (mis. baca data, cari dokumen), bukan akses DB langsung |
-| FR-05 | AIOS membaca struktur database client | *Database Connector + Schema Extraction* menghasilkan metadata schema |
-| FR-06 | AI Schema Analyzer memahami struktur berbeda | Analisis semantik bekerja pada Northwind, Chinook, varian Indonesia, dan varian obfuscated |
-| FR-07 | Struktur client dipetakan ke canonical model | `products.product_name`, `barang.nama_barang`, `m_01.x2` → `Product.name` |
-| FR-08 | Worker menggunakan canonical model | Worker menjawab pertanyaan melalui *canonical data model* |
-| FR-09 | RAG untuk dokumen/PDF | Dokumen diparse, di-*chunk*, di-*embedding*, di-retrieval, dijawab |
-| FR-10 | Local LLM menjalankan AI lokal | Semua peran berjalan di Ollama (`qwen2.5:7b` default, *configurable*) |
-| FR-11 | AIOS terintegrasi sebagai layer tanpa mengubah sistem client | Sistem client dijalankan apa adanya; AIOS hanya menempel di atasnya |
+Detail kebutuhan fungsional ada di `REQUIREMENTS.md` (**FR-01 s.d. FR-40**),
+termasuk autentikasi multi-tenant, onboarding data client, Data Access Agent,
+dan Memory Agent. Dokumen ini tidak menduplikasinya.
 
 ---
 
@@ -239,67 +257,79 @@ Dipetakan langsung dari *Prototype Scope* (11 poin), dengan rincian
 |---|---|---|
 | NFR-01 | *Modularity* | Komponen (AI Manager, Plugin, Worker, Tool, Adapter) terpisah dan dapat diganti |
 | NFR-02 | *Client adaptability* | Tidak ada asumsi *hardcoded* tentang nama tabel/kolom client |
-| NFR-03 | *Local-first* | Berjalan penuh secara lokal (Ollama, tanpa *cloud LLM*) |
-| NFR-04 | *Security & data privacy* | Worker tidak *direct-access* database; akses lewat *canonical model* |
+| NFR-03 | *Local-first* | Berjalan dengan Ollama; pada prototype di server Ekasa |
+| NFR-04 | *Security & data privacy* | Worker tidak *direct-access* database; akses lewat *canonical model*; isolasi antar tenant |
 | NFR-05 | *Performance* | Ringan; model dibatasi ukuran agar muat di 16 GB RAM CPU-only |
 | NFR-06 | *Maintainability* | Kode sederhana, terdokumentasi, tidak *over-engineered* |
-| NFR-07 | *Configurability* | Model per worker dapat diganti via konfigurasi, tanpa ubah kode |
+| NFR-07 | *Configurability* | Model/worker dapat diganti via konfigurasi, tanpa ubah kode |
 | NFR-08 | *Simplicity* | Tidak menambah framework/library tanpa alasan jelas |
 
 ---
 
 ## 12. Arsitektur dan Alur Sistem
 
-### 12.1 Alur Umum
+### 12.1 Alur Interaksi
 
 ```mermaid
 flowchart LR
     U[User] --> IF[AIOS Interface]
     IF --> AM[AI Manager]
-    AM --> PM[Plugin Manager]
-    PM --> W[Specialized Workers]
+    AM --> W[Specialized Workers]
     W --> T[Tools]
     T --> C[Canonical Data Model]
-    C --> SA[Schema Adaptation]
-    SA --> DA[Database Adapter]
+    C --> DA[Database Adapter]
     DA --> DB[(Client Database)]
 ```
 
-Alur lain (terpisah, untuk dokumen tak terstruktur):
+Alur user:
+
+```
+User → Login (SaaS per perusahaan) → Home (9 bidang mengelilingi hub AIOS)
+     → Pilih Bidang → AI Primary Agent (agent primary)
+     → Delegasi ke sub-agent (sub-agent) → Tools / Data → Response
+```
+
+### 12.2 Client Integration
 
 ```mermaid
 flowchart LR
-    D[Document/PDF] --> P[Document Parser]
-    P --> CH[Chunking]
-    CH --> E[Embedding]
-    E --> VS[(Vector Database)]
-    VS --> R[Retrieval]
-    R --> DW[Document Worker]
-    DW --> LLM[Local LLM]
+    CDB[(Client Database)]
+    CDB --> DA[Database Adapter]
+    DA --> SE[Schema Extraction]
+    SE --> ASA[AI Schema Analyzer]
+    ASA --> SM[Semantic Mapping]
+    SM --> CDM[Canonical Data Model]
+    CDM --> DL[AIOS Data Layer]
+    DL --> W[Workers]
 ```
 
-### 12.2 Konsep "Plug in, adapt, use"
+*Client* tetap mempertahankan aplikasi, database, authentication, dan business
+logic mereka. AIOS hanya menambah *layer* AI di atasnya; Client Database tetap
+menjadi source of truth business data.
+
+### 12.3 AIOS Internal Database
+
+AIOS Internal Database menyimpan metadata, mapping, konfigurasi, percakapan,
+dan state AIOS — **bukan** salinan business data client. Antara lain: client
+metadata, connection metadata, schema metadata, semantic mapping (versi/status/
+confidence), plugin/worker configuration, percakapan & ringkasan memory
+(tagged per bidang), dan usage/token metering.
+
+### 12.4 Local AI
 
 ```mermaid
 flowchart LR
-    CS[Client System]
-    AIOS[AIOS Plugin]
-    AIOS --> CS
-    AIOS --> AM2[AI Manager]
-    AM2 --> PM2[Plugin Manager]
-    PM2 --> WR[Workers]
-    WR --> DB2[(Client Database - heterogeneous)]
+    AM[AI Manager / Workers / AI Schema Analyzer]
+    AM --> O[Ollama]
+    O --> L[Local LLM]
 ```
 
-*Client* tetap mempertahankan aplikasi, database, authentication, user/role,
-dan business logic mereka. AIOS hanya menambah *layer* AI di atasnya.
-
-### 12.3 Catatan
+### 12.5 Catatan
 
 - Diagram resmi (flowchart, use case, arsitektur) disimpan sebagai file
   `.drawio` di folder `docs/diagrams/` (Lampiran A).
-- *RAG pipeline* **tidak dicampur** dengan *database schema adaptation*:
-  RAG untuk data tak terstruktur, database adaptation untuk data terstruktur.
+- *RAG pipeline* **tidak dicampur** dengan *database schema adaptation* dan
+  **di-defer** pada prototype ini.
 
 ---
 
@@ -308,10 +338,10 @@ dan business logic mereka. AIOS hanya menambah *layer* AI di atasnya.
 | Komponen | Pilihan | Catatan |
 |---|---|---|
 | Bahasa utama | Python | Sesuai keputusan project |
-| *Local LLM* | Ollama + `qwen2.5:7b` | Default semua peran; *configurable* per worker |
-| *Embedding* | `nomic-embed-text` | Untuk *RAG* / *vector store* |
-| *Database Adapter* | SQLite, PostgreSQL, MySQL | Sesuai kebutuhan prototype |
-| *Dataset sample* | Northwind, Chinook, varian retail Indonesia, varian obfuscated | 4 struktur sengaja berbeda |
+| *Local LLM* | Ollama | Nama model default menunggu keputusan (`REQUIREMENTS.md` LLM-05: **TBD**); harus kecil/ringan untuk CPU-only |
+| *Database Adapter* | SQLite, PostgreSQL, MySQL | Engine spesifik: **TBD** (`DS-01`) |
+| *Dataset sample* | Beberapa struktur client yang sengaja berbeda | Memvalidasi adaptability (nama tabel/kolom, relasi, representasi berbeda) |
+| *Embedding / vector store* | – | Untuk RAG, yang di-defer pada prototype |
 
 ---
 
@@ -319,31 +349,39 @@ dan business logic mereka. AIOS hanya menambah *layer* AI di atasnya.
 
 | Risiko | Dampak | Mitigasi |
 |---|---|---|
-| Kualitas analisis schema model kecil kurang akurat | Salah *mapping* canonical | Pakai *sample data* + *value patterns*; model dapat di-upgrade per peran |
+| Kualitas analisis schema model kecil kurang akurat | Salah *mapping* canonical | Pakai *sample data* + *value patterns*; tampilkan confidence untuk validasi client |
 | Ukuran model melebihi kapasitas RAM CPU-only | Lambat / gagal jalan | Batasi ukuran model; jalankan satu inferensi pada satu waktu |
-| Complexity analisis semantik tidak terbukti | Konsep inti gagal | Uji bertahap dari schema paling mudah ke paling sulit (Northwind → obfuscated) |
-| Scope terlalu luas untuk 18 minggu | Tidak selesai | Prioritas per fase; jangan pindah fase sebelum fase saat ini lulus verifikasi |
+| Complexity analisis semantik tidak terbukti | Konsep inti gagal | Uji bertahap dari schema paling mudah ke paling sulit |
+| Scope terlalu luas untuk 18 minggu | Tidak selesai | Prioritas per fase (lihat `AGENTS.md`); jangan pindah fase sebelum fase saat ini lulus verifikasi |
 | Dokumentasi tertinggal | Nilai akhir menurun | Dokumen di-update setiap akhir fase |
 
 ---
 
 ## 15. Definisi Selesai (Acceptance Criteria)
 
-Prototype dinyatakan **selesai** jika:
+Prototype dinyatakan **selesai** jika kriteria acceptance pada `REQUIREMENTS.md`
+(**AC-01 s.d. AC-21**) dapat didemonstrasikan, antara lain:
 
-1. Ke-11 *Prototype Scope* (FR-01 s.d. FR-11) dapat didemonstrasikan.
-2. AIOS berhasil bekerja pada **minimal 4 dataset** dengan struktur berbeda.
-3. *Pipeline RAG* dapat menjawab pertanyaan dari dokumen/PDF.
-4. Semua berjalan **lokal** melalui Ollama.
-5. Sistem *client* tidak diubah sama sekali selama integrasi.
-6. Dokumentasi (analisis, laporan, diagram, panduan) lengkap.
-7. Presentasi demo final dapat dijalankan dengan lancar.
+1. AIOS terintegrasi sebagai plugin SaaS tanpa mengubah sistem client.
+2. Client dapat registrasi, login, membayar, menghubungkan database, dan
+   memvalidasi mapping di UI.
+3. Client dapat memilih 9 bidang ERP dan berinteraksi dengan AI Primary Agent
+   beserta sub-agents-nya (data aktual via Data Access Agent; konteks via
+   Memory Agent).
+4. AIOS berhasil bekerja pada beberapa struktur database client yang berbeda.
+5. Ekasa Developer dapat memantau pemakaian token per perusahaan.
+6. Semua berjalan **lokal** melalui Ollama.
+7. Dokumentasi (analisis, requirements, use case, laporan, diagram) lengkap.
+8. Presentasi demo final dapat dijalankan dengan lancar.
 
 ---
 
 ## 16. Referensi
 
 - `AGENTS.md` — dokumen konsep dan keputusan arsitektur utama project ini.
+- `REQUIREMENTS.md` — kebutuhan fungsional, non-fungsional, dan acceptance
+  criteria.
+- `docs/use-case-description.md` — deskripsi use case (C1–C14, D1–D2).
 - `jadwal-magang-ekasa.xlsx` — jadwal 18 minggu dan *deliverable* per minggu.
 - `template-dokumen/template-laporan-akhir.pdf` — struktur laporan akhir.
 - `template-dokumen/LAPORAN MINGGU 1 ...` — format laporan mingguan.
@@ -355,5 +393,5 @@ Prototype dinyatakan **selesai** jika:
 | File | Jenis | Status |
 |---|---|---|
 | `docs/diagrams/flowchart-sistem.drawio` | Flowchart alur sistem | Dibuat (v1) |
-| `docs/diagrams/use-case-diagram.drawio` | Use case diagram | Dibuat (v1) |
+| `docs/diagrams/use-case-diagram.drawio` | Use case diagram | Dibuat (v1, perlu disinkronkan dengan `docs/use-case-description.md`) |
 | `docs/diagrams/arsitektur-sistem.drawio` | Arsitektur sistem | Dibuat (v1) |

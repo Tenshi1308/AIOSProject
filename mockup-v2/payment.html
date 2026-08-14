@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pembayaran — AIOS</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/onboarding.css" />
+</head>
+<body>
+  <div class="onboard-wrap">
+    <!-- Panel kiri -->
+    <div class="onboard-side">
+      <div class="logo-lg">AIOS</div>
+      <h2>Aktivasi langganan</h2>
+      <p>
+        Pembayaran diarahkan ke payment gateway. Setelah pembayaran berhasil,
+        akun Anda <strong>aktif otomatis</strong> dan siap menghubungkan database
+        perusahaan.
+      </p>
+      <ul>
+        <li><span class="step-num">1</span> Daftar akun perusahaan</li>
+        <li><span class="step-num active">2</span> Aktivasi langganan (pembayaran)</li>
+        <li><span class="step-num">3</span> Hubungkan database perusahaan</li>
+        <li><span class="step-num">4</span> Validasi hasil pemetaan skema</li>
+        <li><span class="step-num">5</span> Gunakan AI Manager &amp; Workers</li>
+      </ul>
+    </div>
+
+    <!-- Form pembayaran -->
+    <div class="onboard-main">
+      <div class="onboard-card">
+        <h1>Aktivasi Langganan</h1>
+        <p class="sub">Selesaikan pembayaran untuk mengaktifkan AIOS. (Use case C3)</p>
+
+        <div class="stepper">
+          <div class="step done"><span class="dot">✓</span><span class="up">Daftar</span></div>
+          <div class="step active"><span class="dot">2</span><span class="up">Bayar</span></div>
+          <div class="step"><span class="dot">3</span><span class="up">Database</span></div>
+          <div class="step"><span class="dot">4</span><span class="up">Mapping</span></div>
+        </div>
+
+        <div class="plan-box">
+          <div class="plan-name">AIOS Business</div>
+          <div class="plan-price">Rp 1.500.000 <span style="font-size:13px;color:var(--text-muted);">/bulan</span></div>
+          <div class="plan-desc">Akses 9 AI Manager (bidang ERP) + seluruh Worker per cabang.</div>
+        </div>
+
+        <div class="pay-methods">
+          <div class="pm-label">Metode Pembayaran</div>
+          <div class="pay-method selected" data-method="Transfer Bank" onclick="pick(this)">
+            <span class="pm-icon">🏦</span>
+            <span class="pm-name">Transfer Bank</span>
+            <span class="pm-note">BCA / BRI / Mandiri</span>
+          </div>
+          <div class="pay-method" data-method="E-Wallet" onclick="pick(this)">
+            <span class="pm-icon">📱</span>
+            <span class="pm-name">E-Wallet</span>
+            <span class="pm-note">OVO / GoPay / DANA</span>
+          </div>
+          <div class="pay-method" data-method="Kartu Kredit" onclick="pick(this)">
+            <span class="pm-icon">💳</span>
+            <span class="pm-name">Kartu Kredit</span>
+            <span class="pm-note">Visa / Mastercard</span>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-block" onclick="payNow()">Bayar &amp; Aktivasi</button>
+
+        <div id="payStatus" class="status-box hidden mt-20">
+          <div class="step-row active">
+            <span class="step-ico"><span class="spin-lg"></span></span>
+            <span id="payStatusText">Mengarahkan ke payment gateway…</span>
+          </div>
+        </div>
+
+        <div id="payDone" class="alert alert-ok hidden mt-16"></div>
+
+        <p class="demo-cred mt-20">
+          Mockup — <strong id="coLabel"></strong>. Simulasi: klik “Bayar &amp; Aktivasi”.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/state.js"></script>
+  <script>
+    const session = getSession();
+    if (session.role !== 'company' || !session.companyId) window.location.href = 'login.html';
+    if (getOnboardingStep(session.companyId) === 'ready') window.location.href = 'home.html';
+
+    document.getElementById('coLabel').textContent =
+      session.companyName || session.companyId;
+
+    let selectedMethod = 'Transfer Bank';
+
+    function pick(el) {
+      document.querySelectorAll('.pay-method').forEach(m => m.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedMethod = el.dataset.method;
+    }
+
+    function payNow() {
+      const box = document.getElementById('payStatus');
+      const status = document.getElementById('payStatusText');
+      box.classList.remove('hidden');
+      status.textContent = 'Mengarahkan ke payment gateway (' + selectedMethod + ')…';
+
+      setTimeout(() => { status.textContent = 'Pembayaran diproses…'; }, 1200);
+      setTimeout(() => {
+        setState(session.companyId, { paid: true });
+        document.getElementById('payDone').innerHTML =
+          '✅ Pembayaran berhasil. Akun <b>' + session.companyName + '</b> aktif otomatis.';
+        document.getElementById('payDone').classList.remove('hidden');
+        box.classList.remove('hidden');
+        status.innerHTML = '✔ Pembayaran berhasil — mengalihkan ke koneksi database…';
+      }, 2400);
+      setTimeout(() => { window.location.href = 'connect.html'; }, 3600);
+    }
+  </script>
+</body>
+</html>

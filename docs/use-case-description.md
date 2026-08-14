@@ -3,83 +3,74 @@
 **Proyek:** Prototype AIOS Plugin Platform (Immersion Program)
 **Pelaksana:** Samuel Karel Augusta / 233016011
 **Mitra:** Ekasa Technology (software house)
-**Status:** Draft v4 — berdasarkan `AGENTS.md`, `REQUIREMENTS.md`, dan keputusan
-stakeholder (AI Manager & Worker AI dijadikan actor); selaras dengan
-`docs/diagrams/use-case-diagram.drawio`
-
-Diagram: `docs/diagrams/use-case-diagram.drawio`
+**Status:** Draft — berdasarkan `AGENTS.md` dan `REQUIREMENTS.md` serta keputusan
+stakeholder pada sesi perancangan.
 
 ---
 
 ## 1. Pendahuluan
 
-Dokumen ini mendeskripsikan use case diagram AIOS. Use case disusun berdasarkan
-kebutuhan yang terdapat pada `AGENTS.md` dan `REQUIREMENTS.md` saja. Tidak ada
-fitur atau requirement baru yang ditambahkan.
+Dokumen ini mendeskripsikan use case AIOS berdasarkan kebutuhan pada
+`AGENTS.md` dan `REQUIREMENTS.md` saja. Tidak ada fitur atau requirement baru
+yang ditambahkan kecuali yang telah disepakati pada sesi perancangan
+(keputusan stakeholder).
 
 Prinsip yang menjadi dasar:
 
-- AIOS adalah **plugin** yang menempel pada sistem client; sistem client tetap.
-- AIOS dipandang seperti **organisasi/perusahaan dengan 9 cabang bidang**
-  (modul ERP). Setiap cabang dikepalai oleh satu **AI Manager**, dan di bawahnya
-  terdapat **Worker AI** yang meniru job role spesifik pada bidang tersebut.
-  Contoh bidang Finance: Finance Staff, Financial Analyst, Budgeting Staff,
-  Treasurer, CFO.
-- AIOS **bukan chatbot umum**; user memilih AI Manager / kapabilitas terlebih
+- AIOS adalah **plugin** yang menempel pada sistem client; sistem client tetap
+  (**CLIENT SYSTEM STAYS. AIOS ADAPTS.**).
+- AIOS adalah **multi-tenant SaaS** yang di-host Ekasa. Setiap perusahaan
+  client login ke workspace-nya sendiri; data, percakapan, dan mapping
+  antar perusahaan terisolasi.
+- Terdapat **2 role eksternal**: **Client** (perusahaan pemakai AIOS) dan
+  **Developer Ekasa** (internal Ekasa yang hanya memantau pemakaian).
+- AIOS dipandang seperti organisasi dengan **9 cabang bidang (modul ERP)**.
+  Setiap cabang dikepalai satu **AI Primary Agent**, dan di bawahnya terdapat
+  **sub-agents domain** yang meniru job role spesifik pada bidang tersebut.
+- AIOS **bukan chatbot umum**; user memilih AI Manager/kapabilitas terlebih
   dahulu di interface.
-- **Client Database** tetap menjadi source of truth business data.
-- **AIOS Internal Database** menyimpan metadata, mapping, konfigurasi, dan state.
-- Database adaptation berlangsung terutama saat **integrasi/setup**, bukan per
-  request.
-- AIOS berjalan **lokal** (Ollama); pipeline RAG untuk dokumen berjalan internal
-  di AIOS (retrieval oleh Worker AI saat interaksi UC-02/UC-09).
+- **Client Database** tetap menjadi source of truth business data. AIOS
+  Internal Database hanya menyimpan metadata, mapping, konfigurasi,
+  percakapan, dan state.
+- Database adaptation berlangsung saat **integrasi/setup**, bukan per request.
+- Pada prototype ini, penanganan dokumen (RAG) **di-defer** / berada di luar
+  scope. Prototype fokus pada data terstruktur dari Client Database.
+- Produk diukur terhadap 4 prinsip inti (keputusan stakeholder): **Cost
+  Efficient**, **User Friendly**, **Plug and Go**, dan **Fast**.
 
 ---
 
 ## 2. Actor
 
-Berdasarkan keputusan stakeholder, **AI Manager dan Worker AI dijadikan actor**.
-Keduanya adalah aktor internal AIOS yang diangkat sebagai actor pada use case
-diagram untuk memperlihatkan hierarki "AI sebagai manager dan bawahan".
-
-Komponen internal lain (Plugin Manager, Database Adapter, AI Schema Analyzer,
-AIOS Internal Database, RAG pipeline, Ollama) tetap **tidak** dijadikan actor.
-`AIOS System` adalah subjek (system boundary), bukan actor.
-
 | Actor | Peran | Use case terkait |
 |---|---|---|
-| **User** | Pengguna akhir yang memilih AI Manager/kapabilitas dan berinteraksi melalui AIOS Interface, di dalam environment client yang sudah terautentikasi. Tidak perlu memahami detail internal. | UC-01, UC-02 |
-| **AI Manager** (9 cabang) | "Manager bidang" di AIOS. Setiap cabang (modul ERP) dikepalai satu AI Manager: Finance, HR, Sales/CRM, Procurement, Inventory, Production, Logistics, Maintenance, Reporting/BI. Bertanggung jawab mengelola & mengoordinasikan Worker AI di bidangnya. | UC-08 |
-| **Worker AI** (per job role) | "Bawahan" AI Manager yang meniru job role spesifik pada bidangnya (contoh Finance: Finance Staff, Financial Analyst, Budgeting Staff, Treasurer, CFO). Mengeksekusi tugas domain melalui abstraksi AIOS. | UC-09 |
-| **Client System** | Sistem existing milik client (aplikasi, autentikasi, database). Tetap menjadi sistem utama dan sumber kebenaran business data; tidak dimodifikasi. Actor sekunder. | UC-03, UC-04, UC-05, UC-06 |
-| **Developer / Intern (Admin AIOS)** | Membuat & mengintegrasikan plugin AIOS ke sistem client, serta mengonfigurasi plugin dan worker. | UC-03, UC-07 |
+| **Client** | Perusahaan pemakai AIOS (satu role). Registrasi, login, membayar, menghubungkan database, memilih bidang ERP, chat dengan AI Primary Agent, dan memvalidasi mapping. | C1–C9 |
+| **Developer Ekasa** | Internal Ekasa. Hanya memantau pemakaian token per akun client; tidak memiliki akses ke data atau percakapan bisnis client. | D1–D2 |
+| **AI Primary Agent** (9 cabang) | "Manager bidang" di AIOS. Setiap cabang (modul ERP) dikepalai satu AI Primary Agent. Menerima pertanyaan dari Client, mendelegasikan ke sub-agent yang sesuai, dan menyusun respons. | C8–C10, C12–C13 |
+| **Sub-agents domain** | "Bawahan" AI Primary Agent yang meniru job role spesifik pada bidangnya dan menjawab sesuai spesialisasinya. | C11 |
+| **Data Access Agent** | Satu per tenant. Memahami struktur database client (database adaptation), menyimpan mapping, menyediakan data aktual, dan re-adaptasi saat skema berubah. | C4–C7, C12, C14 |
+| **Memory Agent** | Satu per AI Manager. Merangkum percakapan agar AI Primary Agent mengingat konteks chat sebelumnya. | C13 |
+| **Client System** | Sistem existing milik client (aplikasi, autentikasi, database). Tetap menjadi sistem utama dan sumber business data; tidak dimodifikasi. Actor sekunder. | C4, C5, C7, C12, C14 |
 
-### 9 Cabang Bidang (Modul ERP) dan Job Role Worker AI
+### 9 Cabang Bidang (Modul ERP) dan Job Role Sub-agents
 
-| # | Cabang (AI Manager) | Contoh Job Role / Worker AI |
+| # | Cabang (AI Primary Agent) | Contoh Job Role / Sub-agents |
 |---|---|---|
-| 1 | Finance | Finance Staff, Financial Analyst, Budgeting Staff, Treasurer, CFO |
-| 2 | Human Resources | HR Staff, Recruiter, Payroll Officer, Training Specialist, HR Manager |
-| 3 | Sales / CRM | Sales Representative, Customer Service, Sales Data Analyst, Marketing Specialist |
-| 4 | Procurement | Procurement Staff, Senior Procurement Specialist, Purchasing Officer |
-| 5 | Inventory | Inventory Control Manager, Warehouse Inventory Manager, Retail Inventory Manager |
-| 6 | Production | Production Planner, Production Scheduler, Production Supervisor |
-| 7 | Logistics | Logistics Coordinator, Shipping & Receiving Clerk, Fleet Manager |
-| 8 | Maintenance | Maintenance Planner, Reliability Engineer, Maintenance Technician |
-| 9 | Reporting / BI | BI Analyst, Report Developer, Data Steward |
+| 1 | Strategic and Operational Planning | BI Analyst, Report Developer, Data Steward |
+| 2 | Finance | Finance Staff, Financial Analyst, Budgeting Staff, Treasurer, CFO |
+| 3 | Human Resource | HR Staff, Recruiter, Payroll Officer, Training Specialist, HR Manager |
+| 4 | Logistic Management | Logistics Coordinator, Shipping & Receiving Clerk, Fleet Manager |
+| 5 | Maintenance Management | Maintenance Planner, Reliability Engineer, Maintenance Technician |
+| 6 | Sales and Distribution | Sales Representative, Customer Service, Sales Data Analyst, Marketing Specialist |
+| 7 | Quality Management | Quality Inspector, Quality Engineer, Quality Auditor, Quality Control Officer |
+| 8 | Material Management | Procurement Staff, Senior Procurement Specialist, Purchasing Officer, Inventory Control Manager, Warehouse Inventory Manager, Retail Inventory Manager |
+| 9 | Manufacturing | Production Planner, Production Scheduler, Production Supervisor |
 
-> Daftar job role adalah contoh yang mewakili tiap bidang dan dapat disesuaikan
-> pada implementasi. Prinsip utama: tiap AI Manager memimpin Worker AI pada
-> bidangnya; daftar worker bersifat modular (Plugin Manager / UC-07).
-
-> Catatan UC-02: akses business data dari Client Database dilakukan secara
-> internal melalui AIOS Data Layer / Database Adapter / canonical model, sehingga
-> relasi Client System ke UC-02 tidak digambar pada diagram.
-
-> Catatan database adaptation (UC-04, UC-05, UC-06): dieksekusi **otomatis oleh
-> AIOS** saat integrasi/setup dan saat perubahan skema terdeteksi — tidak memiliki
-> actor inisiator manusia. Pemicu (trigger) tiap use case dijelaskan pada
-> deskripsi masing-masing.
+> Semua 9 bidang selalu tersedia untuk setiap client. Jawaban sub-agents
+> menyesuaikan data yang benar-benar tersedia pada database client.
+>
+> Daftar job role bersifat contoh & modular dan dapat disesuaikan pada
+> implementasi melalui konfigurasi (Plugin Manager).
 
 ---
 
@@ -87,303 +78,433 @@ AIOS Internal Database, RAG pipeline, Ollama) tetap **tidak** dijadikan actor.
 
 | ID | Nama | Kelompok | Actor utama | Actor sekunder |
 |---|---|---|---|---|
-| UC-01 | Memilih AI Manager / Kapabilitas | A. Penggunaan AIOS | User | – |
-| UC-02 | Berinteraksi dengan AI Manager dan Worker | A. Penggunaan AIOS | User | AI Manager, Worker AI |
-| UC-03 | Mendaftarkan Integrasi Client (Plugin Setup) | B. Integrasi Client | Developer / Intern | Client System |
-| UC-04 | Menganalisis Skema Database Client | C. Database Adaptation | – (otomatis oleh AIOS) | Client System |
-| UC-05 | Memetakan Skema ke Canonical Data Model | C. Database Adaptation | – (otomatis oleh AIOS) | Client System |
-| UC-06 | Memperbarui Mapping saat Skema Berubah | C. Database Adaptation | – (otomatis oleh AIOS) | Client System |
-| UC-07 | Mengonfigurasi Plugin dan Worker | D. Plugin & Worker | Developer / Intern | – |
-| UC-08 | AI Manager Mengelola & Mengkoordinasikan Worker | E. AI Manager & Worker | AI Manager | Worker AI |
-| UC-09 | Worker AI Mengeksekusi Tugas Domain | E. AI Manager & Worker | Worker AI | – |
-
-\* Client System berpartisipasi secara internal sebagai sumber business data
-(lihat catatan pada bagian Actor).
+| C1 | Registrasi Akun | Onboarding & Auth | Client | – |
+| C2 | Login (Pilih Role) | Onboarding & Auth | Client / Developer Ekasa | – |
+| C3 | Pembayaran | Onboarding & Auth | Client | – |
+| C4 | Menghubungkan Database Perusahaan | Onboarding Data | Client | Client System |
+| C5 | Menganalisis Skema & Membuat Mapping (Database Adaptation) | Onboarding Data | – (otomatis oleh AIOS) | Client System |
+| C6 | Memvalidasi Hasil Mapping | Onboarding Data | Client | – |
+| C7 | Mengedit Koneksi Database | Onboarding Data | Client | Client System |
+| C8 | Memilih Bidang ERP | Penggunaan | Client | – |
+| C9 | Chat dengan AI Primary Agent | Penggunaan | Client | AI Primary Agent |
+| C10 | AI Primary Mendelegasikan Pertanyaan | Internal AI | AI Primary Agent | Sub-agents domain |
+| C11 | Sub-agents Menjawab Tugas Domain | Internal AI | Sub-agents domain | – |
+| C12 | Data Access Agent Menyediakan Data Client | Internal AI | Data Access Agent | Client System |
+| C13 | Memory Agent Merangkum Percakapan | Internal AI | Memory Agent | – |
+| C14 | Re-adaptasi Mapping saat Skema Berubah | Internal AI | – (otomatis oleh AIOS) | Client System |
+| D1 | Dashboard Pemakaian Token per Client | Monitoring | Developer Ekasa | – |
+| D2 | Analisis Penggunaan AI Manager | Monitoring | Developer Ekasa | – |
 
 ---
 
 ## 4. Deskripsi Use Case
 
-### UC-01 — Memilih AI Manager / Kapabilitas
+### C1 — Registrasi Akun
 
-- **Tujuan:** User memilih AI Manager (cabang bidang/kapabilitas) spesifik
-  sebelum berinteraksi.
-- **Actor:** User (utama).
-- **Deskripsi:** Melalui AIOS Interface, user memilih salah satu AI Manager dari
-  9 cabang bidang (Finance, HR, Sales/CRM, Procurement, Inventory, Production,
-  Logistics, Maintenance, Reporting/BI). Sistem membuka workspace AI Manager
-  yang dipilih beserta Worker AI di bawahnya.
-- **Pre-condition:**
-  - User terautentikasi pada environment client.
-  - AIOS telah terintegrasi (UC-03) dan plugin/worker tersedia (UC-07).
+- **Tujuan:** Client membuat akun AIOS sebelum dapat login.
+- **Actor:** Client (utama).
+- **Deskripsi:** Sebelum melakukan login, client melakukan registrasi terlebih
+  dahulu untuk membuat akun perusahaannya.
+- **Pre-condition:** – (belum memiliki akun).
 - **Alur utama:**
-  1. User membuka AIOS Interface.
-  2. Interface menampilkan AI Manager / kapabilitas yang tersedia.
-  3. User memilih AI Manager.
-  4. Interface membuka workspace AI Manager beserta worker-nya.
+  1. Client membuka domain web AIOS.
+  2. Client memilih opsi registrasi.
+  3. Client mengisi data registrasi akun perusahaan.
+  4. Sistem membuat akun client.
+- **Post-condition:** Akun client terdaftar dan siap login.
+- **Referensi:** FR-27, FR-28, SEC-01.
+
+---
+
+### C2 — Login (Pilih Role)
+
+- **Tujuan:** Client atau Developer Ekasa mengakses workspace-nya.
+- **Actor:** Client (utama); Developer Ekasa (utama).
+- **Deskripsi:** Halaman pertama AIOS adalah halaman login. Client masuk ke
+  workspace perusahaannya; Developer Ekasa masuk ke dashboard monitoring.
+- **Pre-condition:** Akun sudah terdaftar (C1).
+- **Alur utama:**
+  1. Client/Developer Ekasa membuka halaman login AIOS.
+  2. Client/Developer Ekasa memasukkan kredensial.
+  3. Sistem memverifikasi kredensial dan menentukan role.
+  4. Sistem membuka workspace yang sesuai dengan role.
 - **Alur alternatif:**
-  - AI Manager/kapabilitas yang dipilih tidak tersedia → sistem menampilkan
-    informasi bahwa kapabilitas tersebut tidak tersedia untuk client ini.
-- **Post-condition:** Workspace AI Manager terbuka dan siap digunakan.
-- **Referensi:** FR-01, FR-02, FR-03, FR-04, OS-01, OS-10.
+  - Kredensial salah → sistem menampilkan pesan kesalahan login.
+  - Pengguna mengakhiri sesi → pengguna memilih opsi keluar (logout); sistem
+    mengakhiri sesi aktif dan mengembalikan ke halaman login.
+- **Post-condition:** Client masuk ke workspace perusahaannya, atau Developer
+  Ekasa masuk ke dashboard monitoring. Sesi tetap berjalan hingga pengguna
+  keluar (logout).
+- **Referensi:** FR-27, FR-28, SEC-01, SEC-03.
 
 ---
 
-### UC-02 — Berinteraksi dengan AI Manager dan Worker
+### C3 — Pembayaran
 
-- **Tujuan:** User bertanya/memberi tugas dan menerima respons AI dari AI
-  Manager beserta Worker AI-nya.
-- **Actor:** User (utama); AI Manager & Worker AI (sekunder, berpartisipasi
-  dalam alur).
-- **Deskripsi:** AI Manager mengelola eksekusi worker di bidangnya
-  (mengelola/koordinasi — UC-08) dan Worker AI mengeksekusi tugas domain
-  (UC-09). Worker memakai tools dan data melalui abstraksi AIOS (canonical
-  model, RAG bila diperlukan) dan Local LLM. User tidak perlu memahami detail
-  internal.
-- **Pre-condition:** UC-01 selesai (workspace AI Manager terbuka).
+- **Tujuan:** Client membayar untuk mengaktifkan penggunaan fitur AIOS.
+- **Actor:** Client (utama).
+- **Deskripsi:** Client melakukan pembayaran melalui payment gateway pada
+  umumnya. Setelah pembayaran berhasil, akun client aktif otomatis dan dapat
+  menggunakan kapabilitas AIOS.
+- **Pre-condition:** Client telah login (C2).
 - **Alur utama:**
-  1. User mengirimkan pertanyaan/tugas pada workspace AI Manager.
-  2. AI Manager mengelola & mengoordinasikan worker yang relevan (UC-08).
-  3. Worker AI mengeksekusi tugas domain (UC-09) menggunakan tools dan data
-     yang tersedia (via canonical model dan abstraksi data AIOS; termasuk RAG
-     bila tugas memerlukan dokumen).
-  4. Local LLM menghasilkan respons.
-  5. Interface menampilkan respons kepada user.
+  1. Client memilih opsi pembayaran.
+  2. Sistem mengarahkan ke payment gateway.
+  3. Client menyelesaikan pembayaran.
+  4. Payment gateway mengonfirmasi keberhasilan.
+  5. Sistem mengaktifkan akses kapabilitas client secara otomatis.
 - **Alur alternatif:**
-  - Konsep yang diminta tidak tersedia pada database client → worker tidak
-    mengarang data; sistem menginformasikan keterbatasan data yang tersedia.
-- **Post-condition:**
-  - User menerima respons.
-  - Business data tidak disalin ke AIOS Internal Database; Client Database
-    tetap source of truth.
-- **Relasi:** **&lt;&lt;include&gt;&gt;** UC-08 (AI Manager Mengelola &
-  Mengkoordinasikan Worker) — interaksi selalu melalui pengelolaan oleh AI
-  Manager.
-- **Referensi:** FR-04, FR-05, FR-06, FR-07, FR-08 s.d. FR-16 (peran AI
-  Manager), FR-20, FR-21, FR-22, RAG-03, LLM-02, LLM-03, SEC-05, IDB-14 s.d.
-  IDB-21, AC-04, AC-12.
+  - Pembayaran gagal/dibatalkan → sistem menampilkan status pembayaran belum
+    selesai; akses kapabilitas belum aktif.
+- **Post-condition:** Akun client aktif dan dapat menggunakan kapabilitas AIOS.
+- **Referensi:** FR-29, AC-18.
 
 ---
 
-### UC-03 — Mendaftarkan Integrasi Client (Plugin Setup)
+### C4 — Menghubungkan Database Perusahaan
 
-- **Tujuan:** Mengintegrasikan AIOS sebagai plugin ke sistem client dan
-  mendaftarkan konfigurasi client.
-- **Actor:** Developer / Intern (utama); Client System (sekunder).
-- **Deskripsi:** Mendaftarkan client baru: metadata client, metadata koneksi
-  database, dan integrasi dengan environment client yang sudah terautentikasi.
-  Dapat diulang untuk banyak client secara independen dan terisolasi.
-- **Pre-condition:**
-  - Developer memiliki akses ke environment client.
-  - Sistem client tidak dimodifikasi.
+- **Tujuan:** Client menghubungkan database perusahaannya agar AIOS dapat
+  mengakses business data.
+- **Actor:** Client (utama); Client System (sekunder).
+- **Deskripsi:** Setelah akun aktif, client menghubungkan database perusahaan
+  melalui form koneksi (gate wajib sebelum menggunakan AI Manager). Kredensial
+  koneksi disimpan aman pada AIOS Internal Database (connection metadata).
+- **Pre-condition:** Akun client aktif (C3).
 - **Alur utama:**
-  1. Developer memulai setup integrasi client baru.
-  2. Sistem mencatat metadata client.
-  3. Sistem menyimpan metadata koneksi database.
-  4. AIOS terintegrasi dengan environment client yang sudah terautentikasi
-     (tanpa lapisan autentikasi JWT baru).
-  5. Metadata disimpan di AIOS Internal Database, terisolasi per client.
-- **Post-condition:** Integrasi client tersimpan dan siap menjalankan database
-  adaptation.
-- **Referensi:** IR-01, IR-02, IR-03, IR-04, IR-05, IR-06, IR-07, IR-08, IR-09,
-  PW-01, SEC-01, SEC-02, SEC-03, IDB-01, IDB-02, IDB-22, IDB-23, IDB-24, AC-01,
-  AC-15.
+  1. Client membuka menu menghubungkan database.
+  2. Client memilih jalur koneksi: **masukkan kredensial** database perusahaan
+     yang sudah ada, atau **buat database baru** (disediakan Ekasa).
+  3. Sistem menyimpan metadata koneksi dan memvalidasi koneksi.
+  4. Koneksi berhasil; sistem melanjutkan ke database adaptation (C5).
+- **Alur alternatif:**
+  - Koneksi gagal (kredensial salah/server tidak terjangkau) → sistem
+    menampilkan pesan kesalahan; client dapat memperbaiki dan mencoba lagi.
+  - Client memilih **buat database baru** (tidak memiliki database):
+    1. Client memilih mode pembuatan: **template standar** Ekasa (skema + data
+       contoh siap pakai) atau **buat sendiri** (menentukan tabel dan
+       variabel/kolom yang dibutuhkan).
+    2. Sistem membuat database baru; karena kredensial dibuat oleh AIOS sendiri,
+       client tidak perlu mengisi form kredensial.
+    3. Sistem menandai database baru tersebut sebagai Client Database (source
+       of truth) yang di-host Ekasa dan melanjutkan ke database adaptation (C5).
+- **Post-condition:** Koneksi ke Client Database tersimpan dan valid.
+- **Referensi:** FR-32, FR-32A, FR-32B, FR-32C, IR-01 s.d. IR-09, DS-12, DS-13, SEC-03, IDB-01, IDB-02, AC-01, AC-15.
 
 ---
 
-### UC-04 — Menganalisis Skema Database Client
+### C5 — Menganalisis Skema & Membuat Mapping (Database Adaptation)
 
-- **Tujuan:** Memahami skema database client secara semantik.
-- **Actor:** – (dieksekusi otomatis oleh AIOS); Client System (sekunder, sumber
-  skema).
-- **Trigger:** Dijalankan otomatis oleh AIOS sebagai bagian database adaptation
-  pada proses integrasi/setup client (setelah UC-03). Tidak dijalankan dari nol
-  pada setiap request user (DS-09, DS-11).
-- **Deskripsi:** Schema Extraction mengekstrak metadata skema melalui Database
-  Adapter; AI Schema Analyzer menganalisis skema secara semantik (tabel, kolom,
-  tipe data, relasi, constraint, sample values, naming pattern, makna semantik)
-  menggunakan Local LLM.
-- **Pre-condition:** UC-03 selesai (koneksi database tersedia).
+- **Tujuan:** Data Access Agent memahami struktur database client secara
+  semantik dan membuat mapping ke konsep canonical.
+- **Actor:** – (dieksekusi otomatis oleh AIOS); Client System (sekunder).
+- **Trigger:** Dijalankan otomatis oleh AIOS setelah koneksi database berhasil
+  (setelah C4) dan setelah koneksi diedit (C7). Tidak dijalankan dari nol pada
+  setiap request user (DS-09, DS-11).
+- **Deskripsi:** Data Access Agent (1 per tenant) mengekstrak metadata skema
+  melalui Database Adapter, menganalisisnya secara semantik (tabel, kolom,
+  tipe data, relasi, constraint, sample values, naming pattern, makna semantik),
+  lalu memetakannya ke Canonical Data Model. Hasil mapping beserta
+  versi/status/confidence disimpan di AIOS Internal Database.
+- **Pre-condition:** Koneksi database tersedia (C4).
 - **Alur utama:**
   1. Sistem mengekstrak metadata skema melalui Database Adapter.
-  2. AI Schema Analyzer menganalisis skema secara semantik.
-  3. Hasil analisis (schema understanding) disimpan bila berguna.
-- **Alur alternatif:**
-  - Skema client berubah → alur UC-06 (perbarui mapping).
-- **Post-condition:** Pemahaman skema tersedia sebagai input untuk semantic
-  mapping.
-- **Referensi:** DS-01, DS-02, DS-03, DS-04, DS-05, LLM-03, IDB-03, IDB-04,
-  AC-06, AC-07.
+  2. Data Access Agent menganalisis skema secara semantik.
+  3. Sistem membuat semantic mapping ke Canonical Data Model.
+  4. Sistem menyimpan mapping dan metadata (versi/status/confidence) di AIOS
+     Internal Database.
+  5. Hasil mapping siap divalidasi oleh client (C6).
+- **Post-condition:** Mapping tersimpan di AIOS Internal Database dan siap
+  digunakan.
+- **Catatan:** Database yang dibuat melalui opsi "buat database baru" pada C4
+  (provisioning Ekasa) tetap melalui pipeline adaptasi yang sama persis seperti
+  Client Database biasa (FR-32A s.d. FR-32C).
+- **Referensi:** DS-01 s.d. DS-11, LLM-03, FR-37, IDB-03 s.d. IDB-06, IDB-10, IDB-26,
+  AC-06, AC-07, AC-08.
 
 ---
 
-### UC-05 — Memetakan Skema ke Canonical Data Model
+### C6 — Memvalidasi Hasil Mapping
 
-- **Tujuan:** Menghasilkan semantic mapping skema client ke canonical model dan
-  menyimpannya agar dapat digunakan kembali.
-- **Actor:** – (dieksekusi otomatis oleh AIOS); Client System (sekunder).
-- **Trigger:** Dijalankan otomatis oleh AIOS setelah UC-04 sebagai bagian
-  database adaptation pada integrasi/setup client.
-- **Deskripsi:** Sistem membuat pemetaan semantik konsep client ke konsep
-  canonical (contoh: `barang.nama` → `Product.name`, `barang.tersedia` →
-  `Product.stock`). Mapping beserta metadata (versi/status/confidence bila
-  diperlukan) disimpan di AIOS Internal Database agar tidak perlu analisis ulang
-  pada setiap request.
-- **Pre-condition:** UC-04 selesai (pemahaman skema tersedia).
+- **Tujuan:** Client mengonfirmasi kebenaran hasil mapping skema agar
+  pemahaman data client dapat dipercaya.
+- **Actor:** Client (utama).
+- **Deskripsi:** Setelah Data Access Agent selesai memahami skema, sistem
+  menampilkan UI validasi mapping: tingkat confidence hasil analisis, daftar
+  pemetaan konsep, opsi konfirmasi, dan opsi edit manual oleh client. Hasil
+  konfirmasi/editan disimpan di AIOS Internal Database.
+- **Pre-condition:** Mapping telah dibuat (C5).
 - **Alur utama:**
-  1. Sistem membuat semantic mapping dari schema understanding ke Canonical
-     Data Model.
-  2. Sistem menyimpan mapping dan metadata (versi/status/confidence bila
-     diperlukan) di AIOS Internal Database.
-  3. Worker siap beroperasi melalui canonical model untuk client ini.
-- **Post-condition:** Mapping tersimpan dan dapat digunakan kembali tanpa
-  analisis skema ulang.
-- **Relasi:** **&lt;&lt;include&gt;&gt;** UC-04 (Menganalisis Skema Database
-  Client) — pemetaan selalu membutuhkan hasil analisis skema.
-- **Referensi:** DS-06, DS-07, DS-08, DS-09, DS-10, DS-11, DS-14, DS-15, DS-16,
-  IDB-05, IDB-06, IDB-10, IDB-26, AC-08, AC-09.
+  1. Sistem menampilkan hasil mapping beserta tingkat confidence.
+  2. Client memeriksa kebenaran pemetaan konsep.
+  3. Client mengonfirmasi mapping yang benar, dan/atau melakukan edit manual
+     pada mapping yang kurang tepat.
+  4. Sistem menyimpan hasil validasi/editan di AIOS Internal Database.
+- **Alur alternatif:**
+  - Confidence rendah → sistem menandai mapping sebagai low-confidence dan
+    meminta konfirmasi/editan manual oleh client.
+- **Post-condition:** Mapping tervalidasi dan digunakan untuk interaksi AI.
+- **Catatan (TBD):** Low-confidence terjadi pada konteks database adaptation
+  (saat onboarding & perubahan skema), bukan saat chat dengan AI Manager.
+  Mekanisme penanganan low-confidence yang user-friendly (tanpa memunculkan
+  istilah teknis, sesuai prinsip User Friendly) masih **open discussion**.
+- **Referensi:** FR-34, DS-06, DS-07, IDB-05, IDB-06, AC-19.
 
 ---
 
-### UC-06 — Memperbarui Mapping saat Skema Berubah
+### C7 — Mengedit Koneksi Database
 
-- **Tujuan:** Menjaga mapping tetap sesuai ketika skema client berubah.
-- **Actor:** – (dieksekusi otomatis oleh AIOS); Client System (sekunder, sumber
-  perubahan skema).
-- **Trigger:** Perubahan skema terdeteksi pada Client Database (event).
-- **Deskripsi:** Jika skema client berubah, sistem dapat mendeteksi perubahan,
-  melakukan re-analysis, dan memperbarui mapping yang terdampak.
-- **Pre-condition:** Mapping pernah dibuat (UC-05).
+- **Tujuan:** Client memperbaiki atau mengganti koneksi database perusahaannya.
+- **Actor:** Client (utama); Client System (sekunder).
+- **Deskripsi:** Client dapat mengedit koneksi database dari menu kapan saja
+  (misalnya kredensial salah, pindah database/server). Perubahan koneksi
+  memicu database adaptation ulang (C5) dan validasi mapping ulang (C6).
+- **Pre-condition:** Koneksi pernah dibuat (C4).
+- **Alur utama:**
+  1. Client membuka menu koneksi database.
+  2. Client mengubah informasi koneksi.
+  3. Sistem memvalidasi koneksi baru.
+  4. Sistem menyimpan koneksi baru dan memicu database adaptation ulang (C5).
+  5. Client melakukan validasi mapping ulang (C6).
+- **Alur alternatif:**
+  - Koneksi baru gagal → sistem menampilkan pesan kesalahan; koneksi lama tetap
+    berlaku.
+- **Post-condition:** Koneksi baru berlaku dan mapping diperbarui.
+- **Referensi:** FR-33, IR-01 s.d. IR-09, IDB-01, IDB-02.
+
+---
+
+### C8 — Memilih Bidang ERP
+
+- **Tujuan:** Client memilih salah satu dari 9 bidang ERP untuk berinteraksi
+  dengan AI Primary Agent-nya.
+- **Actor:** Client (utama).
+- **Deskripsi:** Semua 9 bidang selalu tersedia untuk setiap client. Client
+  memilih satu bidang dari home (9 bidang mengelilingi hub AIOS); sistem
+  membuka workspace AI Primary Agent bidang tersebut.
+- **Pre-condition:** Akun aktif dan database terhubung (C4 selesai).
+- **Alur utama:**
+  1. Client membuka home AIOS.
+  2. Interface menampilkan 9 bidang yang mengelilingi hub AIOS.
+  3. Client memilih salah satu bidang.
+  4. Interface membuka workspace chat AI Primary Agent bidang tersebut.
+- **Post-condition:** Workspace AI Primary Agent terbuka dan siap digunakan.
+- **Referensi:** FR-01, FR-02, FR-03, FR-04, OS-01.
+
+---
+
+### C9 — Chat dengan AI Primary Agent
+
+- **Tujuan:** Client bertanya/memberi tugas dan menerima respons dari AI
+  Primary Agent beserta sub-agents-nya.
+- **Actor:** Client (utama); AI Primary Agent (sekunder).
+- **Deskripsi:** Workspace chat menampilkan panel kiri (placeholder) dan kolom
+  chat di kanan. Client mengirimkan pertanyaan; AI Primary Agent mengelola dan
+  mengoordinasikan sub-agents yang relevan (C10–C13) lalu menyusun respons.
+- **Pre-condition:** Workspace AI Primary Agent terbuka (C8).
+- **Alur utama:**
+  1. Client mengirimkan pertanyaan/tugas pada kolom chat.
+  2. AI Primary Agent menerima pertanyaan.
+  3. AI Primary Agent mendelegasikan ke sub-agent yang sesuai (C10).
+  4. Respons disusun dan ditampilkan kepada client.
+- **Alur alternatif:**
+  - Konsep/kapabilitas yang diminta tidak tersedia pada database client →
+    sistem menginformasikan keterbatasan data, tidak mengarang data.
+- **Post-condition:** Client menerima respons.
+- **Referensi:** FR-04 s.d. FR-07, FR-31, LLM-02, LLM-03, AC-12.
+
+---
+
+### C10 — AI Primary Mendelegasikan Pertanyaan
+
+- **Tujuan:** AI Primary Agent menugaskan pertanyaan/tugas ke sub-agent yang
+  sesuai pada bidangnya.
+- **Actor:** AI Primary Agent (utama); Sub-agents domain (sekunder).
+- **Deskripsi:** AI Primary Agent adalah agent primary bidangnya. Ia
+  mengidentifikasi sub-agent yang relevan dengan pertanyaan, mengoordinasikan
+  konteks dan tools yang dibutuhkan, lalu mengarahkan sub-agent untuk
+  mengeksekusi tugas. Delegasi bersifat transparan di interface.
+- **Pre-condition:** AI Primary Agent menerima pertanyaan dari client (C9).
+- **Alur utama:**
+  1. AI Primary Agent menganalisis pertanyaan client.
+  2. AI Primary Agent mengidentifikasi sub-agent yang relevan pada bidangnya.
+  3. AI Primary Agent mendelegasikan tugas beserta konteks yang dibutuhkan.
+- **Alur alternatif:**
+  - Tidak ada sub-agent yang sesuai → AI Primary Agent menginformasikan
+    keterbatasan kapabilitas.
+- **Post-condition:** Tugas didelegasikan ke sub-agent yang tepat.
+- **Referensi:** FR-08 s.d. FR-16, FR-31, OS-10, PW-04.
+
+---
+
+### C11 — Sub-agents Menjawab Tugas Domain
+
+- **Tujuan:** Sub-agents domain mengeksekusi tugas sesuai spesialisasinya dan
+  mengembalikan hasil ke AI Primary Agent.
+- **Actor:** Sub-agents domain (utama).
+- **Deskripsi:** Sub-agents meniru job role spesifik pada bidangnya (mis.
+  Finance Staff, Inventory Control Manager, BI Analyst). Sub-agent menjawab
+  menggunakan canonical model, abstraksi data AIOS, dan Local LLM; tidak
+  bergantung langsung pada skema raw client.
+- **Pre-condition:** Tugas didelegasikan oleh AI Primary Agent (C10); data
+  yang dibutuhkan tersedia melalui abstraksi AIOS.
+- **Alur utama:**
+  1. Sub-agent menerima tugas dari AI Primary Agent.
+  2. Sub-agent menggunakan tools dan data yang tersedia (via canonical model;
+    termasuk data dari Data Access Agent bila diperlukan).
+  3. Local LLM menghasilkan respons/hasil.
+  4. Sub-agent mengembalikan hasil kepada AI Primary Agent.
+- **Alur alternatif:**
+  - Konsep yang diminta tidak tersedia pada database client → sub-agent tidak
+    mengarang data; hasil mencerminkan keterbatasan data yang tersedia.
+- **Post-condition:** Hasil tugas diserahkan ke AI Primary Agent.
+- **Referensi:** FR-17 s.d. FR-22, LLM-02, LLM-03, AC-04.
+
+---
+
+### C12 — Data Access Agent Menyediakan Data Client
+
+- **Tujuan:** Data Access Agent menyediakan business data aktual dari Client
+  Database kepada sub-agents tanpa menduplikasi data ke AIOS Internal Database.
+- **Actor:** Data Access Agent (utama); Client System (sekunder).
+- **Deskripsi:** Data Access Agent (1 per tenant, dipakai bersama semua AI
+  Primary Agent) menerjemahkan kebutuhan data konsep (canonical) menjadi akses
+  ke Client Database melalui AIOS Data Layer / Database Adapter. Business data
+  tetap bersumber dari Client Database.
+- **Pre-condition:** Mapping tervalidasi (C6); data diminta oleh sub-agent.
+- **Alur utama:**
+  1. Sub-agent meminta data konsep tertentu.
+  2. Data Access Agent menerjemahkan konsep ke struktur client melalui mapping.
+  3. Database Adapter mengambil data dari Client Database.
+  4. Data disediakan kepada sub-agent.
+- **Alur alternatif:**
+  - Koneksi DB gagal/down → sistem menginformasikan bahwa data sementara tidak
+    dapat diambil (bukan error mentah).
+  - Konsep tidak tersedia pada client → menginformasikan bahwa data tidak
+    tersedia, tidak mengarang.
+- **Post-condition:** Data aktual client tersedia bagi sub-agent; Client
+  Database tetap source of truth.
+- **Referensi:** DS-12 s.d. DS-15, SEC-05, IDB-14 s.d. IDB-21, FR-36, FR-38, AC-20.
+
+---
+
+### C13 — Memory Agent Merangkum Percakapan
+
+- **Tujuan:** AI Primary Agent mengingat konteks percakapan client sebelumnya.
+- **Actor:** Memory Agent (utama).
+- **Deskripsi:** Memory Agent (1 per AI Manager) merangkum percakapan yang
+  telah dilakukan. Riwayat percakapan (full messages) dan ringkasan (summary)
+  disimpan di AIOS Internal Database, di-tag per bidang. AI Primary Agent
+  menggunakan ringkasan ini sebagai konteks pada interaksi selanjutnya.
+- **Pre-condition:** Terdapat percakapan yang telah berlangsung (C9).
+- **Alur utama:**
+  1. Memory Agent membaca riwayat percakapan bidang terkait.
+  2. Memory Agent membuat/memperbarui ringkasan percakapan.
+  3. Ringkasan disimpan di AIOS Internal Database.
+  4. AI Primary Agent menggunakan ringkasan sebagai konteks percakapan
+     selanjutnya.
+- **Post-condition:** Konteks percakapan terjaga pada AI Primary Agent bidang
+  tersebut.
+- **Referensi:** FR-39, FR-40, FR-11 (pengelolaan konteks oleh AI Manager), IDB-09, AC-21.
+
+---
+
+### C14 — Re-adaptasi Mapping saat Skema Berubah
+
+- **Tujuan:** Menjaga mapping tetap sesuai ketika skema database client
+  berubah.
+- **Actor:** – (dieksekusi otomatis oleh AIOS); Client System (sekunder).
+- **Trigger:** Perubahan skema terdeteksi pada Client Database.
+- **Deskripsi:** Jika skema client berubah, Data Access Agent mendeteksi
+  perubahan, melakukan re-analysis, dan memperbarui mapping. Sistem menampilkan
+  pop-up yang menjelaskan bahwa skema database berubah, lalu meminta konfirmasi
+  dan memberikan opsi edit manual kepada client (alur validasi ulang seperti
+  C6).
+- **Pre-condition:** Mapping pernah dibuat (C5/C6).
 - **Alur utama:**
   1. Sistem mendeteksi perubahan skema client.
-  2. Sistem melakukan re-analysis skema.
+  2. Data Access Agent melakukan re-analysis skema.
   3. Sistem memperbarui mapping yang terdampak di AIOS Internal Database.
-- **Post-condition:** Mapping yang diperbarui tersimpan dan konsisten dengan
-  skema terbaru.
-- **Relasi:** **&lt;&lt;extend&gt;&gt;** UC-05 (Memetakan Skema ke Canonical
-  Data Model) — hanya berjalan bila perubahan skema terdeteksi.
-- **Referensi:** IDB-11.
+  4. Sistem menampilkan pop-up perubahan skema dan meminta konfirmasi client.
+  5. Client mengonfirmasi dan/atau mengedit mapping secara manual.
+- **Post-condition:** Mapping diperbarui dan konsisten dengan skema terbaru.
+- **Referensi:** FR-35, IDB-11, AC-20.
 
 ---
 
-### UC-07 — Mengonfigurasi Plugin dan Worker
+### D1 — Dashboard Pemakaian Token per Client
 
-- **Tujuan:** Mendaftarkan dan mengonfigurasi plugin, capability, worker, dan
-  tool yang tersedia untuk client.
-- **Actor:** Developer / Intern (utama).
-- **Deskripsi:** Plugin Manager mengelola plugin AIOS beserta kapabilitasnya.
-  Developer mengonfigurasi worker/tool yang tersedia; konfigurasi disimpan di
-  AIOS Internal Database. Mendukung arsitektur modular agar kapabilitas baru
-  dapat ditambahkan tanpa mendesain ulang inti AIOS.
-- **Pre-condition:** AIOS telah terpasang; developer memiliki hak konfigurasi.
+- **Tujuan:** Developer Ekasa memantau pemakaian token setiap akun client.
+- **Actor:** Developer Ekasa (utama).
+- **Deskripsi:** Developer Ekasa membuka AIOS dan login sebagai developer.
+  Dashboard menampilkan kolom input token, consumed token, dan metrik pemakaian
+  lainnya dari tiap akun client (perusahaan yang memakai AIOS).
+- **Pre-condition:** Developer Ekasa login (C2).
 - **Alur utama:**
-  1. Developer mendaftarkan/mengonfigurasi plugin dan capability.
-  2. Developer mengonfigurasi worker dan tool.
-  3. Konfigurasi disimpan di AIOS Internal Database.
-- **Post-condition:** Plugin/worker siap digunakan pada UC-01 dan UC-02.
-- **Referensi:** FR-23, FR-24, FR-25, FR-26, PW-02, PW-03, PW-04, PW-05, PW-07,
-  IDB-07, IDB-08.
+  1. Developer Ekasa masuk ke dashboard monitoring.
+  2. Dashboard menampilkan pemakaian token (input dan consumed) per akun
+     client.
+- **Post-condition:** Developer Ekasa dapat memantau penggunaan client.
+- **Referensi:** FR-30, IDB-27, AC-17.
 
 ---
 
-### UC-08 — AI Manager Mengelola & Mengkoordinasikan Worker
+### D2 — Analisis Penggunaan AI Manager
 
-- **Tujuan:** AI Manager mengelola dan mengoordinasikan Worker AI pada
-  bidangnya sehingga tugas user dapat dieksekusi dengan benar.
-- **Actor:** AI Manager (utama); Worker AI (sekunder).
-- **Deskripsi:** AI Manager sebagai "manager bidang" memilih/mengoordinasikan
-  worker yang relevan, mengelola konteks, dan mengoordinasikan tools yang
-  diperlukan (sesuai peran AI Manager pada AGENTS.md). AI Manager tidak
-  menggantikan worker; eksekusi tugas domain tetap dilakukan Worker AI (UC-09).
-- **Pre-condition:** AI Manager terpilih pada UC-01; worker terkonfigurasi
-  (UC-07).
+- **Tujuan:** Developer Ekasa melihat pola penggunaan AI Manager oleh client.
+- **Actor:** Developer Ekasa (utama).
+- **Deskripsi:** Dashboard menampilkan analisis penggunaan AI Manager terbanyak
+  beserta persentasenya, dengan drill-down per bidang dan per worker.
+- **Pre-condition:** Developer Ekasa login (C2); data pemakaian tercatat.
 - **Alur utama:**
-  1. AI Manager menerima tugas dari user (melalui UC-02).
-  2. AI Manager mengidentifikasi/mengoordinasikan worker yang relevan pada
-     bidangnya.
-  3. AI Manager mengoordinasikan konteks dan tools yang dibutuhkan.
-  4. AI Manager mengarahkan Worker AI untuk mengeksekusi tugas (UC-09).
-- **Alur alternatif:**
-  - Tidak ada worker yang sesuai untuk tugas → AI Manager menginformasikan
-    keterbatasan kapabilitas untuk client ini.
-- **Post-condition:** Tugas didelegasikan ke Worker AI yang tepat.
-- **Relasi:** **&lt;&lt;include&gt;&gt;** UC-09 (Worker AI Mengeksekusi Tugas
-  Domain) — mengelola & mengoordinasikan worker selalu diikuti eksekusi tugas
-  oleh worker.
-- **Referensi:** FR-04, FR-05, FR-06, FR-07, FR-08 s.d. FR-16 (peran AI
-  Manager), OS-10, PW-04.
+  1. Developer Ekasa membuka analisis penggunaan pada dashboard.
+  2. Sistem menampilkan AI Manager yang paling banyak dipakai beserta
+     persentasenya.
+  3. Developer Ekasa dapat melakukan drill-down per bidang dan per worker.
+- **Post-condition:** Developer Ekasa memperoleh gambaran penggunaan per
+  bidang/worker.
+- **Referensi:** FR-30, IDB-27, AC-17.
 
 ---
 
-### UC-09 — Worker AI Mengeksekusi Tugas Domain
+## 5. Proses Pendukung Internal (Bukan Use Case)
 
-- **Tujuan:** Worker AI mengeksekusi tugas domain spesifik pada bidangnya
-  menggunakan tools dan data melalui abstraksi AIOS.
-- **Actor:** Worker AI (utama).
-- **Deskripsi:** Worker AI meniru job role spesifik (mis. Finance Staff,
-  Inventory Control Manager, BI Analyst). Worker mengeksekusi tugas domain
-  dengan memakai canonical model, AIOS Data Layer, dan Local LLM; tidak
-  bergantung langsung pada skema client.
-- **Pre-condition:** Tugas didelegasikan oleh AI Manager (UC-08); data yang
-  dibutuhkan tersedia melalui abstraksi AIOS.
-- **Alur utama:**
-  1. Worker menerima tugas dari AI Manager.
-  2. Worker menggunakan tools dan data yang tersedia (via canonical model dan
-     abstraksi data AIOS; termasuk RAG bila diperlukan).
-  3. Local LLM menghasilkan respons/hasil.
-  4. Worker mengembalikan hasil kepada AI Manager.
-- **Alur alternatif:**
-  - Konsep yang diminta tidak tersedia pada database client → worker tidak
-    mengarang data; hasil mencerminkan keterbatasan data yang tersedia.
-- **Post-condition:** Hasil tugas diserahkan ke AI Manager untuk diteruskan ke
-  user.
-- **Referensi:** FR-04, FR-06, FR-20, FR-21, FR-22, RAG-01, RAG-03, LLM-02,
-  LLM-03, AC-04, AC-12.
+Proses berikut berjalan internal oleh sistem dan mendukung use case di atas:
+
+1. **Pencatatan pemakaian token** — pada setiap pemanggilan LLM, sistem
+   mencatat input token dan consumed token per tenant, per bidang, dan per
+   worker untuk mendukung dashboard D1–D2 (IDB-27).
+2. **Penyimpanan percakapan & memory** — riwayat percakapan dan ringkasan
+   disimpan di AIOS Internal Database, di-tag per bidang (mendukung C13).
+3. **Isolasi tenant** — data, percakapan, dan mapping milik Client A tidak
+   pernah diakses oleh Client B (SEC-03).
+4. **Keamanan kredensial** — kredensial koneksi database client disimpan aman
+   pada AIOS Internal Database (connection metadata) dan tidak terekspos.
+5. **Batasan akses Developer Ekasa** — Developer Ekasa hanya memiliki akses ke
+   metrik pemakaian token; tidak memiliki akses ke data atau percakapan bisnis
+   client.
 
 ---
-
-## 5. Relasi Antara Use Case
-
-- **&lt;&lt;include&gt;&gt;** — UC-05 (Memetakan Skema) *includes* UC-04
-  (Menganalisis Skema): alur pemetaan selalu menjalankan analisis skema sebagai
-  prasyarat hasilnya.
-- **&lt;&lt;extend&gt;&gt;** — UC-06 (Memperbarui Mapping) *extends* UC-05
-  (Memetakan Skema): alur pembaruan mapping hanya berjalan sebagai perluasan
-  opsional ketika perubahan skema terdeteksi.
-- **&lt;&lt;include&gt;&gt;** — UC-02 (Berinteraksi) *includes* UC-08 (AI
-  Manager Mengelola & Mengkoordinasikan Worker): interaksi user selalu melalui
-  pengelolaan oleh AI Manager.
-- **&lt;&lt;include&gt;&gt;** — UC-08 (AI Manager Mengelola) *includes* UC-09
-  (Worker AI Mengeksekusi Tugas Domain): pengelolaan & koordinasi worker selalu
-  diikuti eksekusi tugas domain oleh worker.
-- **Precondition (bukan include):** UC-02 memerlukan UC-01. Pemilihan
-  kapabilitas/AI Manager adalah *entry point* sebelum interaksi, bukan sub-langkah
-  yang diulang pada setiap interaksi, sehingga tidak dimodelkan sebagai include.
 
 ## 6. Catatan
 
-- Berdasarkan keputusan stakeholder, AI Manager dan Worker AI dijadikan actor
-  untuk memperlihatkan hierarki "AI sebagai manager dan bawahan": AIOS dipandang
-  seperti organisasi dengan 9 cabang bidang (modul ERP), tiap cabang dikepalai
-  AI Manager yang memimpin Worker AI (job role spesifik). Komponen internal lain
-  (Plugin Manager, Database Adapter, AI Schema Analyzer, AIOS Internal Database,
-  pipeline RAG, Ollama) tetap bukan actor.
-- Use case tidak dibuat per komponen teknis; misalnya tidak ada use case
-  terpisah untuk "menggunakan Ollama", "menjalankan Database Adapter", atau
-  "Plugin Manager mendaftarkan plugin". Peran tersebut termasuk dalam alur
-  internal use case yang relevan (UC-02, UC-03, UC-07).
-- Database adaptation (UC-04, UC-05, UC-06) dieksekusi otomatis oleh AIOS saat
-  integrasi/setup dan saat perubahan skema terdeteksi, bukan dari nol untuk
-  setiap request (DS-09, DS-11, IDB-11). Karena bersifat otomatis, use case ini
-  tidak memiliki actor inisiator manusia; pemicunya didokumentasikan pada bagian
-  *Trigger* masing-masing.
-- Tidak ada use case khusus untuk pipeline RAG karena `AGENTS.md` dan
-  `REQUIREMENTS.md` tidak mendefinisikan aktor yang menyuplai/mengunggah dokumen.
-  Proses RAG (termasuk retrieval dokumen) berjalan internal di AIOS dan dipakai
-  oleh Worker AI pada alur UC-02/UC-09 (RAG-01, RAG-02, RAG-03).
-- Business data tidak disalin ke AIOS Internal Database; Client Database tetap
-  menjadi source of truth (IDB-14 s.d. IDB-21).
-- Sumber data job role Worker AI: hasil riset struktur organisasi departemen
-  (Finance, HR, Sales/CRM, Procurement, Inventory, Production, Logistics,
-  Maintenance, Reporting/BI). Daftar bersifat contoh & modular dan dapat
-  disesuaikan pada implementasi melalui konfigurasi (UC-07).
+- **9 bidang selalu tersedia** untuk setiap client; jawaban sub-agents
+  menyesuaikan data yang benar-benar tersedia pada database client.
+- **RAG / dokumen di-defer** — penanganan dokumen (unggah file, sub-agent
+  pembaca dokumen, tombol attach pada chat) berada di luar scope prototype ini
+  dan dapat menjadi fase berikutnya.
+- **Reset percakapan/memori** — mekanisme penghapusan riwayat chat dan memory
+  belum tersedia pada prototype ini.
+- **Pembayaran** dilakukan melalui payment gateway pada umumnya dan
+  pengaktifan bersifat otomatis setelah pembayaran berhasil.
+- **Business data tidak disalin** ke AIOS Internal Database; Client Database
+  tetap menjadi source of truth (IDB-14 s.d. IDB-21). Database yang dibuat
+  melalui opsi "buat database baru" (provisioning Ekasa) berperan sebagai
+  Client Database, BUKAN bagian dari IDB, walau di-host di server Ekasa.
+- **Caching query berulang** (keputusan sementara) — query identik berulang
+  direncanakan memanfaatkan cache ber-TTL pendek per (tenant, bidang, hash
+  pertanyaan); detail implementasi masih open discussion dan dapat berubah.
+- **Low-confidence sub-agent analisis database** — terjadi pada konteks
+  database adaptation (onboarding & perubahan skema); mekanisme penanganan
+  yang user-friendly masih open discussion (lihat C6).
+- Daftar job role sub-agents bersifat contoh & modular dan dapat disesuaikan
+  melalui konfigurasi (Plugin Manager, FR-23 s.d. FR-26).

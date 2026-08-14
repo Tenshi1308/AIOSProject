@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daftar — AIOS</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/onboarding.css" />
+</head>
+<body>
+  <div class="onboard-wrap">
+    <!-- Panel kiri -->
+    <div class="onboard-side">
+      <div class="logo-lg">AIOS</div>
+      <h2>Buat akun perusahaan Anda</h2>
+      <p>
+        Daftarkan perusahaan Anda untuk mulai menggunakan AIOS. Setelah itu Anda
+        hanya perlu membayar, menghubungkan database, dan AIOS akan beradaptasi
+        dengan sistem Anda.
+      </p>
+      <ul>
+        <li><span class="step-num">1</span> Daftar akun perusahaan</li>
+        <li><span class="step-num">2</span> Aktivasi langganan (pembayaran)</li>
+        <li><span class="step-num">3</span> Hubungkan database perusahaan</li>
+        <li><span class="step-num">4</span> Validasi hasil pemetaan skema</li>
+        <li><span class="step-num">5</span> Gunakan AI Manager &amp; Workers</li>
+      </ul>
+    </div>
+
+    <!-- Form registrasi -->
+    <div class="onboard-main">
+      <div class="onboard-card">
+        <h1>Daftar Akun Perusahaan</h1>
+        <p class="sub">Registrasi akun AIOS untuk perusahaan Anda. (Use case C1)</p>
+
+        <div class="stepper">
+          <div class="step active"><span class="dot">1</span><span class="up">Daftar</span></div>
+          <div class="step"><span class="dot">2</span><span class="up">Bayar</span></div>
+          <div class="step"><span class="dot">3</span><span class="up">Database</span></div>
+          <div class="step"><span class="dot">4</span><span class="up">Mapping</span></div>
+        </div>
+
+        <form id="form-register" onsubmit="doRegister(event)">
+          <div class="form-group">
+            <label for="co-name">Nama Perusahaan</label>
+            <input type="text" id="co-name" placeholder="PT Contoh Indonesia" required />
+          </div>
+          <div class="form-group">
+            <label for="co-email">Email</label>
+            <input type="email" id="co-email" placeholder="nama@perusahaan.co.id" required />
+          </div>
+          <div class="form-group">
+            <label for="co-pass">Password</label>
+            <input type="password" id="co-pass" placeholder="Minimal 8 karakter" required />
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Buat Akun Perusahaan</button>
+        </form>
+
+        <div id="regError" class="alert alert-warn hidden mt-16"></div>
+
+        <p class="demo-cred">
+          Sudah punya akun? <a href="login.html">Masuk</a> · Demo:
+          <a href="javascript:void(0)" onclick="quickCompany('pt-alpha')">PT Alpha</a>,
+          <a href="javascript:void(0)" onclick="quickCompany('pt-beta')">PT Beta</a>,
+          <a href="javascript:void(0)" onclick="quickCompany('pt-gamma')">PT Gamma</a>.
+          <br/>Mockup — autentikasi disimulasikan di browser.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/state.js"></script>
+  <script>
+    function doRegister(e) {
+      e.preventDefault();
+      const err = document.getElementById('regError');
+      err.classList.add('hidden');
+      const name = document.getElementById('co-name').value.trim();
+      const email = document.getElementById('co-email').value.trim();
+      const pass = document.getElementById('co-pass').value;
+      if (!name || !email || !pass) {
+        showErr('Lengkapi semua kolom pendaftaran.');
+        return;
+      }
+      const res = registerUser(name, email, pass);
+      if (!res.ok) { showErr(res.error); return; }
+      // C1: registrasi — langsung ke login (akun siap dipakai)
+      alert('Akun perusahaan berhasil dibuat. Silakan masuk.');
+      window.location.href = 'login.html';
+    }
+
+    function showErr(msg) {
+      const err = document.getElementById('regError');
+      err.textContent = msg;
+      err.classList.remove('hidden');
+    }
+
+    function quickCompany(id) {
+      companyLogin(id);
+    }
+  </script>
+</body>
+</html>

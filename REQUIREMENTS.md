@@ -8,8 +8,12 @@ Sumber utama: `AGENTS.md`. Dokumen ini hanya berisi konsep yang didukung oleh
 
 ## 1. Project Overview
 
-AIOS adalah platform AI lokal yang dirancang untuk diintegrasikan ke dalam
-sistem perangkat lunak perusahaan yang sudah ada (client) sebagai **plugin**.
+AIOS adalah platform AI standalone (multi-tenant SaaS) yang di-host oleh Ekasa.
+Setiap perusahaan client login ke workspace AIOS-nya sendiri; tidak ada yang
+perlu dipasang atau di-embed di aplikasi client.
+
+"Plugin" berarti AIOS beradaptasi ke sistem client yang sudah ada tanpa
+mengharuskan client mengubah sistemnya.
 
 Tujuannya adalah memberikan kemampuan AI khusus tanpa mengharuskan client untuk
 memodifikasi atau membangun ulang aplikasi, database, autentikasi, atau logika
@@ -42,40 +46,80 @@ AIOS terdiri dari komponen berikut:
 
 ---
 
+## 1.5 Product Core Principles
+
+Produk diukur terhadap empat prinsip inti (keputusan stakeholder; sumber:
+`AGENTS.md` "Product Core Principles"):
+
+- **Cost Efficient** — meminimalkan biaya operasional: satu model lokal yang
+  dibagikan untuk semua cabang/worker, model tetap kecil, menghindari komputasi
+  mahal yang berulang melalui caching ber-TTL pendek, dan tidak pernah
+  menduplikasi business data client di AIOS Internal Database.
+- **User Friendly** — client tidak perlu menangani detail teknis; interaksi
+  menggunakan bahasa alami dan guided onboarding, serta langkah internal
+  (adapter, analisis skema, mapping) tetap tersembunyi.
+- **Plug and Go** — beradaptasi ke sistem existing client dengan usaha setup
+  minimal; client yang tidak memiliki database mendapatkan database yang
+  disediakan oleh Ekasa.
+- **Fast** — database adaptation terjadi sekali saat integrasi/setup (bukan
+  per request), query berulang memanfaatkan hasil cache, dan respons cepat.
+
+Kaitan dengan requirements:
+
+| Prinsip | Requirement terkait |
+|---|---|
+| Cost Efficient | NFR-02, NFR-03, IDB-14 s.d. IDB-21, DS-09, DS-11, LLM-04 |
+| User Friendly | FR-06, FR-34, NFR-04, DS-10 |
+| Plug and Go | FR-32A s.d. FR-32C, IR-01 s.d. IR-09, NFR-04, AC-01, AC-15 |
+| Fast | DS-09, DS-11, DS-12, NFR-03 |
+
+---
+
 ## 2. System Scope
 
 AIOS dipandang seperti organisasi/perusahaan dengan 9 cabang bidang (modul
-ERP): Finance, Human Resources, Sales / CRM, Procurement, Inventory,
-Production, Logistics, Maintenance, Reporting / BI. Setiap cabang dikepalai
+ERP): Strategic and Operational Planning, Finance, Human Resource, Logistic
+Management, Maintenance Management, Sales and Distribution, Quality
+Management, Material Management, Manufacturing. Setiap cabang dikepalai
 oleh satu AI Manager yang mengelola dan mengoordinasikan Worker AI (job role)
 pada bidangnya.
 
 Model interaksi: AIOS **bukan** chatbot umum tunggal. Pengguna memilih
-AI Manager/kapabilitas terlebih dahulu, kemudian berinteraksi dengan AI
-Manager beserta Worker AI-nya.
+bidang (kapabilitas) terlebih dahulu, kemudian berinteraksi dengan AI
+Manager (agent primary) beserta Worker AI-nya.
 
 Alur umum:
 
 ```
-User → AIOS Interface → Select Capability (AI Manager) → AI Manager
-      → Selected Worker (Worker AI) → Tools / Data / RAG → Response
+User → Login (SaaS per perusahaan) → Home (9 bidang mengelilingi hub AIOS)
+     → Pilih Bidang → AI Manager (agent primary) → Delegasi ke Worker (sub-agent)
+     → Tools / Data / RAG → Response
 ```
 
 Dalam lingkup sistem:
 
-1. Pengguna dapat memilih AI Manager / kapabilitas spesifik dari AIOS
-   Interface.
-2. AI Manager mengelola dan mengoordinasikan Worker AI yang dipilih beserta
+1. Pengguna login ke tenant perusahaannya (multi-tenant SaaS).
+2. Pengguna dapat memilih AI Manager / kapabilitas spesifik dari AIOS
+   Interface (Home: 9 bidang mengelilingi hub AIOS; hover menampilkan preview
+   worker, bukan untuk diklik).
+3. AI Manager mengelola dan mengoordinasikan Worker AI yang dipilih beserta
    kapabilitas yang dibutuhkan.
-3. Worker AI melaksanakan tugas domain-spesifik.
-4. Worker menggunakan tools dan data melalui abstraksi AIOS.
-5. AIOS menggunakan Local LLM (Ollama).
-6. AIOS terhubung ke database client melalui Database Adapter.
-7. AIOS menganalisis skema database client secara semantik dan memetakannya ke
+4. Worker AI melaksanakan tugas domain-spesifik.
+5. AI Manager (agent primary) mendelegasikan tugas ke worker (sub-agent);
+   proses delegasi transparan di interface.
+6. Worker menggunakan tools dan data melalui abstraksi AIOS.
+7. AIOS menggunakan Ollama sebagai runtime LLM (di server Ekasa pada
+   prototype).
+8. AIOS terhubung ke database client melalui Database Adapter.
+9. AIOS menganalisis skema database client secara semantik dan memetakannya ke
    Canonical Data Model.
-8. Worker beroperasi melalui Canonical Data Model, bukan skema raw client.
-9. AIOS menangani pengetahuan berbasis dokumen (PDF/dokumen) melalui RAG.
-10. Alur lengkap dapat didemonstrasikan melalui interface.
+10. Worker beroperasi melalui Canonical Data Model, bukan skema raw client.
+11. AIOS menangani pengetahuan berbasis dokumen (PDF/dokumen) melalui RAG.
+12. Pengguna perusahaan harus menyelesaikan pembayaran sebelum dapat
+    menggunakan kapabilitas AIOS (via payment gateway, aktivasi otomatis).
+13. Ekasa Developer dapat memantau pemakaian token per perusahaan dengan
+    drill-down per bidang dan per worker.
+14. Alur lengkap dapat didemonstrasikan melalui interface.
 
 Di luar lingkup awal: pengoptimalan model tingkat produksi, serta infrastruktur
 tingkat produksi yang tidak mendukung prototype secara langsung.
@@ -84,14 +128,21 @@ tingkat produksi yang tidak mendukung prototype secara langsung.
 
 ## 3. Actors
 
-- **User** — pengguna akhir yang memilih kapabilitas dan berinteraksi dengan
-  worker melalui AIOS Interface. Pengguna tidak perlu memahami detail
-  implementasi internal (database adapter, schema analyzer, canonical model,
-  vector database, tools internal).
+- **Client** — perusahaan yang memakai AIOS (satu role; tidak ada pemisahan
+  user/admin di dalam perusahaan). Registrasi akun, login, pembayaran,
+  menghubungkan database perusahaannya, memilih bidang, berinteraksi dengan AI
+  Manager dan worker melalui AIOS Interface, serta memvalidasi mapping
+  perusahaannya sendiri. Tidak perlu memahami detail implementasi internal
+  (database adapter, schema analyzer, canonical model, vector database, tools
+  internal).
+- **Ekasa Developer** — internal Ekasa yang hanya memantau pemakaian token per
+  perusahaan (input dan consumed) dengan drill-down per bidang/worker. Tidak
+  mengakses data bisnis atau percakapan client.
 - **AI Manager** — "manager bidang" di AIOS. AIOS dipandang seperti organisasi
   dengan 9 cabang bidang (modul ERP), dan setiap cabang dikepalai oleh satu AI
-  Manager: Finance, Human Resources, Sales / CRM, Procurement, Inventory,
-  Production, Logistics, Maintenance, Reporting / BI. AI Manager mengelola dan
+  Manager: Strategic and Operational Planning, Finance, Human Resource,
+  Logistic Management, Maintenance Management, Sales and Distribution, Quality
+  Management, Material Management, Manufacturing. AI Manager mengelola dan
   mengoordinasikan Worker AI pada bidangnya. Actor pada use case yang
   menggambarkan pengelolaan/koordinasi worker.
 - **Worker AI** — "bawahan" AI Manager yang meniru job role spesifik pada
@@ -101,8 +152,9 @@ tingkat produksi yang tidak mendukung prototype secara langsung.
 - **Client System** — sistem existing milik client (aplikasi, database,
   autentikasi, logika bisnis) yang tetap menjadi sistem utama dan tidak
   dimodifikasi.
-- **AIOS System** — platform plugin AIOS (AI Manager, Plugin Manager, Workers,
-  Tools, Data Layer, RAG, Local LLM) yang menempel di atas sistem client.
+- **AIOS System** — platform AIOS standalone (SaaS) yang di-host Ekasa,
+  terdiri dari AI Manager, Plugin Manager, Workers, Tools, Data Layer, RAG,
+  dan runtime LLM (Ollama).
 - **Developer / Intern** — pelaksana pengembangan yang bekerja secara
   bertahap dengan persetujuan sebelum setiap tahap.
 
@@ -114,14 +166,18 @@ tingkat produksi yang tidak mendukung prototype secara langsung.
 
 - **FR-01** — AIOS harus menyediakan interface yang mengekspos kapabilitas/
   *workspace* yang berbeda-beda (bukan satu chatbot generik tunggal).
-- **FR-02** — Interface harus menyajikan entry AI Manager/kapabilitas yang
-  berbeda, misalnya Finance, Human Resources, Sales / CRM, Procurement,
-  Inventory, Production, Logistics, Maintenance, Reporting / BI.
-- **FR-03** — Pengguna harus memilih kapabilitas/worker terlebih dahulu sebelum
-  berinteraksi.
-- **FR-04** — Setelah memilih kapabilitas, interface harus membuka workspace
-  worker yang sesuai sehingga pengguna dapat berinteraksi dengan worker tersebut.
-- **FR-05** — Interface harus memperjelas tujuan dari setiap worker.
+- **FR-02** — Home harus menyajikan 9 bidang yang mengelilingi hub "AIOS" di
+  tengah: Strategic and Operational Planning, Finance, Human Resource, Logistic
+  Management, Maintenance Management, Sales and Distribution, Quality
+  Management, Material Management, Manufacturing.
+- **FR-03** — Pengguna harus memilih bidang (kapabilitas) terlebih dahulu
+  sebelum berinteraksi; hover pada sebuah bidang menampilkan preview daftar
+  worker bidang tersebut (informasi saja, worker pada preview tidak dapat
+  diklik).
+- **FR-04** — Setelah memilih bidang, interface harus membuka tampilan chat
+  dengan AI Manager bidang tersebut (agent primary), termasuk kotak saran dan
+  panel kiri placeholder (mis. revenue, growth).
+- **FR-05** — Interface harus memperjelas tujuan dari setiap bidang dan worker.
 - **FR-06** — Detail implementasi internal (database adapter, schema analyzer,
   canonical model, vector database, tools internal) harus tersembunyi dari
   pengguna kecuali diperlukan untuk administrasi/debugging.
@@ -132,8 +188,9 @@ tingkat produksi yang tidak mendukung prototype secara langsung.
 
 AIOS dipandang seperti organisasi dengan 9 cabang bidang (modul ERP). Setiap
 cabang dikepalai oleh satu AI Manager yang mengelola dan mengoordinasikan
-Worker AI (job role) pada bidangnya: Finance, Human Resources, Sales / CRM,
-Procurement, Inventory, Production, Logistics, Maintenance, Reporting / BI.
+Worker AI (job role) pada bidangnya: Strategic and Operational Planning,
+Finance, Human Resource, Logistic Management, Maintenance Management, Sales
+and Distribution, Quality Management, Material Management, Manufacturing.
 
 - **FR-08** — Setiap AI Manager harus menjadi orkestrator pusat untuk
   cabangnya dan mengelola Worker AI yang dipilih beserta kapabilitas yang
@@ -150,6 +207,11 @@ Procurement, Inventory, Production, Logistics, Maintenance, Reporting / BI.
 - **FR-16** — AI Manager tidak boleh menggantikan Worker AI; Worker AI tetap
   bertanggung jawab atas tugas domain-spesifik.
 
+Catatan: AI Manager bertindak sebagai agent primary pada bidangnya — ia
+berkomunikasi dengan pengguna dan mendelegasikan tugas domain-spesifik ke
+worker (sub-agent). Proses delegasi transparan: interface dapat menampilkan
+worker mana yang sedang dikonsultasikan.
+
 ### 4.3 Specialized Workers
 
 - **FR-17** — Worker AI harus merupakan komponen AI domain-spesifik dengan
@@ -159,23 +221,25 @@ Procurement, Inventory, Production, Logistics, Maintenance, Reporting / BI.
 - **FR-19** — Worker AI dikelompokkan per cabang bidang dan meniru job role
   spesifik pada bidangnya (contoh, bukan daftar wajib; modular dan dapat
   disesuaikan melalui konfigurasi):
+  - **Strategic and Operational Planning**: BI Analyst, Report Developer, Data
+    Steward.
   - **Finance**: Finance Staff, Financial Analyst, Budgeting Staff, Treasurer,
     CFO.
-  - **Human Resources**: HR Staff, Recruiter, Payroll Officer, Training
+  - **Human Resource**: HR Staff, Recruiter, Payroll Officer, Training
     Specialist, HR Manager.
-  - **Sales / CRM**: Sales Representative, Customer Service, Sales Data
-    Analyst, Marketing Specialist.
-  - **Procurement**: Procurement Staff, Senior Procurement Specialist,
-    Purchasing Officer.
-  - **Inventory**: Inventory Control Manager, Warehouse Inventory Manager,
-    Retail Inventory Manager.
-  - **Production**: Production Planner, Production Scheduler, Production
+  - **Logistic Management**: Logistics Coordinator, Shipping & Receiving
+    Clerk, Fleet Manager.
+  - **Maintenance Management**: Maintenance Planner, Reliability Engineer,
+    Maintenance Technician.
+  - **Sales and Distribution**: Sales Representative, Customer Service, Sales
+    Data Analyst, Marketing Specialist.
+  - **Quality Management**: Quality Inspector, Quality Engineer, Quality
+    Auditor, Quality Control Officer.
+  - **Material Management**: Procurement Staff, Senior Procurement Specialist,
+    Purchasing Officer, Inventory Control Manager, Warehouse Inventory
+    Manager, Retail Inventory Manager.
+  - **Manufacturing**: Production Planner, Production Scheduler, Production
     Supervisor.
-  - **Logistics**: Logistics Coordinator, Shipping & Receiving Clerk, Fleet
-    Manager.
-  - **Maintenance**: Maintenance Planner, Reliability Engineer, Maintenance
-    Technician.
-  - **Reporting / BI**: BI Analyst, Report Developer, Data Steward.
   - Daftar final worker dapat berubah selama pengembangan (**TBD**).
 - **FR-20** — Worker AI harus menggunakan tools dan data melalui abstraksi
   AIOS.
@@ -196,16 +260,92 @@ Procurement, Inventory, Production, Logistics, Maintenance, Reporting / BI.
 - **FR-26** — Worker tidak boleh terkait erat (tight coupling) dengan
   implementasi AI Manager.
 
+### 4.6 Autentikasi, Role, Pembayaran & Monitoring
+
+- **FR-27** — AIOS adalah SaaS multi-tenant: setiap perusahaan login ke
+  workspace-nya sendiri; data, metadata, dan mapping antar perusahaan harus
+  terisolasi (tenant isolation).
+- **FR-28** — Client harus registrasi akun sebelum login. AIOS harus memiliki
+  autentikasi login sendiri (mis. email + password) dengan role: **Client** dan
+  **Ekasa Developer**. AIOS harus menyediakan opsi keluar (logout) untuk
+  mengakhiri sesi login Client maupun Developer Ekasa.
+- **FR-29** — Client harus menyelesaikan pembayaran via payment gateway
+  sebelum dapat menggunakan kapabilitas AIOS; aktivasi akun bersifat otomatis
+  setelah pembayaran berhasil.
+- **FR-30** — Ekasa Developer harus dapat memantau pemakaian token per
+  perusahaan (input dan consumed) dengan drill-down per bidang dan per worker.
+  Ekasa Developer tidak mengakses data bisnis atau percakapan client.
+- **FR-31** — AI Manager bertindak sebagai agent primary pada bidangnya dan
+  mendelegasikan tugas ke worker (sub-agent); proses delegasi transparan di
+  interface.
+
+### 4.7 Onboarding Data Client
+
+- **FR-32** — Sebelum client dapat menggunakan AI Manager, database
+  perusahaannya harus dihubungkan terlebih dahulu (onboarding gate).
+- **FR-32A** — Koneksi database harus menyediakan 2 jalur pilihan: (1) client
+  memasukkan kredensial database perusahaannya yang sudah ada, atau (2) client
+  memilih opsi **buat database baru** yang disediakan oleh Ekasa (untuk client
+  yang tidak memiliki database).
+- **FR-32B** — Database yang dibuat melalui opsi "buat database baru"
+  (provisioning) berperan sebagai **Client Database** (source of truth business
+  data) meskipun di-host di server Ekasa; karena kredensialnya dibuat oleh AIOS
+  sendiri, client tidak perlu mengisi form kredensial pada jalur ini.
+- **FR-32C** — Opsi "buat database baru" harus mendukung 2 mode: (1) **template
+  standar** Ekasa (skema + data contoh siap pakai), dan (2) **buat sendiri** di
+  mana client menentukan tabel dan variabel/kolom yang dibutuhkannya.
+- **FR-33** — Client harus dapat mengedit koneksi database perusahaannya dari
+  menu kapan saja; perubahan koneksi memicu database adaptation ulang.
+- **FR-34** — Hasil mapping skema harus ditampilkan kepada client di UI beserta
+  tingkat confidence; client dapat mengonfirmasi mapping yang benar dan
+  mengedit mapping secara manual. Mapping low-confidence ditandai untuk
+  konfirmasi.
+- **FR-35** — Jika skema client berubah, AIOS harus mendeteksi perubahan,
+  melakukan re-adaptasi, dan menampilkan pop-up penjelasan perubahan skema
+  dengan permintaan konfirmasi serta opsi edit manual.
+
+> Catatan (TBD) — low-confidence pada analisis database (misalnya oleh AI
+> Schema Analyzer / Data Access Agent) terjadi pada konteks **database
+> adaptation saat onboarding dan saat perubahan skema**, bukan saat user
+> sedang chat dengan AI Manager. Mekanisme penanganannya agar tetap
+> user-friendly (tanpa memunculkan istilah teknis) masih **TBD / open
+> discussion**.
+
+### 4.8 Data Access Agent
+
+- **FR-36** — Data Access Agent adalah specialized worker yang dibagikan per
+  tenant (bukan per bidang); semua AI Manager pada tenant yang sama memakai
+  Data Access Agent yang sama.
+- **FR-37** — Data Access Agent harus menghubungkan dan memahami skema database
+  client (database adaptation), serta membangun dan mempersistenkan semantic
+  mapping di AIOS Internal Database (termasuk mapping version, confidence, dan
+  validation status).
+- **FR-38** — Data Access Agent harus menyediakan business data aktual kepada
+  worker lain melalui AIOS Data Layer / Canonical Data Model, menjaga Client
+  Database sebagai source of truth, dan melakukan re-adaptasi ketika skema
+  client berubah.
+
+### 4.9 Memory Agent
+
+- **FR-39** — Setiap AI Manager memiliki Memory Agent (satu per bidang) yang
+  merangkum percakapan sebelumnya dengan client.
+- **FR-40** — Pesan percakapan dan ringkasan disimpan di AIOS Internal
+  Database, di-tag per bidang, sehingga AI Manager mempertahankan konteks
+  lintas sesi chat.
+
 ---
 
 ## 5. Non-Functional Requirements
 
-- **NFR-01** — Eksekusi lokal: AIOS harus berjalan sepenuhnya secara lokal
-  (tanpa ketergantungan cloud).
+- **NFR-01** — SaaS: AIOS berjalan di server Ekasa (multi-tenant); data
+  perusahaan mengalir ke server Ekasa pada prototype.
 - **NFR-02** — Model sederhana: prototype harus memakai model AI yang sederhana.
   (Model LLM spesifik: **TBD**.)
 - **NFR-03** — Performa wajar: prototype harus memberikan performa yang wajar.
   (Target performa spesifik: **TBD**.)
+  - Keputusan sementara (dapat berubah): query berulang memanfaatkan **cache
+    ber-TTL pendek** yang dikunci per (tenant, bidang, hash pertanyaan) —
+    mendukung prinsip Cost Efficient dan Fast. Detail implementasi masih **TBD**.
 - **NFR-04** — Setup mudah: setup/instalasi harus mudah dilakukan.
 - **NFR-05** — Dapat didemonstrasikan: alur end-to-end harus mudah
   didemonstrasikan.
@@ -226,13 +366,14 @@ Procurement, Inventory, Production, Logistics, Maintenance, Reporting / BI.
 
 - **C-01** — Lingkup prototype: utamakan prototype fungsional yang
   dapat didemonstrasikan end-to-end di atas kompleksitas tingkat produksi.
-- **C-02** — AI lokal: gunakan Ollama sebagai runtime model lokal kecuali ada
-  kebutuhan proyek yang secara eksplisit mengubahnya.
+- **C-02** — Runtime LLM: gunakan Ollama sebagai runtime model; pada prototype
+  berjalan di server Ekasa.
 - **C-03** — Jangan over-engineer model AI; pengoptimalan model tingkat produksi
   berada di luar scope awal.
 - **C-04** — AIOS tidak boleh mengharuskan client mengubah sistemnya.
-- **C-05** — Jangan memperkenalkan lapisan autentikasi JWT terpisah untuk AIOS
-  kecuali diminta eksplisit oleh kebutuhan di masa depan.
+- **C-05** — AIOS memiliki autentikasi sendiri (login per perusahaan dengan
+  role) karena deployment SaaS; ini merupakan kebutuhan eksplisit, bukan
+  pengganti autentikasi aplikasi client.
 - **C-06** — Jangan melewatkan dependensi arsitektural demi mencapai UI lebih
   cepat.
 - **C-07** — Urutan pengembangan mengikuti prioritas: AIOS Core, AI Manager,
@@ -248,18 +389,21 @@ Procurement, Inventory, Production, Logistics, Maintenance, Reporting / BI.
 
 ## 7. Integration Requirements
 
-- **IR-01** — AIOS harus dirancang sebagai plugin; aplikasi client tetap menjadi
-  sistem utama.
+- **IR-01** — AIOS harus beradaptasi ke sistem client (aspek "plugin"); aplikasi
+  dan database client tetap tidak dimodifikasi. Deployment AIOS adalah SaaS
+  standalone dengan domain dan login sendiri.
 - **IR-02** — AIOS tidak boleh mengharuskan client mengganti aplikasi existing.
 - **IR-03** — AIOS tidak boleh mengharuskan client mendesain ulang database.
 - **IR-04** — AIOS tidak boleh mengharuskan client mengganti nama tabel.
 - **IR-05** — AIOS tidak boleh mengharuskan client mengganti nama kolom.
 - **IR-06** — AIOS tidak boleh mengharuskan client mengganti sistem autentikasi.
 - **IR-07** — AIOS tidak boleh mengharuskan client migrasi logika bisnis ke AIOS.
-- **IR-08** — AIOS harus terintegrasi dengan environment client yang sudah
-  terautentikasi.
-- **IR-09** — Prototype harus menunjukkan bahwa AIOS dapat diintegrasikan ke
-  sistem-sistem existing yang berbeda dengan modifikasi minimal.
+- **IR-08** — AIOS memiliki autentikasi sendiri (login per perusahaan) karena
+  deployment SaaS; hal ini tidak menggantikan sistem autentikasi aplikasi
+  client itu sendiri.
+- **IR-09** — Prototype harus menunjukkan bahwa AIOS dapat beradaptasi ke
+  sistem-sistem existing yang berbeda dengan modifikasi minimal pada sistem
+  client.
 
 ---
 
@@ -308,6 +452,11 @@ Procurement, Inventory, Production, Logistics, Maintenance, Reporting / BI.
 
 ## 9. RAG Requirements
 
+> **Prototype scope:** RAG / document handling is deferred in the prototype.
+> The prototype focuses on structured data from the Client Database; document
+> handling (RAG) may be added in a later phase. Requirements RAG-01 s.d.
+> RAG-03 below describe the target design and do not block the prototype.
+
 - **RAG-01** — AIOS harus menyediakan pipeline RAG untuk dokumen tak
   terstruktur (PDF/Dokumen) dengan alur: Parser → Chunking → Embedding →
   Vector Store → Retrieval → Document Worker.
@@ -322,15 +471,23 @@ Procurement, Inventory, Production, Logistics, Maintenance, Reporting / BI.
 
 ## 10. AI / Local LLM Requirements
 
-- **LLM-01** — AIOS harus menggunakan arsitektur AI lokal untuk prototype karena
-  data perusahaan dapat bersifat sensitif.
-- **LLM-02** — AIOS harus menggunakan Ollama sebagai runtime model lokal.
+- **LLM-01** — Prototype menggunakan Ollama sebagai runtime LLM; pada deployment
+  SaaS, Ollama berjalan di server Ekasa sehingga data perusahaan mengalir ke
+  server Ekasa (trade-off yang diterima untuk prototype).
+- **LLM-02** — AIOS harus menggunakan Ollama sebagai runtime model.
 - **LLM-03** — AI Manager, Workers, dan AI Schema Analyzer harus menggunakan
   Local LLM.
-- **LLM-04** — Prototype harus memprioritaskan: eksekusi lokal, model sederhana,
-  performa wajar, setup mudah, dan demonstrabilitas.
+- **LLM-04** — Prototype harus memprioritaskan: model sederhana, performa wajar,
+  setup mudah, dan demonstrabilitas.
 - **LLM-05** — Model LLM spesifik yang digunakan: **TBD** (runtime ditetapkan
   Ollama; nama model belum ditetapkan oleh `AGENTS.md`).
+  - Catatan diskusi: keluarga **Hermes** (Nous Research) dapat berjalan lokal via
+    Ollama (mis. `hermes3`; varian Hermes 4/4-Pro juga tersedia). Banyak token
+    tidak menjadi masalah biaya pada model lokal; kendala utama adalah
+    **memori/VRAM model yang mengendap saat tersimpan di RAM** dan dampaknya ke
+    server (prinsip Cost Efficient → utamakan satu model kecil bersama untuk
+    semua cabang/worker). Keputusan final tetap **TBD**, ditentukan pada tahap
+    Local LLM integration.
 
 ---
 
@@ -354,18 +511,18 @@ Procurement, Inventory, Production, Logistics, Maintenance, Reporting / BI.
 
 ## 12. Authentication & Security Boundary
 
-- **SEC-01** — Autentikasi pengguna tetap menjadi tanggung jawab sistem
-  autentikasi existing milik client.
-- **SEC-02** — AIOS harus terintegrasi dengan environment client yang sudah
-  terautentikasi.
-- **SEC-03** — AIOS tidak boleh memperkenalkan lapisan autentikasi JWT terpisah
-  kecuali diminta eksplisit oleh kebutuhan di masa depan.
-- **SEC-04** — AIOS harus berjalan lokal untuk menjaga keamanan/privasi data
-  perusahaan yang sensitif.
+- **SEC-01** — AIOS memiliki autentikasi login sendiri (per perusahaan) dengan
+  role: Client dan Ekasa Developer. Siklus sesi mencakup login dan logout.
+- **SEC-02** — Autentikasi AIOS tidak menggantikan sistem autentikasi aplikasi
+  client; sistem client tetap berfungsi seperti sebelumnya.
+- **SEC-03** — Data, metadata, dan mapping antar perusahaan harus terisolasi
+  (tenant isolation); akses hanya dalam lingkup tenant yang sedang login.
+- **SEC-04** — Pada prototype, data perusahaan mengalir ke server Ekasa (SaaS);
+  kebijakan privasi/keamanan produksi: **TBD**.
 - **SEC-05** — Worker tidak boleh mengakses database langsung; akses data harus
   melalui AIOS Data Layer / Database Adapter / canonical model.
-- **SEC-06** — Detail autentikasi integrasi spesifik dengan system client:
-  **TBD**.
+- **SEC-06** — Detail autentikasi SaaS (login, sesi, role, dan tenant
+  isolation): **TBD**.
 
 ---
 
@@ -448,6 +605,14 @@ IDB berfungsi sebagai persistent storage AIOS untuk 4 kategori:
   Data Layer / Database Adapter, bukan dari IDB.
 - **IDB-21** — IDB tidak digunakan sebagai sumber utama business data client.
 
+> Catatan boundary provisioning (FR-32A s.d. FR-32C) — Database yang dibuat
+> melalui opsi "buat database baru" oleh Ekasa berperan sebagai **Client
+> Database** (source of truth business data), BUKAN bagian dari AIOS Internal
+> Database. IDB-14 s.d. IDB-21 tetap berlaku penuh untuk database tersebut.
+> Secara implementasi, database provisioning boleh berjalan pada engine/mesin
+> yang sama dengan IDB (misal di server Ekasa), tetapi keduanya tetap
+> merupakan database/schema yang terpisah secara logis.
+
 ### 13.4 Multi-Client Requirements
 
 - **IDB-22** — IDB harus mendukung beberapa konfigurasi client secara independen.
@@ -459,6 +624,8 @@ IDB berfungsi sebagai persistent storage AIOS untuk 4 kategori:
   menyimpan pemahaman/mapping yang spesifik untuk masing-masing client.
 - **IDB-26** — Mapping yang sudah dianalisis dapat digunakan kembali tanpa
   analisis ulang setiap request.
+- **IDB-27** — IDB harus menyimpan data pemakaian (usage/token metering) per
+  perusahaan, bidang, dan worker untuk mendukung dashboard Ekasa Developer.
 
 ---
 
@@ -471,8 +638,12 @@ IDB berfungsi sebagai persistent storage AIOS untuk 4 kategori:
 - **OS-03** — Tidak mengharuskan client mengganti aplikasi, mendesain ulang
   database, mengganti nama tabel/kolom, mengganti autentikasi, atau memigrasi
   logika bisnis.
-- **OS-04** — Bukan sistem autentikasi baru (tanpa lapisan JWT terpisah).
-- **OS-05** — Bukan AI yang bergantung pada cloud untuk data sensitif.
+- **OS-04** — Autentikasi AIOS (login per perusahaan) bukan pengganti sistem
+  autentikasi aplikasi client; aplikasi client tetap memakai autentikasinya
+  sendiri.
+- **OS-05** — Prototype menerima trade-off data perusahaan mengalir ke server
+  Ekasa (SaaS); opsi LLM/deployment per perusahaan menjadi pertimbangan fase
+  berikutnya.
 - **OS-06** — Bukan worker yang bergantung langsung pada skema database client
   atau akses database langsung.
 - **OS-07** — Bukan pengoptimalan/perawatan model tingkat produksi.
@@ -483,6 +654,8 @@ IDB berfungsi sebagai persistent storage AIOS untuk 4 kategori:
 - **OS-10** — AI Manager tidak menebak/memilih worker sendiri.
 - **OS-11** — Proyek adalah prototype untuk validasi konsep, bukan produk
   production-ready.
+- **OS-12** — RAG / penanganan dokumen di-defer pada prototype; prototype fokus
+  pada data terstruktur dari Client Database.
 
 ---
 
@@ -491,7 +664,8 @@ IDB berfungsi sebagai persistent storage AIOS untuk 4 kategori:
 Prototype AIOS dinyatakan berhasil jika seluruh kriteria berikut dapat
 ditunjukkan:
 
-- **AC-01** — AIOS dapat diintegrasikan sebagai plugin.
+- **AC-01** — AIOS dapat beradaptasi ke sistem client existing (aspek plugin)
+  sebagai SaaS standalone tanpa mengubah sistem client.
 - **AC-02** — Pengguna dapat memilih kapabilitas AI yang spesifik melalui
   interface.
 - **AC-03** — AI Manager dapat mengelola worker yang dipilih.
@@ -503,6 +677,7 @@ ditunjukkan:
 - **AC-09** — Worker dapat beroperasi melalui canonical model, bukan skema raw
   client.
 - **AC-10** — AIOS dapat menangani pengetahuan berbasis dokumen melalui RAG.
+  (Deferred pada prototype; prototype fokus pada data terstruktur.)
 - **AC-11** — Beberapa struktur database client dapat didemonstrasikan.
 - **AC-12** — Alur lengkap dapat didemonstrasikan melalui interface.
 - **AC-13** — Testing menggunakan beberapa simulated client system dengan skema
@@ -513,6 +688,21 @@ ditunjukkan:
   handling.
 - **AC-15** — Sistem client tidak perlu didesain ulang agar AIOS dapat bekerja
   (sistem client tetap, AIOS beradaptasi).
+- **AC-16** — Pengguna dapat registrasi dan login per perusahaan (multi-tenant)
+  dengan role-based access (Client dan Ekasa Developer); data antar perusahaan
+  terisolasi.
+- **AC-17** — Ekasa Developer dapat memantau pemakaian token per perusahaan
+  dengan drill-down per bidang dan per worker.
+- **AC-18** — Client harus menyelesaikan pembayaran sebelum menggunakan
+  kapabilitas AIOS (via payment gateway, aktivasi otomatis).
+- **AC-19** — Sebelum menggunakan AI Manager, client harus menghubungkan
+  database perusahaannya dan memvalidasi hasil mapping di UI (confidence,
+  konfirmasi, edit manual).
+- **AC-20** — Data Access Agent (per tenant) menyediakan business data aktual
+  kepada worker lain melalui canonical model, dan melakukan re-adaptasi saat
+  skema berubah (dengan pop-up konfirmasi).
+- **AC-21** — Memory Agent (per bidang) menyimpan percakapan dan ringkasan di
+  AIOS Internal Database sehingga AI Manager mempertahankan konteks lintas sesi.
 
 ---
 
@@ -524,12 +714,19 @@ requirement yang sudah ada ke use case yang menggambarkannya.
 
 | Use Case | Nama | Requirement terkait |
 |---|---|---|
-| UC-01 | Memilih AI Manager / Kapabilitas | FR-01, FR-02, FR-03, FR-04, OS-01, OS-10 |
-| UC-02 | Berinteraksi dengan AI Manager dan Worker | FR-04, FR-05, FR-06, FR-07, FR-08 s.d. FR-16, FR-20, FR-21, FR-22, RAG-03, LLM-02, LLM-03, SEC-05, IDB-14 s.d. IDB-21, AC-04, AC-12 |
-| UC-03 | Mendaftarkan Integrasi Client (Plugin Setup) | IR-01 s.d. IR-09, PW-01, SEC-01, SEC-02, SEC-03, IDB-01, IDB-02, IDB-22, IDB-23, IDB-24, AC-01, AC-15 |
-| UC-04 | Menganalisis Skema Database Client | DS-01, DS-02, DS-03, DS-04, DS-05, LLM-03, IDB-03, IDB-04, AC-06, AC-07 |
-| UC-05 | Memetakan Skema ke Canonical Data Model | DS-06, DS-07, DS-08, DS-09, DS-10, DS-11, DS-14, DS-15, DS-16, IDB-05, IDB-06, IDB-10, IDB-26, AC-08, AC-09 |
-| UC-06 | Memperbarui Mapping saat Skema Berubah | IDB-11 |
-| UC-07 | Mengonfigurasi Plugin dan Worker | FR-23, FR-24, FR-25, FR-26, PW-02, PW-03, PW-04, PW-05, PW-07, IDB-07, IDB-08 |
-| UC-08 | AI Manager Mengelola & Mengkoordinasikan Worker | FR-04, FR-05, FR-06, FR-07, FR-08 s.d. FR-16, OS-10, PW-04 |
-| UC-09 | Worker AI Mengeksekusi Tugas Domain | FR-04, FR-06, FR-20, FR-21, FR-22, RAG-01, RAG-03, LLM-02, LLM-03, AC-04, AC-12 |
+| C1 | Registrasi Akun | FR-27, FR-28, SEC-01, SEC-03, AC-16 |
+| C2 | Login (Pilih Role) | FR-27, FR-28, SEC-01, SEC-03, AC-16 |
+| C3 | Pembayaran | FR-29, AC-18 |
+| C4 | Menghubungkan Database Perusahaan | FR-32, FR-32A, FR-32B, FR-32C, IR-01 s.d. IR-09, SEC-03, IDB-01, IDB-02, AC-01, AC-15 |
+| C5 | Menganalisis Skema & Membuat Mapping | DS-01 s.d. DS-11, LLM-03, FR-37, IDB-03 s.d. IDB-06, IDB-10, IDB-26, AC-06, AC-07, AC-08 |
+| C6 | Memvalidasi Hasil Mapping | FR-34, DS-06, DS-07, IDB-05, IDB-06, AC-19 |
+| C7 | Mengedit Koneksi Database | FR-33, IR-01 s.d. IR-09, IDB-01, IDB-02 |
+| C8 | Memilih Bidang ERP | FR-01, FR-02, FR-03, FR-04, OS-01, OS-10 |
+| C9 | Chat dengan AI Primary Agent | FR-04 s.d. FR-07, FR-31, LLM-02, LLM-03, AC-12 |
+| C10 | AI Primary Mendelegasikan Pertanyaan | FR-08 s.d. FR-16, FR-31, OS-10, PW-04 |
+| C11 | Sub-agents Menjawab Tugas Domain | FR-17 s.d. FR-22, LLM-02, LLM-03, AC-04 |
+| C12 | Data Access Agent Menyediakan Data Client | FR-36, FR-38, DS-12 s.d. DS-15, SEC-05, IDB-14 s.d. IDB-21, AC-20 |
+| C13 | Memory Agent Merangkum Percakapan | FR-39, FR-40, IDB-09, AC-21 |
+| C14 | Re-adaptasi Mapping saat Skema Berubah | FR-35, IDB-11, AC-20 |
+| D1 | Dashboard Pemakaian Token per Client | FR-30, IDB-27, AC-17 |
+| D2 | Analisis Penggunaan AI Manager | FR-30, IDB-27, AC-17 |

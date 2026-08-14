@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kelola Koneksi Database — AIOS</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/onboarding.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> AIOS</div>
+    <div class="nav">
+      <a href="home.html" class="btn btn-outline btn-sm">← Kembali</a>
+      <span class="user" id="userBox"></span>
+    </div>
+  </div>
+
+  <div class="settings-layout">
+    <h1>Kelola Koneksi Database</h1>
+    <p class="sub">Ubah koneksi database perusahaan kapan saja. Perubahan memicu re-analisis skema &amp; validasi mapping ulang. (Use case C7 &amp; C14)</p>
+
+    <div id="mappingNote" class="mapping-note"></div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Koneksi Saat Ini</h3>
+        <span class="badge badge-ok">Terhubung</span>
+      </div>
+      <div class="card-body">
+        <div class="conn-meta" id="connMeta"></div>
+        <p style="font-size:13px;color:var(--text-muted);">
+          Kredensial disimpan aman di AIOS Internal Database (connection metadata),
+          tidak pernah disimpan di Client Database.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>Edit Koneksi</h3></div>
+      <div class="card-body">
+        <form id="form-connect" onsubmit="saveConnection(event)">
+          <div class="row-gap">
+            <div class="form-group">
+              <label for="db-engine">Database Engine</label>
+              <select id="db-engine">
+                <option>PostgreSQL</option>
+                <option>MySQL</option>
+                <option>SQL Server</option>
+                <option>SQLite</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="db-host">Host</label>
+              <input type="text" id="db-host" required />
+            </div>
+          </div>
+          <div class="row-gap">
+            <div class="form-group">
+              <label for="db-port">Port</label>
+              <input type="text" id="db-port" required />
+            </div>
+            <div class="form-group">
+              <label for="db-name">Nama Database</label>
+              <input type="text" id="db-name" required />
+            </div>
+          </div>
+          <div class="row-gap">
+            <div class="form-group">
+              <label for="db-user">Username</label>
+              <input type="text" id="db-user" required />
+            </div>
+            <div class="form-group">
+              <label for="db-pass">Password</label>
+              <input type="password" id="db-pass" />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Simpan &amp; Re-analisis</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>Simulasi Perubahan Skema</h3></div>
+      <div class="card-body">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">
+          Jalankan simulasi skema database berubah. AIOS akan mendeteksi perubahan,
+          re-adaptasi mapping, lalu menampilkan pop-up konfirmasi (use case C14).
+        </p>
+        <button class="btn btn-outline" onclick="simulateSchemaChange()">⚡ Simulasikan Perubahan Skema</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/topbar.js"></script>
+  <script>
+    const session = getSession();
+    if (session.role !== 'company' || !session.companyId) window.location.href = 'login.html';
+
+    (function init() {
+      const state = getState(session.companyId);
+      if (!state.connection) { window.location.href = 'connect.html'; return; }
+
+      document.getElementById('mappingNote').innerHTML =
+        '📊 <b>' + session.companyName + '</b> · Mapping versi <b>' + (state.mappingVersion || 1) + '</b> · ' +
+        (state.mappingValidated ? 'Tervalidasi' : 'Belum divalidasi');
+
+      const meta = document.getElementById('connMeta');
+      const c = state.connection;
+      ['engine','host','port','name','user'].forEach(k => {
+        const chip = document.createElement('span');
+        chip.className = 'conn-chip';
+        chip.textContent = k + ': ' + c[k];
+        meta.appendChild(chip);
+      });
+
+      document.getElementById('db-engine').value = c.engine;
+      document.getElementById('db-host').value = c.host;
+      document.getElementById('db-port').value = c.port;
+      document.getElementById('db-name').value = c.name;
+      document.getElementById('db-user').value = c.user;
+    })();
+
+    function saveConnection(e) {
+      e.preventDefault();
+      const connection = {
+        engine: document.getElementById('db-engine').value,
+        host: document.getElementById('db-host').value,
+        port: document.getElementById('db-port').value,
+        name: document.getElementById('db-name').value,
+        user: document.getElementById('db-user').value
+      };
+      // C7: koneksi baru -> re-analysis & mapping version ++
+      const state = getState(session.companyId);
+      setState(session.companyId, {
+        connection,
+        mappingValidated: false,
+        mappingVersion: (state.mappingVersion || 1) + 1,
+        schemaChanged: true
+      });
+      alert('Koneksi disimpan. AIOS melakukan re-analisis & pembaruan mapping (versi baru).');
+      window.location.href = 'validate-mapping.html';
+    }
+
+    function simulateSchemaChange() {
+      // C14: deteksi perubahan skema -> pop-up konfirmasi -> validasi ulang
+      const state = getState(session.companyId);
+      setState(session.companyId, {
+        mappingValidated: false,
+        mappingVersion: (state.mappingVersion || 1) + 1,
+        schemaChanged: true
+      });
+      window.location.href = 'validate-mapping.html';
+    }
+  </script>
+</body>
+</html>

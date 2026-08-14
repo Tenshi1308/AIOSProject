@@ -4,8 +4,9 @@
 
 AIOS Plugin Platform
 
-AIOS is a local AI platform designed to be integrated into existing
-company software systems as a plugin.
+AIOS is a standalone AI platform (multi-tenant SaaS) hosted by Ekasa.
+Each client company logs in to its own AIOS workspace; nothing needs
+to be installed or embedded in the client's own application.
 
 The goal is to provide specialized AI capabilities without requiring
 the client to modify or rebuild their existing application, database,
@@ -14,9 +15,28 @@ authentication, or business logic.
 AIOS must adapt to the client's existing system rather than forcing
 the client system to adapt to AIOS.
 
+In this context, "plugin" means AIOS adapts to the client's existing
+system (especially its database) rather than being embedded in the
+client's application.
+
 This project is a prototype for validating the product concept and
 technical architecture. Prioritize a functional, demonstrable,
 end-to-end prototype over production-level complexity.
+
+The product is measured against four core principles:
+
+- **Cost Efficient** — minimize operating cost: one shared local model
+  for all branches/workers, keep models small, avoid repeated expensive
+  computation through short-TTL caching, and never duplicate client
+  business data in the AIOS Internal Database.
+- **User Friendly** — the client should not deal with technical details;
+  interactions use natural language and guided onboarding, and internal
+  steps (adapters, schema analysis, mapping) remain hidden.
+- **Plug and Go** — adapt to each client's existing system with minimal
+  setup effort; clients without a database get one provided by Ekasa.
+- **Fast** — database adaptation happens once at integration/setup (not
+  per request), repeated queries reuse cached results, and responses are
+  quick.
 
 ---
 
@@ -119,17 +139,26 @@ Example:
 
 User
   ↓
-AIOS Interface
+Register / Login (AIOS SaaS, per company)
   ↓
-Select capability
+Payment (payment gateway, automatic activation)
   ↓
-AI Manager
+Home — 9 branches around the AIOS hub
   ↓
-Selected Worker
+Select branch
+  ↓
+AI Manager (primary agent of the branch)
+  ↓
+Selected Worker (sub-agent)
   ↓
 Worker Workspace
   ↓
-User interacts with the Worker
+User interacts with the AI Manager / Worker
+
+Before the client can use an AI Manager, its company database must be
+connected (onboarding gate). Connecting the database triggers database
+adaptation (see Database Adaptation Pipeline) and the client validates
+the resulting mapping in the UI before use.
 
 AIOS is viewed as an organization with 9 branches (ERP modules). Each
 branch is led by one AI Manager who manages and coordinates the Worker
@@ -137,15 +166,15 @@ AI (job roles) of that branch.
 
 Example branches:
 
+- Strategic and Operational Planning
 - Finance
-- Human Resources
-- Sales / CRM
-- Procurement
-- Inventory
-- Production
-- Logistics
-- Maintenance
-- Reporting / BI
+- Human Resource
+- Logistic Management
+- Maintenance Management
+- Sales and Distribution
+- Quality Management
+- Material Management
+- Manufacturing
 
 The exact worker list may evolve during development.
 
@@ -162,15 +191,15 @@ branch is led by one AI Manager.
 
 Example branches:
 
+- Strategic and Operational Planning
 - Finance
-- Human Resources
-- Sales / CRM
-- Procurement
-- Inventory
-- Production
-- Logistics
-- Maintenance
-- Reporting / BI
+- Human Resource
+- Logistic Management
+- Maintenance Management
+- Sales and Distribution
+- Quality Management
+- Material Management
+- Manufacturing
 
 The exact list of branches may evolve during development.
 
@@ -204,6 +233,11 @@ Prefer:
 
 User → Interface → Select Capability → AI Manager → Selected Worker
 
+Each AI Manager acts as the primary agent of its branch: it talks to
+the user and delegates domain-specific tasks to its workers (sub-agents).
+The delegation process is transparent — the interface may show which
+worker is being consulted while the AI Manager composes the response.
+
 ---
 
 ## Specialized Workers
@@ -217,6 +251,11 @@ unrelated business logic.
 
 Example branches and worker job roles:
 
+Strategic and Operational Planning (AI Manager Strategic and Operational Planning):
+- BI Analyst
+- Report Developer
+- Data Steward
+
 Finance (AI Manager Finance):
 - Finance Staff
 - Financial Analyst
@@ -224,48 +263,47 @@ Finance (AI Manager Finance):
 - Treasurer
 - CFO
 
-Human Resources (AI Manager HR):
+Human Resource (AI Manager HR):
 - HR Staff
 - Recruiter
 - Payroll Officer
 - Training Specialist
 - HR Manager
 
-Sales / CRM (AI Manager Sales):
+Logistic Management (AI Manager Logistic Management):
+- Logistics Coordinator
+- Shipping & Receiving Clerk
+- Fleet Manager
+
+Maintenance Management (AI Manager Maintenance Management):
+- Maintenance Planner
+- Reliability Engineer
+- Maintenance Technician
+
+Sales and Distribution (AI Manager Sales):
 - Sales Representative
 - Customer Service
 - Sales Data Analyst
 - Marketing Specialist
 
-Procurement (AI Manager Procurement):
+Quality Management (AI Manager Quality Management):
+- Quality Inspector
+- Quality Engineer
+- Quality Auditor
+- Quality Control Officer
+
+Material Management (AI Manager Material Management):
 - Procurement Staff
 - Senior Procurement Specialist
 - Purchasing Officer
-
-Inventory (AI Manager Inventory):
 - Inventory Control Manager
 - Warehouse Inventory Manager
 - Retail Inventory Manager
 
-Production (AI Manager Production):
+Manufacturing (AI Manager Manufacturing):
 - Production Planner
 - Production Scheduler
 - Production Supervisor
-
-Logistics (AI Manager Logistics):
-- Logistics Coordinator
-- Shipping & Receiving Clerk
-- Fleet Manager
-
-Maintenance (AI Manager Maintenance):
-- Maintenance Planner
-- Reliability Engineer
-- Maintenance Technician
-
-Reporting / BI (AI Manager Reporting / BI):
-- BI Analyst
-- Report Developer
-- Data Steward
 
 The exact worker list may evolve during development.
 
@@ -277,13 +315,40 @@ schema.
 Workers should operate through AIOS Data Layer / Canonical Data Model
 and Database Adapter abstractions.
 
+### Data Access Agent
+
+The Data Access Agent is a specialized worker shared per tenant (not
+per branch). It is responsible for:
+
+- connecting to and understanding the client's database schema
+  (database adaptation)
+- building and persisting the semantic mapping in the AIOS Internal
+  Database, including mapping version, confidence, and validation status
+- re-adapting when the client schema changes
+- providing actual business data to other workers through the AIOS Data
+  Layer / Canonical Data Model, keeping the Client Database as the
+  source of truth
+
+All AI Managers of a tenant use the same Data Access Agent.
+
+### Memory Agent
+
+Each AI Manager has a Memory Agent (one per branch) that summarizes past
+conversations with the client. Conversation messages and summaries are
+stored in the AIOS Internal Database, tagged per branch, so the AI
+Manager retains context across the chat session.
+
 ---
 
 ## Plugin Architecture
 
-AIOS must be designed as a plugin.
+AIOS is designed as a plugin in the sense that it ADAPTS to the
+client's existing system without requiring changes to it. The client's
+business application and database remain untouched.
 
-The client application remains the primary system.
+Deployment model: AIOS is a standalone SaaS with its own domain and
+its own login (see Authentication & Roles). It is not embedded in the
+client's application.
 
 AIOS must NOT require the client to:
 
@@ -294,16 +359,40 @@ AIOS must NOT require the client to:
 - replace its authentication system
 - migrate its business logic to AIOS
 
-The existing client authentication remains responsible for user
-authentication.
+Because AIOS is a standalone SaaS, it has its own authentication layer
+(login per company, with roles). This is an explicit requirement of the
+SaaS deployment model and does not replace the client's own
+authentication system, which continues to serve the client's own
+application.
 
-AIOS should integrate with the authenticated client environment.
+The prototype should demonstrate that AIOS can adapt to different
+existing systems with minimal modification to the client's system.
 
-Do NOT introduce a separate JWT authentication layer for AIOS unless
-explicitly required by a future requirement.
+---
 
-The prototype should demonstrate that AIOS can be integrated into
-different existing systems with minimal modification.
+## Authentication & Roles
+
+AIOS is a multi-tenant SaaS: each company logs in to its own workspace,
+and all company data, metadata, and mappings are isolated per company
+(tenant). Data, conversations, and mappings of Client A MUST NOT be
+accessed by Client B.
+
+Before logging in, a client must register an account. After login, the
+client completes payment (via a payment gateway) before using AIOS
+capabilities; activation is automatic once payment succeeds.
+
+Roles:
+
+- Client — a company that uses AIOS (single role; no separate user/admin
+  within a company). Registers, logs in, pays, connects its own database,
+  selects a branch, uses AI capabilities, and validates its own mapping.
+- Ekasa Developer — internal Ekasa who only monitors usage: input and
+  consumed tokens per company, with drill-down per branch and per worker.
+  Does not access client business data or conversations.
+
+The Ekasa Developer view provides usage monitoring per company (input
+and consumed tokens) with drill-down per branch and per worker, so
+Ekasa can see which branches each company actually uses.
 
 ---
 
@@ -430,8 +519,15 @@ is required.
 Do not repeatedly perform complete schema analysis for every normal
 user request unless explicitly required.
 
+The client validates the resulting mapping in the UI: the mapping is
+shown with its confidence, the client confirms correct mappings and may
+edit mappings manually. Low-confidence mappings are flagged for
+confirmation.
+
 If the client schema changes, AIOS should be able to detect, re-analyze,
-or update the affected mapping.
+or update the affected mapping. When a schema change is detected, AIOS
+re-adapts automatically and shows the client a pop-up explaining that
+the schema changed, requesting confirmation and allowing manual edits.
 
 ---
 
@@ -462,6 +558,7 @@ The Internal Database may store:
 - worker configuration
 - tool configuration
 - AIOS integration metadata
+- usage / token metering data (per company, branch, worker)
 
 Concept:
 
@@ -634,19 +731,24 @@ conceptual process.
 A worker may use both structured data and documents when a task requires
 both.
 
+> Prototype scope: RAG / document handling is deferred in the prototype.
+> The prototype focuses on structured data from the Client Database;
+> document handling (RAG) may be added in a later phase.
+
 ---
 
 ## Local AI
 
-AIOS must use a local AI architecture for the prototype because
-company data may be sensitive.
+The prototype uses Ollama as the LLM runtime. In the SaaS deployment,
+Ollama runs on the Ekasa server, which means company data flows to the
+Ekasa server. This is an accepted trade-off for the prototype; a future
+phase may offer per-company LLM deployment options.
 
-Use Ollama as the local model runtime unless a project requirement
-explicitly changes this.
+Use Ollama as the model runtime unless a project requirement explicitly
+changes this.
 
 The prototype should prioritize:
 
-- local execution
 - simple models
 - reasonable performance
 - easy setup
@@ -665,27 +767,29 @@ The interface should not be designed as one generic chatbot.
 
 The interface should expose distinct capabilities/workspaces.
 
-Example:
+Home screen: the 9 branches (ERP modules) are arranged around a central
+"AIOS" hub. Hovering near a branch shows a preview of the workers in
+that branch (informational only — workers are not clickable from the
+preview). Clicking a branch opens the chat view for that branch.
 
-AIOS Dashboard
+Chat view (after selecting a branch):
 
-[ Finance ]
-[ Human Resources ]
-[ Sales / CRM ]
-[ Procurement ]
-[ Inventory ]
-[ Production ]
-[ Logistics ]
-[ Maintenance ]
-[ Reporting / BI ]
+- Left panel: placeholder quick-access boxes (e.g., revenue, growth);
+  content may be added later.
+- Right side: chat with the branch's AI Manager (the primary agent),
+  including suggestion boxes with example questions.
 
-After selecting a capability, the user enters the corresponding worker
-workspace and can interact with that worker.
+The AI Manager acts as the primary agent of its branch: it delegates
+to its specialized workers (sub-agents) and the delegation process is
+transparent to the user.
 
-The interface should make the purpose of each worker clear.
+The interface should make the purpose of each branch and worker clear.
 
 Internal implementation details should remain hidden unless needed for
 administration/debugging.
+
+The Ekasa Developer view provides usage monitoring per company (input
+and consumed tokens) with drill-down per branch and per worker.
 
 ---
 
@@ -711,9 +815,14 @@ A successful prototype should demonstrate:
     client schemas.
 12. AIOS can retrieve client business data from the Client Database
     without duplicating it into the Internal Database.
-13. AIOS can handle document-based knowledge through RAG.
+13. AIOS can handle document-based knowledge through RAG. (Deferred in
+    the prototype; the prototype focuses on structured data.)
 14. Multiple client database structures can be demonstrated.
 15. The complete flow can be demonstrated through the interface.
+16. Users can log in per company (multi-tenant SaaS) with role-based
+    access (Client and Ekasa Developer roles).
+17. Ekasa developers can monitor usage (tokens) per company with
+    drill-down per branch and worker.
 
 Prefer a smaller number of fully working workers over many incomplete
 workers.
@@ -739,7 +848,7 @@ Prioritize implementation in this general order:
 13. Canonical Data Model
 14. AIOS Data Layer
 15. Worker-to-data integration
-16. RAG / Document Worker
+16. RAG / Document Worker (deferred; add later if RAG is brought back)
 17. Interface
 18. Multi-client simulation
 19. End-to-end testing
@@ -868,7 +977,9 @@ Test:
 - semantic mapping
 - canonical model generation
 - mapping persistence
-- client isolation
+- client isolation (multi-tenant, via login)
+- role-based access (Client vs Ekasa Developer roles)
+- usage / token metering
 - worker queries
 - incorrect or ambiguous mappings
 - schema changes

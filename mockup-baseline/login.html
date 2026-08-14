@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — AIOS</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="login-wrap">
+    <!-- Panel kiri: branding -->
+    <div class="login-side">
+      <div class="logo-lg">AIOS</div>
+      <h2>AI Plugin Platform</h2>
+      <p>
+        Platform AI lokal yang beradaptasi dengan sistem perusahaan Anda.
+        Pilih bidang, ajak AI Manager, dan dapatkan wawasan dari data bisnis
+        Anda — tanpa mengubah sistem yang sudah ada.
+      </p>
+      <p class="tagline">"Client system stays. AIOS adapts."</p>
+    </div>
+
+    <!-- Panel kanan: form login -->
+    <div class="login-form-wrap">
+      <div class="login-card">
+        <h1>Masuk ke AIOS</h1>
+        <p class="sub">Pilih peran Anda untuk melanjutkan.</p>
+
+        <!-- Tab peran -->
+        <div class="role-tabs" id="roleTabs">
+          <button class="role-tab active" data-role="company">Perusahaan</button>
+          <button class="role-tab" data-role="developer">Developer Ekasa</button>
+        </div>
+
+        <!-- Form Perusahaan -->
+        <form id="form-company" onsubmit="loginCompany(event)">
+          <div class="form-group">
+            <label for="company">Perusahaan</label>
+            <select id="company">
+              <option value="pt-alpha">PT Alpha — Manufacturing (demo)</option>
+              <option value="pt-beta">PT Beta — Retail (demo)</option>
+              <option value="pt-gamma">PT Gamma — F&B (demo)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="email-c">Email</label>
+            <input type="email" id="email-c" placeholder="nama@ptalpha.co.id" value="user@ptalpha.co.id" required />
+          </div>
+          <div class="form-group">
+            <label for="pass-c">Password</label>
+            <input type="password" id="pass-c" placeholder="••••••••" value="demo1234" required />
+          </div>
+
+<div class="hint-box">
+          💡 <strong>Demo:</strong> akun perusahaan sudah tersedia.
+          <code>user@ptalpha.co.id</code> / <code>demo1234</code>
+        </div>
+
+        <div id="loginError" class="alert alert-warn hidden"></div>
+
+        <button type="submit" class="btn btn-primary btn-block">Masuk ke Workspace</button>
+        <p class="sub mt-16" style="margin-bottom:0;text-align:center;">
+          Belum punya akun? <a href="register.html">Daftar perusahaan</a>
+        </p>
+        </form>
+
+        <!-- Form Developer -->
+        <form id="form-developer" class="hidden" onsubmit="loginDeveloper(event)">
+          <div class="form-group">
+            <label for="email-d">Email Ekasa</label>
+            <input type="email" id="email-d" placeholder="developer@ekasa.com" value="developer@ekasa.com" required />
+          </div>
+          <div class="form-group">
+            <label for="pass-d">Password</label>
+            <input type="password" id="pass-d" placeholder="••••••••" value="admin1234" required />
+          </div>
+
+          <div class="hint-box">
+            🔧 <strong>Demo:</strong> login developer untuk mengakses
+            monitoring token seluruh perusahaan.
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Masuk ke Developer Dashboard</button>
+        </form>
+
+        <p class="demo-cred">
+          Mockup — belum ada pembayaran / backend.
+          <a href="javascript:void(0)" onclick="resetDemo()">Reset data demo</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/state.js"></script>
+  <script>
+    // Tab role switching
+    const tabs = document.querySelectorAll('.role-tab');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const role = tab.dataset.role;
+        document.getElementById('form-company').classList.toggle('hidden', role !== 'company');
+        document.getElementById('form-developer').classList.toggle('hidden', role !== 'developer');
+      });
+    });
+
+    function loginCompany(e) {
+      e.preventDefault();
+      const email = document.getElementById('email-c').value;
+      const pass = document.getElementById('pass-c').value;
+      const res = findUser(email, pass);
+      if (!res.ok) {
+        const el = document.getElementById('loginError');
+        el.textContent = res.error;
+        el.classList.remove('hidden');
+        return;
+      }
+      document.getElementById('loginError').classList.add('hidden');
+      companyLogin(res.user.id);
+    }
+
+    function loginDeveloper(e) {
+      e.preventDefault();
+      sessionStorage.setItem('aios_role', 'developer');
+      window.location.href = 'developer.html';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Developer Dashboard — AIOS</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> AIOS</div>
+    <div class="nav">
+      <span class="user" id="userBox"></span>
+    </div>
+  </div>
+
+  <div class="dev-layout">
+    <h1>Developer Dashboard</h1>
+    <p class="sub">Monitoring pemakaian token &amp; adopsi AIOS per perusahaan.</p>
+
+    <div class="dev-filters">
+      <select id="companySelect" onchange="selectCompany(this.value)"></select>
+      <span>
+        <button class="range-btn active" data-range="7">7 hari</button>
+        <button class="range-btn" data-range="30">30 hari</button>
+        <button class="range-btn" data-range="all">Semua</button>
+      </span>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Token Input</div>
+        <div class="stat-value" id="statInput">—</div>
+        <div class="stat-sub" id="statInputSub"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Token Consumed</div>
+        <div class="stat-value" id="statConsumed">—</div>
+        <div class="stat-sub" id="statConsumedSub"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Bidang Paling Aktif</div>
+        <div class="stat-value" id="statTopBranch" style="font-size:18px;">—</div>
+        <div class="stat-sub" id="statTopBranchSub"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Worker Paling Aktif</div>
+        <div class="stat-value" id="statTopWorker" style="font-size:18px;">—</div>
+        <div class="stat-sub" id="statTopWorkerSub"></div>
+      </div>
+    </div>
+
+    <!-- Breadcrumb drill-down -->
+    <div class="breadcrumb" id="breadcrumb">
+      <a href="#" onclick="goLevel('company'); return false;">Perusahaan</a>
+      <span class="sep">›</span>
+      <span id="crumbLevel">Ringkasan</span>
+    </div>
+
+    <!-- View: daftar perusahaan -->
+    <div class="card" id="viewCompanies">
+      <div class="card-head"><h3>Daftar Perusahaan</h3></div>
+      <div class="card-body">
+        <table class="dev-table">
+          <thead>
+            <tr>
+              <th>Perusahaan</th>
+              <th>Token Input</th>
+              <th>Token Consumed</th>
+              <th>Bidang Aktif</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="companiesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- View: drill-down per bidang -->
+    <div class="card hidden" id="viewBranch">
+      <div class="card-head">
+        <h3 id="branchTitle">Pemakaian per Bidang</h3>
+        <span class="badge badge-info" id="branchTotal"></span>
+      </div>
+      <div class="card-body" id="branchBody"></div>
+    </div>
+
+    <!-- View: drill-down per worker -->
+    <div class="card hidden" id="viewWorker">
+      <div class="card-head">
+        <h3 id="workerTitle">Pemakaian per Worker</h3>
+        <span class="badge badge-info" id="workerTotal"></span>
+      </div>
+      <div class="card-body" id="workerBody"></div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/topbar.js"></script>
+  <script>
+    // Gate: halaman ini hanya untuk Developer Ekasa
+    if (getSession().role !== 'developer') {
+      window.location.href = 'login.html';
+    }
+
+    // ---------- Data dummy ----------
+    const COMPANIES = [
+      {
+        id: 'pt-alpha', name: 'PT Alpha', desc: 'Manufacturing',
+        input: 2480000, consumed: 1930000,
+        branches: {
+          finance:      { label: 'Finance',              input: 720000, consumed: 560000, workers: { 'Financial Analyst': 260000, 'CFO': 180000, 'Finance Staff': 120000 } },
+          manufacturing:{ label: 'Manufacturing',        input: 640000, consumed: 510000, workers: { 'Production Planner': 280000, 'Production Supervisor': 150000, 'Production Scheduler': 80000 } },
+          material:     { label: 'Material Management',  input: 480000, consumed: 390000, workers: { 'Inventory Control Manager': 200000, 'Procurement Staff': 110000, 'Purchasing Officer': 80000 } },
+          sales:        { label: 'Sales and Distribution', input: 340000, consumed: 280000, workers: { 'Sales Data Analyst': 170000, 'Sales Representative': 70000, 'Customer Service': 40000 } },
+          quality:      { label: 'Quality Management',   input: 300000, consumed: 190000, workers: { 'Quality Inspector': 120000, 'Quality Engineer': 70000 } }
+        }
+      },
+      {
+        id: 'pt-beta', name: 'PT Beta', desc: 'Retail',
+        input: 1320000, consumed: 980000,
+        branches: {
+          sales:    { label: 'Sales and Distribution',  input: 420000, consumed: 330000, workers: { 'Sales Data Analyst': 180000, 'Marketing Specialist': 90000, 'Sales Representative': 60000 } },
+          material: { label: 'Material Management',      input: 380000, consumed: 290000, workers: { 'Retail Inventory Manager': 150000, 'Inventory Control Manager': 90000, 'Warehouse Inventory Manager': 50000 } },
+          finance:  { label: 'Finance',                  input: 320000, consumed: 240000, workers: { 'Financial Analyst': 120000, 'Budgeting Staff': 70000, 'Finance Staff': 50000 } },
+          hr:       { label: 'Human Resource',           input: 200000, consumed: 120000, workers: { 'Payroll Officer': 60000, 'HR Staff': 60000 } }
+        }
+      },
+      {
+        id: 'pt-gamma', name: 'PT Gamma', desc: 'F&B',
+        input: 760000, consumed: 610000,
+        branches: {
+          finance:      { label: 'Finance',              input: 260000, consumed: 210000, workers: { 'Financial Analyst': 110000, 'CFO': 60000, 'Finance Staff': 40000 } },
+          sales:        { label: 'Sales and Distribution', input: 220000, consumed: 180000, workers: { 'Sales Data Analyst': 90000, 'Marketing Specialist': 60000, 'Customer Service': 30000 } },
+          manufacturing:{ label: 'Manufacturing',        input: 180000, consumed: 140000, workers: { 'Production Planner': 80000, 'Production Supervisor': 60000 } },
+          logistic:     { label: 'Logistic Management',  input: 100000, consumed: 80000,  workers: { 'Logistics Coordinator': 50000, 'Fleet Manager': 30000 } }
+        }
+      }
+    ];
+
+    const RANGES = { '7': 0.2, '30': 0.6, 'all': 1 };
+
+    let currentCompany = COMPANIES[0];
+    let currentRange = 7;
+
+    // ---------- Helpers ----------
+    function fmt(n) {
+      if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+      if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
+      return String(n);
+    }
+    function pct(part, total) {
+      return total ? Math.round((part / total) * 100) : 0;
+    }
+
+    // ---------- Render ----------
+    const select = document.getElementById('companySelect');
+    COMPANIES.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.name + ' — ' + c.desc;
+      select.appendChild(opt);
+    });
+
+    function selectCompany(id) {
+      currentCompany = COMPANIES.find(c => c.id === id);
+      goLevel('company');
+    }
+
+    document.querySelectorAll('.range-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentRange = btn.dataset.range;
+        goLevel('company');
+      });
+    });
+
+    function renderCompanies() {
+      const body = document.getElementById('companiesBody');
+      body.innerHTML = '';
+      COMPANIES.forEach(c => {
+        const branches = Object.values(c.branches);
+        const topB = branches.reduce((a, b) => (b.consumed > a.consumed ? b : a));
+        const row = document.createElement('tr');
+        row.className = 'clickable';
+        row.innerHTML =
+          `<td><b>${c.name}</b><br/><span class="muted">${c.desc}</span></td>` +
+          `<td>${fmt(c.input)}</td>` +
+          `<td>${fmt(c.consumed)}</td>` +
+          `<td>${topB.label}</td>` +
+          `<td><span class="badge badge-ok">Aktif</span></td>`;
+        row.onclick = () => { currentCompany = c; select.value = c.id; goLevel('branch'); };
+        body.appendChild(row);
+      });
+    }
+
+    function renderBranch() {
+      const f = RANGES[currentRange];
+      const title = document.getElementById('branchTitle');
+      title.textContent = 'Pemakaian per Bidang — ' + currentCompany.name;
+      document.getElementById('branchTotal').textContent = fmt(currentCompany.consumed * f) + ' token';
+
+      const body = document.getElementById('branchBody');
+      body.innerHTML = '';
+      const entries = Object.entries(currentCompany.branches).sort((a, b) => b[1].consumed - a[1].consumed);
+      entries.forEach(([id, b]) => {
+        const row = document.createElement('div');
+        row.className = 'branch-bar-row clickable';
+        row.style.cursor = 'pointer';
+        row.innerHTML =
+          `<div class="bb-label">${b.label}</div>` +
+          `<div class="bb-bar"><div class="progress"><div style="width:${pct(b.consumed * f, currentCompany.consumed * f)}%"></div></div></div>` +
+          `<div class="bb-val">${fmt(b.consumed * f)} · ${pct(b.consumed, currentCompany.consumed)}%</div>`;
+        row.onclick = (e) => {
+          e.stopPropagation();
+          goLevel('worker', id);
+        };
+        body.appendChild(row);
+      });
+    }
+
+    let currentBranchId = null;
+    function goLevel(level, branchId) {
+      if (branchId) currentBranchId = branchId;
+      // ... shared render logic
+      _render(level);
+    }
+
+    function _render(level) {
+      const f = RANGES[currentRange];
+      document.getElementById('statInput').textContent = fmt(currentCompany.input * f);
+      document.getElementById('statConsumed').textContent = fmt(currentCompany.consumed * f);
+      document.getElementById('statInputSub').textContent = currentCompany.name;
+      document.getElementById('statConsumedSub').textContent = currentCompany.name;
+
+      const branches = Object.values(currentCompany.branches);
+      const topB = branches.reduce((a, b) => (b.consumed > a.consumed ? b : a));
+      document.getElementById('statTopBranch').textContent = topB.label;
+      document.getElementById('statTopBranchSub').textContent = pct(topB.consumed, currentCompany.consumed) + '% dari total';
+
+      let topW = null;
+      branches.forEach(b => Object.entries(b.workers).forEach(([name, val]) => {
+        if (!topW || val > topW.val) topW = { name, val };
+      }));
+      document.getElementById('statTopWorker').textContent = topW.name;
+      document.getElementById('statTopWorkerSub').textContent = fmt(topW.val) + ' token';
+
+      document.getElementById('viewCompanies').classList.toggle('hidden', level !== 'company');
+      document.getElementById('viewBranch').classList.toggle('hidden', level !== 'branch');
+      document.getElementById('viewWorker').classList.toggle('hidden', level !== 'worker');
+
+      const crumb = document.getElementById('crumbLevel');
+      if (level === 'company') {
+        crumb.textContent = 'Ringkasan ' + currentCompany.name;
+        renderCompanies();
+      } else if (level === 'branch') {
+        crumb.textContent = currentCompany.name + ' › Bidang';
+        renderBranch();
+      } else {
+        crumb.textContent = currentCompany.name + ' › Bidang › Worker';
+        renderWorker();
+      }
+    }
+
+    function renderWorker() {
+      const f = RANGES[currentRange];
+      const b = currentCompany.branches[currentBranchId];
+      document.getElementById('workerTitle').textContent = 'Pemakaian per Worker — ' + b.label;
+      document.getElementById('workerTotal').textContent = fmt(b.consumed * f) + ' token';
+
+      const body = document.getElementById('workerBody');
+      body.innerHTML = '';
+      const entries = Object.entries(b.workers).sort((a, b2) => b2[1] - a[1]);
+      entries.forEach(([name, val]) => {
+        const row = document.createElement('div');
+        row.className = 'branch-bar-row';
+        row.innerHTML =
+          `<div class="bb-label">🧑‍💼 ${name}</div>` +
+          `<div class="bb-bar"><div class="progress"><div style="width:${pct(val, b.consumed)}%"></div></div></div>` +
+          `<div class="bb-val">${fmt(val * f)} · ${pct(val, b.consumed)}%</div>`;
+        body.appendChild(row);
+      });
+    }
+
+    // breadcrumb
+    document.getElementById('breadcrumb').addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') e.preventDefault();
+    });
+
+    goLevel('company');
+  </script>
+</body>
+</html>
