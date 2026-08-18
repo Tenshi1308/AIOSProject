@@ -381,6 +381,15 @@ Before logging in, a client must register an account. After login, the
 client completes payment (via a payment gateway) before using AIOS
 capabilities; activation is automatic once payment succeeds.
 
+The Client portal and the Ekasa Developer monitoring portal are served
+on separate domains (separate websites): the Client logs in at the
+Client portal domain (e.g., client.aios.*) and the Ekasa Developer logs
+in at the monitoring portal domain (e.g., developer.aios.*). The role
+is determined by the portal domain the user logs in through — there is
+no role picker on the login page, and the role is enforced server-side.
+Both portals share the same AIOS backend and the same AIOS Internal
+Database. Separate domains do NOT mean separate databases.
+
 Roles:
 
 - Client — a company that uses AIOS (single role; no separate user/admin
@@ -390,9 +399,10 @@ Roles:
   consumed tokens per company, with drill-down per branch and per worker.
   Does not access client business data or conversations.
 
-The Ekasa Developer view provides usage monitoring per company (input
-and consumed tokens) with drill-down per branch and per worker, so
-Ekasa can see which branches each company actually uses.
+The Ekasa Developer view (served on the separate monitoring portal
+domain, e.g., developer.aios.*) provides usage monitoring per company
+(input and consumed tokens) with drill-down per branch and per worker,
+so Ekasa can see which branches each company actually uses.
 
 ---
 
@@ -789,7 +799,9 @@ Internal implementation details should remain hidden unless needed for
 administration/debugging.
 
 The Ekasa Developer view provides usage monitoring per company (input
-and consumed tokens) with drill-down per branch and per worker.
+and consumed tokens) with drill-down per branch and per worker. This
+view is served on a separate portal domain (developer.aios.*), separate
+from the Client portal (client.aios.*).
 
 ---
 
@@ -900,6 +912,75 @@ When implementing an approved task:
 
 If a requested change conflicts with the current architecture, stop and
 explain the conflict before making a major architectural change.
+
+---
+
+## Git Commit Workflow
+
+The agent MUST use Git as a local checkpoint mechanism during development.
+
+### Commit Policy
+
+After completing a meaningful, logically complete change:
+
+1. Check the current Git status.
+2. Review the relevant diff before committing.
+3. Run the appropriate validation/tests for the change.
+4. If validation passes, stage the relevant changes.
+5. Create a local Git commit with a clear Conventional Commit message.
+6. Continue working from the new commit checkpoint.
+
+A "meaningful change" means a logically complete unit of work, such as:
+implementing a feature, fixing a bug, completing a refactor, modifying an
+API, changing database/schema logic, completing a UI component or flow, or
+completing a project phase/task.
+
+Do NOT create commits for every individual file edit or trivial intermediate
+change.
+
+### Commit Restrictions
+
+The agent MUST:
+
+- create commits locally when a meaningful change is completed
+- inspect `git diff` before committing
+- avoid committing secrets, credentials, `.env` files, or sensitive data
+- avoid committing generated/build/cache files unless they are intentionally
+  tracked
+- keep commits focused and logically grouped
+
+The agent MUST NOT:
+
+- run `git push` (requires explicit user instruction)
+- push branches, tags, or commits to any remote repository
+- modify remote repository state
+- create pull requests
+- force-push
+
+### Commit Message Convention
+
+Use Conventional Commits:
+
+- `feat:` for new functionality
+- `fix:` for bug fixes
+- `refactor:` for code restructuring
+- `docs:` for documentation
+- `test:` for tests
+- `chore:` for maintenance/configuration
+
+Example:
+
+    docs: separate client and developer portals onto distinct domains
+
+### Before Finishing a Task
+
+Before reporting a task as complete:
+
+1. Check `git status`.
+2. Review the latest changes.
+3. Ensure all meaningful changes have been committed.
+4. Confirm that no `git push` was performed.
+5. Report the commit hash and commit message to the user.
 
 ---
 

@@ -267,14 +267,21 @@ worker mana yang sedang dikonsultasikan.
   terisolasi (tenant isolation).
 - **FR-28** — Client harus registrasi akun sebelum login. AIOS harus memiliki
   autentikasi login sendiri (mis. email + password) dengan role: **Client** dan
-  **Ekasa Developer**. AIOS harus menyediakan opsi keluar (logout) untuk
-  mengakhiri sesi login Client maupun Developer Ekasa.
+  **Ekasa Developer**. Portal Client dan portal monitoring Ekasa Developer
+  berada di **domain terpisah** (website terpisah), contoh: Client di
+  `client.aios.*` dan Developer Ekasa di `developer.aios.*`. Role ditentukan
+  oleh domain portal tempat login (tanpa menu pilih role) dan diverifikasi
+  server-side; kedua portal berbagi backend dan AIOS Internal Database yang
+  sama (domain terpisah tidak berarti database terpisah). AIOS harus
+  menyediakan opsi keluar (logout) untuk mengakhiri sesi login Client maupun
+  Developer Ekasa.
 - **FR-29** — Client harus menyelesaikan pembayaran via payment gateway
   sebelum dapat menggunakan kapabilitas AIOS; aktivasi akun bersifat otomatis
   setelah pembayaran berhasil.
 - **FR-30** — Ekasa Developer harus dapat memantau pemakaian token per
-  perusahaan (input dan consumed) dengan drill-down per bidang dan per worker.
-  Ekasa Developer tidak mengakses data bisnis atau percakapan client.
+  perusahaan (input dan consumed) dengan drill-down per bidang dan per worker
+  melalui portal monitoring di domain terpisah (`developer.aios.*`). Ekasa
+  Developer tidak mengakses data bisnis atau percakapan client.
 - **FR-31** — AI Manager bertindak sebagai agent primary pada bidangnya dan
   mendelegasikan tugas ke worker (sub-agent); proses delegasi transparan di
   interface.
@@ -512,7 +519,9 @@ worker mana yang sedang dikonsultasikan.
 ## 12. Authentication & Security Boundary
 
 - **SEC-01** — AIOS memiliki autentikasi login sendiri (per perusahaan) dengan
-  role: Client dan Ekasa Developer. Siklus sesi mencakup login dan logout.
+  role: Client dan Ekasa Developer. Portal Client dan portal monitoring Ekasa
+  Developer berada di domain terpisah; role ditentukan oleh domain portal dan
+  diverifikasi server-side. Siklus sesi mencakup login dan logout.
 - **SEC-02** — Autentikasi AIOS tidak menggantikan sistem autentikasi aplikasi
   client; sistem client tetap berfungsi seperti sebelumnya.
 - **SEC-03** — Data, metadata, dan mapping antar perusahaan harus terisolasi
@@ -690,7 +699,8 @@ ditunjukkan:
   (sistem client tetap, AIOS beradaptasi).
 - **AC-16** — Pengguna dapat registrasi dan login per perusahaan (multi-tenant)
   dengan role-based access (Client dan Ekasa Developer); data antar perusahaan
-  terisolasi.
+  terisolasi. Login Client dan Ekasa Developer dilakukan melalui portal pada
+  domain terpisah (role ditentukan dari domain portal).
 - **AC-17** — Ekasa Developer dapat memantau pemakaian token per perusahaan
   dengan drill-down per bidang dan per worker.
 - **AC-18** — Client harus menyelesaikan pembayaran sebelum menggunakan
@@ -715,7 +725,7 @@ requirement yang sudah ada ke use case yang menggambarkannya.
 | Use Case | Nama | Requirement terkait |
 |---|---|---|
 | C1 | Registrasi Akun | FR-27, FR-28, SEC-01, SEC-03, AC-16 |
-| C2 | Login (Pilih Role) | FR-27, FR-28, SEC-01, SEC-03, AC-16 |
+| C2 | Login (Role dari Domain) | FR-27, FR-28, SEC-01, SEC-03, AC-16 |
 | C3 | Pembayaran | FR-29, AC-18 |
 | C4 | Menghubungkan Database Perusahaan | FR-32, FR-32A, FR-32B, FR-32C, IR-01 s.d. IR-09, SEC-03, IDB-01, IDB-02, AC-01, AC-15 |
 | C5 | Menganalisis Skema & Membuat Mapping | DS-01 s.d. DS-11, LLM-03, FR-37, IDB-03 s.d. IDB-06, IDB-10, IDB-26, AC-06, AC-07, AC-08 |

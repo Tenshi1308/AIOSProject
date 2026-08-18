@@ -24,6 +24,10 @@ Prinsip yang menjadi dasar:
   antar perusahaan terisolasi.
 - Terdapat **2 role eksternal**: **Client** (perusahaan pemakai AIOS) dan
   **Developer Ekasa** (internal Ekasa yang hanya memantau pemakaian).
+- Portal Client dan portal monitoring Developer Ekasa berada di **domain
+  terpisah** (mis. `client.aios.*` dan `developer.aios.*`); role ditentukan
+  dari domain portal dan diverifikasi server-side, tanpa menu pilih role.
+  Kedua portal berbagi satu backend dan satu AIOS Internal Database.
 - AIOS dipandang seperti organisasi dengan **9 cabang bidang (modul ERP)**.
   Setiap cabang dikepalai satu **AI Primary Agent**, dan di bawahnya terdapat
   **sub-agents domain** yang meniru job role spesifik pada bidang tersebut.
@@ -45,7 +49,7 @@ Prinsip yang menjadi dasar:
 | Actor | Peran | Use case terkait |
 |---|---|---|
 | **Client** | Perusahaan pemakai AIOS (satu role). Registrasi, login, membayar, menghubungkan database, memilih bidang ERP, chat dengan AI Primary Agent, dan memvalidasi mapping. | C1–C9 |
-| **Developer Ekasa** | Internal Ekasa. Hanya memantau pemakaian token per akun client; tidak memiliki akses ke data atau percakapan bisnis client. | D1–D2 |
+| **Developer Ekasa** | Internal Ekasa. Hanya memantau pemakaian token per akun client; tidak memiliki akses ke data atau percakapan bisnis client. Akses melalui portal monitoring di domain terpisah (`developer.aios.*`). | D1–D2 |
 | **AI Primary Agent** (9 cabang) | "Manager bidang" di AIOS. Setiap cabang (modul ERP) dikepalai satu AI Primary Agent. Menerima pertanyaan dari Client, mendelegasikan ke sub-agent yang sesuai, dan menyusun respons. | C8–C10, C12–C13 |
 | **Sub-agents domain** | "Bawahan" AI Primary Agent yang meniru job role spesifik pada bidangnya dan menjawab sesuai spesialisasinya. | C11 |
 | **Data Access Agent** | Satu per tenant. Memahami struktur database client (database adaptation), menyimpan mapping, menyediakan data aktual, dan re-adaptasi saat skema berubah. | C4–C7, C12, C14 |
@@ -79,7 +83,7 @@ Prinsip yang menjadi dasar:
 | ID | Nama | Kelompok | Actor utama | Actor sekunder |
 |---|---|---|---|---|
 | C1 | Registrasi Akun | Onboarding & Auth | Client | – |
-| C2 | Login (Pilih Role) | Onboarding & Auth | Client / Developer Ekasa | – |
+| C2 | Login (Role dari Domain) | Onboarding & Auth | Client / Developer Ekasa | – |
 | C3 | Pembayaran | Onboarding & Auth | Client | – |
 | C4 | Menghubungkan Database Perusahaan | Onboarding Data | Client | Client System |
 | C5 | Menganalisis Skema & Membuat Mapping (Database Adaptation) | Onboarding Data | – (otomatis oleh AIOS) | Client System |
@@ -107,7 +111,7 @@ Prinsip yang menjadi dasar:
   dahulu untuk membuat akun perusahaannya.
 - **Pre-condition:** – (belum memiliki akun).
 - **Alur utama:**
-  1. Client membuka domain web AIOS.
+  1. Client membuka domain portal client (`client.aios.*`).
   2. Client memilih opsi registrasi.
   3. Client mengisi data registrasi akun perusahaan.
   4. Sistem membuat akun client.
@@ -116,20 +120,26 @@ Prinsip yang menjadi dasar:
 
 ---
 
-### C2 — Login (Pilih Role)
+### C2 — Login (Role dari Domain)
 
 - **Tujuan:** Client atau Developer Ekasa mengakses workspace-nya.
 - **Actor:** Client (utama); Developer Ekasa (utama).
-- **Deskripsi:** Halaman pertama AIOS adalah halaman login. Client masuk ke
-  workspace perusahaannya; Developer Ekasa masuk ke dashboard monitoring.
+- **Deskripsi:** Setiap role login melalui portal pada **domain terpisah**:
+  Client membuka domain portal client (`client.aios.*`) dan Developer Ekasa
+  membuka domain portal monitoring (`developer.aios.*`). Role ditentukan oleh
+  domain portal dan diverifikasi server-side; tidak ada menu pilih role.
+  Client masuk ke workspace perusahaannya; Developer Ekasa masuk ke dashboard
+  monitoring.
 - **Pre-condition:** Akun sudah terdaftar (C1).
 - **Alur utama:**
-  1. Client/Developer Ekasa membuka halaman login AIOS.
-  2. Client/Developer Ekasa memasukkan kredensial.
-  3. Sistem memverifikasi kredensial dan menentukan role.
+  1. Client membuka domain portal client (`client.aios.*`), ATAU Developer
+     Ekasa membuka domain portal monitoring (`developer.aios.*`).
+  2. User memasukkan kredensial.
+  3. Sistem memverifikasi kredensial dan role sesuai domain portal.
   4. Sistem membuka workspace yang sesuai dengan role.
 - **Alur alternatif:**
-  - Kredensial salah → sistem menampilkan pesan kesalahan login.
+  - Kredensial salah atau role tidak sesuai dengan domain → sistem menampilkan
+    pesan kesalahan login.
   - Pengguna mengakhiri sesi → pengguna memilih opsi keluar (logout); sistem
     mengakhiri sesi aktif dan mengembalikan ke halaman login.
 - **Post-condition:** Client masuk ke workspace perusahaannya, atau Developer
@@ -435,9 +445,10 @@ Prinsip yang menjadi dasar:
 
 - **Tujuan:** Developer Ekasa memantau pemakaian token setiap akun client.
 - **Actor:** Developer Ekasa (utama).
-- **Deskripsi:** Developer Ekasa membuka AIOS dan login sebagai developer.
-  Dashboard menampilkan kolom input token, consumed token, dan metrik pemakaian
-  lainnya dari tiap akun client (perusahaan yang memakai AIOS).
+- **Deskripsi:** Developer Ekasa membuka domain portal monitoring
+  (`developer.aios.*`) dan login sebagai developer. Dashboard menampilkan kolom
+  input token, consumed token, dan metrik pemakaian lainnya dari tiap akun
+  client (perusahaan yang memakai AIOS).
 - **Pre-condition:** Developer Ekasa login (C2).
 - **Alur utama:**
   1. Developer Ekasa masuk ke dashboard monitoring.
@@ -456,7 +467,8 @@ Prinsip yang menjadi dasar:
   beserta persentasenya, dengan drill-down per bidang dan per worker.
 - **Pre-condition:** Developer Ekasa login (C2); data pemakaian tercatat.
 - **Alur utama:**
-  1. Developer Ekasa membuka analisis penggunaan pada dashboard.
+  1. Developer Ekasa membuka analisis penggunaan pada dashboard (portal
+     monitoring `developer.aios.*`).
   2. Sistem menampilkan AI Manager yang paling banyak dipakai beserta
      persentasenya.
   3. Developer Ekasa dapat melakukan drill-down per bidang dan per worker.
@@ -496,6 +508,11 @@ Proses berikut berjalan internal oleh sistem dan mendukung use case di atas:
   belum tersedia pada prototype ini.
 - **Pembayaran** dilakukan melalui payment gateway pada umumnya dan
   pengaktifan bersifat otomatis setelah pembayaran berhasil.
+- **Portal terpisah** — Portal Client (`client.aios.*`) dan portal monitoring
+  Developer Ekasa (`developer.aios.*`) berada di domain terpisah; role
+  ditentukan oleh domain portal dan diverifikasi server-side, tanpa menu pilih
+  role. Pemisahan domain tidak memisahkan database: AIOS Internal Database
+  tetap satu (multi-tenant).
 - **Business data tidak disalin** ke AIOS Internal Database; Client Database
   tetap menjadi source of truth (IDB-14 s.d. IDB-21). Database yang dibuat
   melalui opsi "buat database baru" (provisioning Ekasa) berperan sebagai

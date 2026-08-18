@@ -31,7 +31,11 @@ Model interaksi: AIOS **bukan chatbot umum tunggal**. AIOS dipandang seperti
 organisasi dengan **9 cabang bidang (modul ERP)**; setiap cabang dikepalai satu
 **AI Primary Agent** yang mengoordinasikan **sub-agents** (worker AI) pada
 bidangnya. Ada dua role eksternal: **Client** (perusahaan pemakai AIOS) dan
-**Ekasa Developer** (monitoring pemakaian).
+**Ekasa Developer** (monitoring pemakaian). Portal Client dan portal monitoring
+Ekasa Developer berada di **domain terpisah** (website terpisah), contoh
+`client.aios.*` dan `developer.aios.*`; role ditentukan dari domain portal
+(tanpa menu pilih role) dan diverifikasi server-side, dan kedua portal berbagi
+satu backend serta satu AIOS Internal Database yang sama.
 
 Pada prototype, penanganan dokumen (RAG) **di-defer**; fokus adalah data
 terstruktur dari Client Database.
@@ -170,7 +174,8 @@ Prototype dianggap berhasil jika kriteria acceptance pada `REQUIREMENTS.md`
 7. Autentikasi multi-tenant (Client & Ekasa Developer), registrasi, dan
    pembayaran via payment gateway.
 8. *AIOS Interface*: home 9 bidang, workspace chat, onboarding & validasi
-   mapping, dashboard monitoring Ekasa Developer.
+   mapping di portal client (`client.aios.*`); dashboard monitoring Ekasa
+   Developer di portal domain terpisah (`developer.aios.*`).
 9. Simulasi integrasi ke beberapa struktur *database* client yang berbeda.
 10. *End-to-end testing* + dokumentasi + demo.
 
@@ -212,7 +217,7 @@ Prototype dianggap berhasil jika kriteria acceptance pada `REQUIREMENTS.md`
 | Stakeholder | Peran | Kebutuhan Utama |
 |---|---|---|
 | **Client** | Perusahaan pengguna AIOS (satu role) | AI *capability* tanpa mengubah sistem mereka; validasi mapping sendiri |
-| **Ekasa Developer** | Internal Ekasa (monitoring) | Memantau pemakaian token per perusahaan (drill-down per bidang/worker) |
+| **Ekasa Developer** | Internal Ekasa (monitoring) | Memantau pemakaian token per perusahaan (drill-down per bidang/worker) melalui portal monitoring di domain terpisah |
 | **Ekasa Technology** | Mitra / penyedia jasa | Produk AIOS yang bisa ditawarkan ke banyak client |
 | **Pemagang (Samuel)** | Pelaksana & pengembang | Prototype lengkap, kompetensi baru, portfolio |
 | **Mentor / Pemilik Ekasa** | Pembimbing & penilai | Kualitas prototype, kesesuaian kebutuhan |
@@ -289,6 +294,9 @@ User → Login (SaaS per perusahaan) → Home (9 bidang mengelilingi hub AIOS)
      → Delegasi ke sub-agent (sub-agent) → Tools / Data → Response
 ```
 
+> Login dilakukan per domain portal: Client di `client.aios.*`, Ekasa Developer
+> di `developer.aios.*`; role tidak dipilih manual, ditentukan oleh domain.
+
 ### 12.2 Client Integration
 
 ```mermaid
@@ -314,6 +322,10 @@ dan state AIOS — **bukan** salinan business data client. Antara lain: client
 metadata, connection metadata, schema metadata, semantic mapping (versi/status/
 confidence), plugin/worker configuration, percakapan & ringkasan memory
 (tagged per bidang), dan usage/token metering.
+
+Pemisahan domain portal (Client vs Ekasa Developer) **tidak** mengubah desain
+database: AIOS Internal Database tetap satu (multi-tenant) dan dipakai bersama
+oleh kedua portal.
 
 ### 12.4 Local AI
 
