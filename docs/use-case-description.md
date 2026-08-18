@@ -516,7 +516,11 @@ Proses berikut berjalan internal oleh sistem dan mendukung use case di atas:
 - **Business data tidak disalin** ke AIOS Internal Database; Client Database
   tetap menjadi source of truth (IDB-14 s.d. IDB-21). Database yang dibuat
   melalui opsi "buat database baru" (provisioning Ekasa) berperan sebagai
-  Client Database, BUKAN bagian dari IDB, walau di-host di server Ekasa.
+  Client Database, BUKAN bagian dari IDB, walau di-host di server Ekasa. IDB
+  adalah persistent storage milik AIOS yang wajib berjalan local / self-hosted
+  (tanpa serverless / cloud-managed database service); engine-nya masih **TBD**
+  (kandidat utama PostgreSQL self-hosted, SQLite kandidat alternatif), dan
+  dirancang database-agnostic (IDB-13, IDB-28 s.d. IDB-30).
 - **Caching query berulang** (keputusan sementara) — query identik berulang
   direncanakan memanfaatkan cache ber-TTL pendek per (tenant, bidang, hash
   pertanyaan); detail implementasi masih open discussion dan dapat berubah.

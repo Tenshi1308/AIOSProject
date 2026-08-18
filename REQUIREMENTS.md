@@ -598,6 +598,10 @@ IDB berfungsi sebagai persistent storage AIOS untuk 4 kategori:
 - **IDB-12** — Skema IDB harus diturunkan dari kebutuhan fungsional aktual;
   tidak boleh membuat tabel/entitas yang tidak perlu.
 - **IDB-13** — Implementasi teknis IDB (engine, ERD, tabel, migration): **TBD**.
+  Engine IDB harus berjalan local / self-hosted (tanpa serverless / cloud-managed
+  database service). Kandidat utama: PostgreSQL (self-hosted); SQLite tetap kandidat
+  alternatif, bukan keputusan final. Keputusan final ditentukan dari hasil evaluasi /
+  PoC, bukan di awal (lihat `docs/decisions/ADR-003`).
 
 ### 13.3 Data Boundary
 
@@ -638,6 +642,18 @@ IDB berfungsi sebagai persistent storage AIOS untuk 4 kategori:
   analisis ulang setiap request.
 - **IDB-27** — IDB harus menyimpan data pemakaian (usage/token metering) per
   perusahaan, bidang, dan worker untuk mendukung dashboard Ekasa Developer.
+
+### 13.5 Deployment & Database-Agnostic IDB
+
+- **IDB-28** — IDB harus berjalan local / self-hosted (in-process dengan AIOS).
+  Serverless / cloud-managed database service BUKAN requirement untuk IDB (milik
+  AIOS, bukan milik client).
+- **IDB-29** — IDB harus database-agnostic: AIOS Core, AI Managers, dan Workers
+  tidak boleh bergantung langsung pada API implementasi-spesifik satu engine.
+  Akses IDB melalui data-access layer / repository atau database adapter boundary,
+  sehingga engine IDB dapat diganti tanpa mendesain ulang arsitektur.
+- **IDB-30** — Abstraction akses IDB harus minimal (boundary yang jelas), tidak
+  over-engineered, sesuai skala prototype.
 
 ---
 

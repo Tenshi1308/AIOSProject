@@ -621,6 +621,30 @@ requirements.
 Do not store client business records in the Internal Database merely
 to simplify worker implementation.
 
+The technology of the Internal Database is an open decision (TBD), not a
+closed choice:
+
+- The Internal Database MUST run local / self-hosted, in-process with AIOS.
+  No serverless or cloud-managed database service is required for it.
+- PostgreSQL (self-hosted) is the primary candidate under evaluation.
+- SQLite remains a valid alternative / candidate, but must not be treated
+  as the final decision.
+- The final engine decision is made based on evaluation / PoC results, not
+  in advance.
+- Independent of the engine chosen, the Internal Database is used only for
+  AIOS metadata, configuration, mapping, and state. It never replaces the
+  Client Database as the source of truth for client business data.
+
+The Internal Database remains database-agnostic at the architecture level:
+
+- AIOS Core, AI Managers, and Workers MUST NOT depend directly on
+  implementation-specific APIs of a single database engine.
+- Access to the Internal Database goes through a data-access layer /
+  repository or database adapter boundary (see Database Adapter), so the
+  engine can be replaced without redesigning the architecture.
+- Keep the abstraction minimal — a clear boundary, not an over-engineered
+  data layer, since this is a prototype.
+
 ---
 
 ## Database Adapter

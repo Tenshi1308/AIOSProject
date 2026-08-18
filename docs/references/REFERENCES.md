@@ -24,12 +24,13 @@ referenced from ADRs in `docs/decisions/`.
 | REF-014 | LLMATCH: A Unified Schema Matching Framework with Large Language Models | Sha Wang, Yuchen Li, Hanhua Xiao, Bing Tian Dai, Roy Ka-Wei Lee, Yanfei Dong, Lambert Deng | 2025 | APWeb 2025 / arXiv | https://doi.org/10.48550/arXiv.2507.10897 | Yes |
 | REF-015 | Bootstrapping Self-Improvement of Language Model Programs for Zero-Shot Schema Matching | Nabeel Seedat, Mihaela Van Der Schaar | 2025 | ICML 2025, PMLR 267 | https://proceedings.mlr.press/v267/seedat25a.html | Yes |
 | REF-016 | Ollama Documentation | Ollama | 2026 | Official documentation | https://docs.ollama.com/ | Yes |
+| REF-017 | PostgreSQL Documentation | PostgreSQL Global Development Group | 2026 | Official documentation | https://www.postgresql.org/docs/current/ | Yes |
 
 ## Verification Notes
 
 - REF-001: Whitepaper page notes it is "for historical reference only" (August 2020). Still cited because the isolation concepts (silo/pool/bridge models, tenant context) remain the canonical reference for SaaS tenant isolation.
 - REF-002: Verified via DOI and multiple independent citations; the original SpringerOpen page blocks automated access, so the metadata was cross-checked through citing works (Ochei, Bass, Petrovski, Journal of Cloud Computing 7(1), 2018).
-- REF-003, REF-004, REF-016: Official documentation verified directly at the listed URLs.
+- REF-003, REF-004, REF-016, REF-017: Official documentation verified directly at the listed URLs.
 - REF-005, REF-006, REF-007, REF-008, REF-009, REF-010, REF-011, REF-012, REF-013, REF-014, REF-015: Verified directly on the publisher/arXiv pages.
 
 ## Not Registered (kept out per AGENTS.md section 8)
