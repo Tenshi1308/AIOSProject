@@ -908,6 +908,9 @@ requirements are established.
   demonstrations.
 - When analyzing or planning, do not modify project files unless
   implementation has been explicitly authorized.
+- Setiap kali menyelesaikan langkah/fase yang sudah disepakati, perbarui
+  To-Do list (todowrite) berdasarkan fase rencana yang berlaku, agar
+  progres pekerjaan selalu terlihat dan terlacak oleh user.
 
 ## 2. Phase and Approval Workflow
 
