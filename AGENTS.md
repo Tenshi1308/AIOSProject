@@ -873,35 +873,213 @@ requirements are established.
 
 ---
 
-## Working Method
+## 1. Core Working Principles
 
-BEFORE starting a new stage, new task, or significant change, always
-ask the intern for approval first.
+- Work in phases. Complete one phase first, report the result, and wait
+  for explicit approval before starting the next phase.
+- Each phase must be approved before execution.
+- Do not assume that previous instructions are approval to start a new
+  phase.
+- Work incrementally. Do not implement the entire platform in one step.
+- The priority is a working end-to-end prototype over isolated
+  demonstrations.
+- When analyzing or planning, do not modify project files unless
+  implementation has been explicitly authorized.
 
-Wait for explicit approval before executing.
+## 2. Phase and Approval Workflow
 
-Do not assume previous instructions are approval to start the next stage.
+Before executing any task, the agent MUST define and present the plan:
 
-Work incrementally.
+- the scope of the phase
+- what will be done (deliverables)
+- what will NOT be done (explicit out-of-scope)
+- the definition of done
+- known risks or trade-offs
+- where the continuation leads
 
-Do not implement the entire platform in one step.
+Wait for explicit approval. Execute only after approval.
 
-Complete one stage first, report the result, and wait for approval before
-moving to the next stage.
+When the phase is complete, report results. Do not start the next phase
+without approval.
 
-When offering to continue to the next step (for example "Mau lanjut ke
-langkah berikutnya?"), always explain where the continuation leads: what
-will be done, what the outcome will be, and which direction the flow goes.
-Do not offer a continuation without clarifying its destination.
+## 3. Evidence-Based Technical Recommendations
 
-When analyzing or planning, do not modify project files unless the user
-has explicitly authorized implementation.
+Technical recommendations MUST be evidence-based.
 
----
+Before making a technical recommendation, research the relevant
+literature, official documentation, and existing solutions.
 
-## Change Discipline
+Do not give personal opinions as engineering fact.
 
-When implementing an approved task:
+When researching:
+
+- prefer primary sources (official docs, papers, spec, standard)
+- prefer peer-reviewed work over blog posts
+- verify facts in at least two independent sources where practical
+- cite the sources you rely on
+
+If a claim cannot be verified, state that the claim is unverified instead
+of presenting it as fact.
+
+## 4. Source and Evidence Hierarchy
+
+When evaluating sources, use this hierarchy (highest to lowest):
+
+1. Peer-reviewed papers
+2. Official documentation (library, framework, vendor)
+3. Published standards / specifications
+4. Books and scholarly surveys
+5. Reputable engineering blogs / vendor engineering posts
+6. General blogs / forum posts / opinion pieces
+
+Lower-tier sources may be used to support a claim only if no higher-tier
+source exists for that claim, and the lower-tier claim is clearly marked
+as such.
+
+## 5. Research Integrity
+
+Do not fabricate, misattribute, or exaggerate sources.
+
+Do not invent citations, DOIs, URLs, author names, or publication venues.
+
+Do not copy statements from papers without citing them.
+
+Do not distort what a source actually says to fit a recommendation.
+
+If the exact bibliographic metadata (authors, year, venue, URL/DOI) cannot
+be confirmed, do not present it as verified — mark it as unverified and
+proceed.
+
+## 6. Recommendation Format
+
+When the agent gives a technical recommendation, format it as:
+
+- the claim / recommendation
+- the supporting evidence (sources) — with proper citation
+- the confidence level (high / medium / low) and why
+- any alternative options considered and why they were rejected
+
+## 7. Decision Documentation — ADR
+
+Significant architectural and technical decisions MUST be documented as
+an Architecture Decision Record (ADR).
+
+ADR files live in `docs/decisions/` and are named
+`ADR-XXX-short-decision-name.md`.
+
+Use sequential numbering ADR-001, ADR-002, etc.
+
+Each ADR must include the following sections (template):
+
+```
+# ADR-XXX: <Decision Title>
+
+- **Decision ID:** ADR-XXX
+- **Status:** Proposed | Accepted | Superseded | Rejected
+- **Date:** YYYY-MM-DD
+
+## Context
+
+Why the decision is needed.
+
+## Problem Statement
+
+What is being decided.
+
+## Constraints
+
+Relevant constraints (time, cost, scope, environment, prototype).
+
+## Options Considered
+
+- Option A: ...
+- Option B: ...
+- Option C: ...
+
+## Decision
+
+What was decided.
+
+## Rationale
+
+Why this option was chosen over the others.
+
+## Evidence / References
+
+- Related references from docs/references/REFERENCES.md (REF-XXX)
+
+## Trade-offs
+
+What was given up.
+
+## Consequences
+
+What will happen as a result (follow-ups, requirements changes).
+
+## Confidence
+
+High / Medium / Low and why.
+
+## Reconsideration Conditions
+
+Under what conditions this decision should be revisited.
+```
+
+## 8. Research Reference Registry
+
+The agent MUST maintain a research reference registry at
+`docs/references/REFERENCES.md`.
+
+The registry is a single source of truth for all research references used
+in the project.
+
+References are identified by REF-XXX IDs.
+
+Reference format (Markdown):
+
+```
+| REF-XXX | <Title> | <Authors> | <Year> | <Venue / Source> | <URL / DOI> | Verified |
+```
+
+Add a reference only when:
+
+- it is actually used to inform a decision or recommendation in this
+  project, and
+- it has been verified.
+
+Do not add an unverified source to the registry.
+
+If a reference is not fully verified, keep it OUT of the registry and
+mention it in the ADR's context/evidence section instead.
+
+## 9. Evidence Traceability
+
+Every technical decision must be traceable:
+
+Source
+  ↓
+REF-XXX (registry entry)
+  ↓
+ADR-XXX (decision record)
+  ↓
+Implementation (commit)
+
+Maintain this chain in the ADRs and references.
+
+## 10. Contradictory Evidence
+
+When sources disagree, present both sides explicitly instead of silently
+picking one.
+
+Include:
+
+- what Source A says
+- what Source B says
+- how the conflict was resolved and why
+
+## 11. Implementation and Validation
+
+When implementing an approved change:
 
 - modify only what is necessary
 - avoid unrelated refactoring
@@ -913,13 +1091,13 @@ When implementing an approved task:
 If a requested change conflicts with the current architecture, stop and
 explain the conflict before making a major architectural change.
 
----
+After implementation, validate the change by running the appropriate
+validation for the project (e.g. build, tests, lint, or manual
+verification), and report the result.
 
-## Git Commit Workflow
+## 12. Git Checkpoint Workflow
 
 The agent MUST use Git as a local checkpoint mechanism during development.
-
-### Commit Policy
 
 After completing a meaningful, logically complete change:
 
@@ -935,29 +1113,10 @@ implementing a feature, fixing a bug, completing a refactor, modifying an
 API, changing database/schema logic, completing a UI component or flow, or
 completing a project phase/task.
 
-Do NOT create commits for every individual file edit or trivial intermediate
-change.
+Do NOT create commits for every individual file edit or trivial
+intermediate change.
 
-### Commit Restrictions
-
-The agent MUST:
-
-- create commits locally when a meaningful change is completed
-- inspect `git diff` before committing
-- avoid committing secrets, credentials, `.env` files, or sensitive data
-- avoid committing generated/build/cache files unless they are intentionally
-  tracked
-- keep commits focused and logically grouped
-
-The agent MUST NOT:
-
-- run `git push` (requires explicit user instruction)
-- push branches, tags, or commits to any remote repository
-- modify remote repository state
-- create pull requests
-- force-push
-
-### Commit Message Convention
+## 13. Git Commit Message Convention
 
 Use Conventional Commits:
 
@@ -970,17 +1129,80 @@ Use Conventional Commits:
 
 Example:
 
-    docs: separate client and developer portals onto distinct domains
+    docs: add ADR and reference registry
 
-### Before Finishing a Task
+## 14. Git Push Restriction
 
-Before reporting a task as complete:
+The agent MUST NOT:
 
-1. Check `git status`.
-2. Review the latest changes.
-3. Ensure all meaningful changes have been committed.
-4. Confirm that no `git push` was performed.
-5. Report the commit hash and commit message to the user.
+- run `git push`
+- push branches, tags, or commits to any remote repository
+- modify remote repository state
+- create pull requests
+- force-push
+
+Pushing is only allowed with explicit user instruction.
+
+## 15. Git Safety
+
+The agent MUST:
+
+- create commits locally when a meaningful change is completed
+- inspect `git diff` before committing
+- avoid committing secrets, credentials, `.env` files, or sensitive data
+- avoid committing generated/build/cache files unless they are
+  intentionally tracked
+- keep commits focused and logically grouped
+
+## 16. Documentation Synchronization
+
+When behavior, requirements, or architecture change, keep all related
+documentation in sync:
+
+- AGENTS.md
+- REQUIREMENTS.md
+- docs/analisis-kebutuhan.md
+- docs/use-case-description.md
+- docs/decisions/ (ADRs)
+- docs/references/REFERENCES.md
+- mockups, diagrams, and other docs as needed
+
+Do not let AGENTS.md describe behavior that the rest of the project no
+longer follows.
+
+## 17. Final Task Report
+
+After completing a task, report using this format:
+
+- **Completed:** what was done
+- **Validation:** how it was validated
+- **Decision:** the decision/ADR made (if any)
+- **Evidence:** the sources used (REF-XXX / links)
+- **Documentation:** which docs were updated
+- **Git:** commit hash and message
+- **Remote:** confirm no push was performed
+
+## 18. Final Internship Report Traceability
+
+Every recommendation, decision, and implementation must be traceable to
+the final internship report:
+
+- Recommendation → REF-XXX → ADR-XXX → Implementation (commit)
+- Decisions recorded in ADRs must be referenced from the report
+- Evidence must be reproducible (registry entries must be verifiable)
+
+## 19. General Rule
+
+CLIENT SYSTEM STAYS. AIOS ADAPTS.
+
+The client should not have to redesign its existing system just to use
+AIOS.
+
+The Client Database remains the source of truth for business data.
+
+The AIOS Internal Database stores the metadata, mapping, configuration,
+and state required to make AIOS adaptable, reusable, and suitable for
+multiple clients.
 
 ---
 
