@@ -1,0 +1,3 @@
+# AIOS local experiment artifacts (Hermes + llama.cpp)
+# Model weights and binaries are large and must not be committed.
+ai/
