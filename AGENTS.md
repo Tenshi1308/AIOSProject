@@ -122,7 +122,7 @@ Local AI architecture:
 
 AI Manager / Workers / AI Schema Analyzer
   ↓
-Ollama
+Local LLM runtime (candidate: Ollama)
   ↓
 Local LLM
 
@@ -749,13 +749,12 @@ both.
 
 ## Local AI
 
-The prototype uses Ollama as the LLM runtime. In the SaaS deployment,
-Ollama runs on the Ekasa server, which means company data flows to the
-Ekasa server. This is an accepted trade-off for the prototype; a future
-phase may offer per-company LLM deployment options.
-
-Use Ollama as the model runtime unless a project requirement explicitly
-changes this.
+The prototype uses a local LLM runtime. The specific runtime is still an
+open decision (candidate: Ollama; final decision TBD at Local LLM
+integration). In the SaaS deployment, the runtime runs on the Ekasa server,
+which means company data flows to the Ekasa server. This is an accepted
+trade-off for the prototype; a future phase may offer per-company LLM
+deployment options.
 
 The prototype should prioritize:
 
@@ -817,7 +816,7 @@ A successful prototype should demonstrate:
 2. User can select a specific AI capability.
 3. AI Manager can manage the selected worker.
 4. Worker can execute domain-specific tasks.
-5. AIOS can use a local LLM through Ollama.
+5. AIOS can use a local LLM through a local runtime (candidate: Ollama).
 6. AIOS can connect to a client database through an adapter.
 7. AI can analyze a client's database schema.
 8. Different database structures can be mapped to a canonical model.

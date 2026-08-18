@@ -108,8 +108,8 @@ Dalam lingkup sistem:
 5. AI Manager (agent primary) mendelegasikan tugas ke worker (sub-agent);
    proses delegasi transparan di interface.
 6. Worker menggunakan tools dan data melalui abstraksi AIOS.
-7. AIOS menggunakan Ollama sebagai runtime LLM (di server Ekasa pada
-   prototype).
+7. AIOS menggunakan Local LLM runtime (kandidat: Ollama; final **TBD**) di
+   server Ekasa pada prototype.
 8. AIOS terhubung ke database client melalui Database Adapter.
 9. AIOS menganalisis skema database client secara semantik dan memetakannya ke
    Canonical Data Model.
@@ -154,7 +154,7 @@ tingkat produksi yang tidak mendukung prototype secara langsung.
   dimodifikasi.
 - **AIOS System** — platform AIOS standalone (SaaS) yang di-host Ekasa,
   terdiri dari AI Manager, Plugin Manager, Workers, Tools, Data Layer, RAG,
-  dan runtime LLM (Ollama).
+   dan runtime LLM (lokal; kandidat Ollama, **TBD**).
 - **Developer / Intern** — pelaksana pengembangan yang bekerja secara
   bertahap dengan persetujuan sebelum setiap tahap.
 
@@ -373,8 +373,9 @@ worker mana yang sedang dikonsultasikan.
 
 - **C-01** — Lingkup prototype: utamakan prototype fungsional yang
   dapat didemonstrasikan end-to-end di atas kompleksitas tingkat produksi.
-- **C-02** — Runtime LLM: gunakan Ollama sebagai runtime model; pada prototype
-  berjalan di server Ekasa.
+- **C-02** — Runtime LLM: gunakan Local LLM runtime (kandidat utama Ollama);
+  pada prototype berjalan di server Ekasa. Keputusan runtime final **TBD**,
+  ditentukan saat fase Local LLM integration.
 - **C-03** — Jangan over-engineer model AI; pengoptimalan model tingkat produksi
   berada di luar scope awal.
 - **C-04** — AIOS tidak boleh mengharuskan client mengubah sistemnya.
@@ -478,16 +479,18 @@ worker mana yang sedang dikonsultasikan.
 
 ## 10. AI / Local LLM Requirements
 
-- **LLM-01** — Prototype menggunakan Ollama sebagai runtime LLM; pada deployment
-  SaaS, Ollama berjalan di server Ekasa sehingga data perusahaan mengalir ke
-  server Ekasa (trade-off yang diterima untuk prototype).
-- **LLM-02** — AIOS harus menggunakan Ollama sebagai runtime model.
+- **LLM-01** — Prototype menggunakan Local LLM runtime (kandidat: Ollama;
+  final **TBD**); pada deployment SaaS, runtime berjalan di server Ekasa
+  sehingga data perusahaan mengalir ke server Ekasa (trade-off yang diterima
+  untuk prototype).
+- **LLM-02** — AIOS harus menggunakan Local LLM runtime (runtime spesifik
+  **TBD**; Ollama sebagai kandidat utama).
 - **LLM-03** — AI Manager, Workers, dan AI Schema Analyzer harus menggunakan
   Local LLM.
 - **LLM-04** — Prototype harus memprioritaskan: model sederhana, performa wajar,
   setup mudah, dan demonstrabilitas.
-- **LLM-05** — Model LLM spesifik yang digunakan: **TBD** (runtime ditetapkan
-  Ollama; nama model belum ditetapkan oleh `AGENTS.md`).
+- **LLM-05** — Model LLM spesifik yang digunakan: **TBD** (runtime lokal,
+  kandidat utama Ollama; nama model belum ditetapkan oleh `AGENTS.md`).
   - Catatan diskusi: keluarga **Hermes** (Nous Research) dapat berjalan lokal via
     Ollama (mis. `hermes3`; varian Hermes 4/4-Pro juga tersedia). Banyak token
     tidak menjadi masalah biaya pada model lokal; kendala utama adalah
@@ -679,7 +682,8 @@ ditunjukkan:
   interface.
 - **AC-03** — AI Manager dapat mengelola worker yang dipilih.
 - **AC-04** — Worker dapat melaksanakan tugas domain-spesifik.
-- **AC-05** — AIOS dapat menggunakan Local LLM melalui Ollama.
+- **AC-05** — AIOS dapat menggunakan Local LLM melalui runtime lokal
+  (kandidat: Ollama).
 - **AC-06** — AIOS dapat terhubung ke database client melalui adapter.
 - **AC-07** — AI dapat menganalisis skema database client.
 - **AC-08** — Struktur database yang berbeda dapat dipetakan ke canonical model.

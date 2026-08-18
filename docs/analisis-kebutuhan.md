@@ -81,8 +81,8 @@ tersedia pada database client.
    sistem client dengan cara yang sama.
 2. **Ketergantungan pada struktur** — analisis data hanya bisa dilakukan jika
    programmer memahami dan menulis query spesifik per *client*.
-3. **Privasi / lokalitas** — kebutuhan AI yang berjalan lokal (Ollama) tanpa
-   *cloud LLM*.
+3. **Privasi / lokalitas** — kebutuhan AI yang berjalan lokal (kandidat:
+   Ollama) tanpa *cloud LLM*.
 4. **Mahalnya adopsi AI** — setiap *client* harus membangun solusi AI terpisah.
 
 ---
@@ -119,7 +119,7 @@ Prototype dianggap berhasil jika kriteria acceptance pada `REQUIREMENTS.md`
 
 1. Menguasai *AI orchestration*: AI Manager, plugin registry, worker system,
    dan tool system.
-2. Menerapkan integrasi *local LLM* (Ollama).
+2. Menerapkan integrasi *local LLM* (kandidat runtime: Ollama; final **TBD**).
 3. Mempraktikkan pola arsitektur adaptif untuk *database* heterogen
    (*schema analyzer* + *canonical model*).
 4. Menghasilkan *prototype*, laporan, dan demo yang memenuhi penilaian mentor,
@@ -163,7 +163,8 @@ Prototype dianggap berhasil jika kriteria acceptance pada `REQUIREMENTS.md`
 ## 6. Cakupan (In-Scope)
 
 1. Arsitektur inti AIOS: AI Manager, Plugin Manager, Worker System, Tool System.
-2. Integrasi *local LLM* (Ollama) untuk semua peran.
+2. Integrasi *local LLM* (kandidat runtime: Ollama; final **TBD**) untuk semua
+   peran.
 3. *Database Adapter* + *Schema Extraction* + AI Schema Analyzer (pemahaman
    semantik skema).
 4. *Canonical Data Model* + *semantic mapping* yang dipersistenkan di AIOS
@@ -186,7 +187,8 @@ Prototype dianggap berhasil jika kriteria acceptance pada `REQUIREMENTS.md`
 ### 7.1 Batasan Teknis
 
 - Durasi: 18 minggu (10 Agustus – 12 Desember 2026).
-- Berjalan **lokal** (Ollama), tanpa *cloud LLM* kecuali ada alasan teknis jelas.
+- Berjalan **lokal** (kandidat: Ollama), tanpa *cloud LLM* kecuali ada alasan
+  teknis jelas.
 - Hardware: AMD Ryzen 5 5600G, 16 GB RAM, tanpa GPU dedicated (CPU-only).
   Model harus kecil dan ringan.
 - Prototype tidak *production-ready*, namun setiap fitur inti harus benar-benar
@@ -262,7 +264,7 @@ dan Memory Agent. Dokumen ini tidak menduplikasinya.
 |---|---|---|
 | NFR-01 | *Modularity* | Komponen (AI Manager, Plugin, Worker, Tool, Adapter) terpisah dan dapat diganti |
 | NFR-02 | *Client adaptability* | Tidak ada asumsi *hardcoded* tentang nama tabel/kolom client |
-| NFR-03 | *Local-first* | Berjalan dengan Ollama; pada prototype di server Ekasa |
+| NFR-03 | *Local-first* | Berjalan dengan Local LLM (kandidat: Ollama); pada prototype di server Ekasa |
 | NFR-04 | *Security & data privacy* | Worker tidak *direct-access* database; akses lewat *canonical model*; isolasi antar tenant |
 | NFR-05 | *Performance* | Ringan; model dibatasi ukuran agar muat di 16 GB RAM CPU-only |
 | NFR-06 | *Maintainability* | Kode sederhana, terdokumentasi, tidak *over-engineered* |
@@ -332,7 +334,7 @@ oleh kedua portal.
 ```mermaid
 flowchart LR
     AM[AI Manager / Workers / AI Schema Analyzer]
-    AM --> O[Ollama]
+    AM --> O[Local LLM runtime]
     O --> L[Local LLM]
 ```
 
@@ -349,9 +351,10 @@ flowchart LR
 
 | Komponen | Pilihan | Catatan |
 |---|---|---|
-| Bahasa utama | Python | Sesuai keputusan project |
-| *Local LLM* | Ollama | Nama model default menunggu keputusan (`REQUIREMENTS.md` LLM-05: **TBD**); harus kecil/ringan untuk CPU-only |
-| *Database Adapter* | SQLite, PostgreSQL, MySQL | Engine spesifik: **TBD** (`DS-01`) |
+| Backend | Python (FastAPI) | Sesuai `ADR-002` |
+| Frontend | Vue (JavaScript/TypeScript) | Portal client & developer; struktur terpisah dari backend |
+| *Local LLM* | Ollama (kandidat), final **TBD** | Runtime final belum diputuskan (`ADR-004`; `REQUIREMENTS.md` LLM-05: **TBD**); model harus kecil/ringan untuk CPU-only |
+| *Database Adapter* | SQLite, PostgreSQL, MySQL | Prototype memakai **SQLite** (`ADR-003`); MySQL/PostgreSQL via adapter nanti |
 | *Dataset sample* | Beberapa struktur client yang sengaja berbeda | Memvalidasi adaptability (nama tabel/kolom, relasi, representasi berbeda) |
 | *Embedding / vector store* | – | Untuk RAG, yang di-defer pada prototype |
 
@@ -382,7 +385,7 @@ Prototype dinyatakan **selesai** jika kriteria acceptance pada `REQUIREMENTS.md`
    Memory Agent).
 4. AIOS berhasil bekerja pada beberapa struktur database client yang berbeda.
 5. Ekasa Developer dapat memantau pemakaian token per perusahaan.
-6. Semua berjalan **lokal** melalui Ollama.
+6. Semua berjalan **lokal** melalui Local LLM runtime (kandidat: Ollama).
 7. Dokumentasi (analisis, requirements, use case, laporan, diagram) lengkap.
 8. Presentasi demo final dapat dijalankan dengan lancar.
 

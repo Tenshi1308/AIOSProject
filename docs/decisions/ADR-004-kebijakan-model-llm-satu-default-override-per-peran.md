@@ -6,11 +6,12 @@
 
 ## Context
 
-AIOS memakai Local LLM melalui Ollama untuk AI Manager, Workers, dan AI Schema
-Analyzer. Prinsip Cost Efficient menuntut biaya operasi minimal: satu model
-lokal bersama untuk semua cabang/worker, model kecil, dan hindari komputasi
-mahal berulang. Namun setiap peran (AI Manager, worker spesialis, schema
-analyzer) memiliki kebutuhan yang berbeda terhadap kemampuan model.
+AIOS memakai Local LLM (runtime lokal, kandidat utama: Ollama, final **TBD**)
+untuk AI Manager, Workers, dan AI Schema Analyzer. Prinsip Cost Efficient
+menuntut biaya operasi minimal: satu model lokal bersama untuk semua
+cabang/worker, model kecil, dan hindari komputasi mahal berulang. Namun setiap
+peran (AI Manager, worker spesialis, schema analyzer) memiliki kebutuhan yang
+berbeda terhadap kemampuan model.
 
 ## Problem Statement
 
@@ -20,8 +21,10 @@ peran di AIOS?
 
 ## Constraints
 
-- Prototype memakai Ollama di server Ekasa; data perusahaan mengalir ke server
-  Ekasa (trade-off yang sudah diterima untuk prototype).
+- Prototype memakai Local LLM runtime (kandidat: Ollama) di server Ekasa; data
+  perusahaan mengalir ke server Ekasa (trade-off yang sudah diterima untuk
+  prototype). Runtime spesifik belum diputuskan — lihat "Reconsideration
+  Conditions".
 - Prinsip Cost Efficient: satu model lokal bersama untuk semua cabang/worker,
   model tetap kecil, dan hindari komputasi mahal berulang.
 - Prinsip "Do NOT over-engineer the AI model" — prototype tidak mengejar
@@ -86,7 +89,7 @@ dinamis otomatis (Option D) tidak dipakai di prototype.
 - REF-014: LLMATCH — Wang et al. (2025)
 - REF-015: Bootstrapping Self-Improvement of Language Model Programs for
   Zero-Shot Schema Matching (Matchmaker) — Seedat & Van Der Schaar (2025)
-- REF-016: Ollama Documentation
+- REF-016: Ollama Documentation (kandidat runtime)
 
 ## Trade-offs
 
@@ -106,6 +109,8 @@ dinamis otomatis (Option D) tidak dipakai di prototype.
 - REQUIREMENTS.md LLM-05 akan diperbarui sesuai kebijakan ini.
 - Prototype tidak menerapkan dynamic routing; evaluasi ulang jika terbukti
   dibutuhkan setelah prototype.
+- Keputusan runtime spesifik (kandidat: Ollama) dilakukan terpisah saat fase
+  Local LLM integration, dan dapat dicatat sebagai ADR tersendiri.
 
 ## Confidence
 
@@ -122,3 +127,5 @@ final (TBD) belum diverifikasi secara empiris di lingkungan prototype ini.
 - Jika biaya hardware turun sehingga model lebih besar terjangkau, default
   dapat dinaikkan.
 - Keputusan model final direvisi setelah benchmark di setup lingkungan.
+- Keputusan runtime spesifik (misal memilih Ollama secara final) ditinjau saat
+  fase Local LLM integration — dokumen ini tidak mengunci runtime.
