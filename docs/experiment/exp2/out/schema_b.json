@@ -1,0 +1,262 @@
+{
+  "tables": [
+    {
+      "table": "objects",
+      "columns": [
+        {
+          "name": "object_id",
+          "type": "SERIAL",
+          "pk": true,
+          "fk": null
+        },
+        {
+          "name": "object_type",
+          "type": "VARCHAR(30)",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "meta",
+          "type": "JSONB",
+          "pk": false,
+          "fk": null
+        }
+      ],
+      "rows": [
+        {
+          "object_id": "1",
+          "object_type": "product",
+          "meta": "{\"brand\":\"Sariwangi\"}"
+        },
+        {
+          "object_id": "2",
+          "object_type": "product",
+          "meta": "{\"brand\":\"Indofood\"}"
+        }
+      ]
+    },
+    {
+      "table": "attribute_definitions",
+      "columns": [
+        {
+          "name": "attribute_id",
+          "type": "SERIAL",
+          "pk": true,
+          "fk": null
+        },
+        {
+          "name": "attribute_code",
+          "type": "VARCHAR(40)",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "attribute_domain",
+          "type": "VARCHAR(10)",
+          "pk": false,
+          "fk": null
+        }
+      ],
+      "rows": [
+        {
+          "attribute_code": "name",
+          "attribute_domain": "text"
+        },
+        {
+          "attribute_code": "price",
+          "attribute_domain": "num"
+        },
+        {
+          "attribute_code": "stock",
+          "attribute_domain": "num"
+        }
+      ]
+    },
+    {
+      "table": "attr_value_text",
+      "columns": [
+        {
+          "name": "object_id",
+          "type": "INTEGER",
+          "pk": false,
+          "fk": "objects.object_id"
+        },
+        {
+          "name": "attribute_id",
+          "type": "INTEGER",
+          "pk": false,
+          "fk": "attribute_definitions.attribute_id"
+        },
+        {
+          "name": "attr_value_text",
+          "type": "VARCHAR(255)",
+          "pk": false,
+          "fk": null
+        }
+      ],
+      "rows": [
+        {
+          "object_id": "1",
+          "attribute_id": "1",
+          "attr_value_text": "Teh Botol"
+        },
+        {
+          "object_id": "2",
+          "attribute_id": "1",
+          "attr_value_text": "Kecap Manis"
+        }
+      ]
+    },
+    {
+      "table": "attr_value_num",
+      "columns": [
+        {
+          "name": "object_id",
+          "type": "INTEGER",
+          "pk": false,
+          "fk": "objects.object_id"
+        },
+        {
+          "name": "attribute_id",
+          "type": "INTEGER",
+          "pk": false,
+          "fk": "attribute_definitions.attribute_id"
+        },
+        {
+          "name": "attr_value_num",
+          "type": "NUMERIC(15,2)",
+          "pk": false,
+          "fk": null
+        }
+      ],
+      "rows": [
+        {
+          "object_id": "1",
+          "attribute_id": "2",
+          "attr_value_num": "3500.00"
+        },
+        {
+          "object_id": "1",
+          "attribute_id": "3",
+          "attr_value_num": "120.00"
+        },
+        {
+          "object_id": "2",
+          "attribute_id": "2",
+          "attr_value_num": "8000.00"
+        },
+        {
+          "object_id": "2",
+          "attribute_id": "3",
+          "attr_value_num": "45.00"
+        }
+      ]
+    },
+    {
+      "table": "attr_value_date",
+      "columns": [
+        {
+          "name": "object_id",
+          "type": "INTEGER",
+          "pk": false,
+          "fk": "objects.object_id"
+        },
+        {
+          "name": "attribute_id",
+          "type": "INTEGER",
+          "pk": false,
+          "fk": "attribute_definitions.attribute_id"
+        },
+        {
+          "name": "attr_value_date",
+          "type": "DATE",
+          "pk": false,
+          "fk": null
+        }
+      ],
+      "rows": []
+    },
+    {
+      "table": "orders",
+      "columns": [
+        {
+          "name": "order_id",
+          "type": "SERIAL",
+          "pk": true,
+          "fk": null
+        },
+        {
+          "name": "order_json",
+          "type": "JSONB",
+          "pk": false,
+          "fk": null
+        }
+      ],
+      "rows": [
+        {
+          "order_id": "1",
+          "order_json": "{\"order_date\":\"2024-05-01\",\"customer\":\"Toko Maju\",\"status\":\"paid\"}"
+        },
+        {
+          "order_id": "2",
+          "order_json": "{\"order_date\":\"2024-05-02\",\"customer\":\"Minimarket Sejahtera\",\"status\":\"pending\"}"
+        }
+      ]
+    },
+    {
+      "table": "order_lines",
+      "columns": [
+        {
+          "name": "line_id",
+          "type": "SERIAL",
+          "pk": true,
+          "fk": null
+        },
+        {
+          "name": "order_id",
+          "type": "INTEGER",
+          "pk": false,
+          "fk": "orders.order_id"
+        },
+        {
+          "name": "object_id",
+          "type": "INTEGER",
+          "pk": false,
+          "fk": "objects.object_id"
+        },
+        {
+          "name": "qty_json",
+          "type": "JSONB",
+          "pk": false,
+          "fk": null
+        }
+      ],
+      "rows": [
+        {
+          "line_id": "1",
+          "order_id": "1",
+          "object_id": "1",
+          "qty_json": "{\"qty\":10}"
+        },
+        {
+          "line_id": "2",
+          "order_id": "1",
+          "object_id": "2",
+          "qty_json": "{\"qty\":5}"
+        },
+        {
+          "line_id": "3",
+          "order_id": "2",
+          "object_id": "1",
+          "qty_json": "{\"qty\":3}"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,410 @@
+{
+  "tables": [
+    {
+      "table": "categories",
+      "columns": [
+        {
+          "name": "category_id",
+          "type": "SMALLINT",
+          "pk": true,
+          "fk": null
+        },
+        {
+          "name": "category_name",
+          "type": "VARCHAR(15)",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "fk": null
+        }
+      ],
+      "rows": [
+        {
+          "category_id": "1",
+          "category_name": "Beverages",
+          "description": "Soft drinks, coffees, teas, beers and ales"
+        },
+        {
+          "category_id": "2",
+          "category_name": "Condiments",
+          "description": "Sweet and savory sauces, relishes, spreads, and seasonings"
+        }
+      ]
+    },
+    {
+      "table": "suppliers",
+      "columns": [
+        {
+          "name": "supplier_id",
+          "type": "SMALLINT",
+          "pk": true,
+          "fk": null
+        },
+        {
+          "name": "company_name",
+          "type": "VARCHAR(40)",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "contact_name",
+          "type": "VARCHAR(30)",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "contact_title",
+          "type": "VARCHAR(30)",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "address",
+          "type": "VARCHAR(60)",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "city",
+          "type": "VARCHAR(15)",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "postal_code",
+          "type": "VARCHAR(10)",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "country",
+          "type": "VARCHAR(15)",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "phone",
+          "type": "VARCHAR(24)",
+          "pk": false,
+          "fk": null
+        }
+      ],
+      "rows": [
+        {
+          "supplier_id": "1",
+          "company_name": "Exotic Liquids",
+          "contact_name": "Charlotte Cooper",
+          "contact_title": "Purchasing Manager",
+          "address": "49 Gilbert St.",
+          "city": "London",
+          "postal_code": "EC1 4SD",
+          "country": "UK",
+          "phone": "(171) 555-2222"
+        },
+        {
+          "supplier_id": "2",
+          "company_name": "New Orleans Cajun Delights",
+          "contact_name": "Shelley Burke",
+          "contact_title": "Order Administrator",
+          "address": "P.O. Box 78934",
+          "city": "New Orleans",
+          "postal_code": "70117",
+          "country": "USA",
+          "phone": "(100) 555-4822"
+        }
+      ]
+    },
+    {
+      "table": "products",
+      "columns": [
+        {
+          "name": "product_id",
+          "type": "SMALLINT",
+          "pk": true,
+          "fk": null
+        },
+        {
+          "name": "product_name",
+          "type": "VARCHAR(40)",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "supplier_id",
+          "type": "SMALLINT",
+          "pk": false,
+          "fk": "suppliers.supplier_id"
+        },
+        {
+          "name": "category_id",
+          "type": "SMALLINT",
+          "pk": false,
+          "fk": "categories.category_id"
+        },
+        {
+          "name": "quantity_per_unit",
+          "type": "VARCHAR(20)",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "unit_price",
+          "type": "REAL",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "units_in_stock",
+          "type": "SMALLINT",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "units_on_order",
+          "type": "SMALLINT",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "reorder_level",
+          "type": "SMALLINT",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "discontinued",
+          "type": "SMALLINT",
+          "pk": false,
+          "fk": null
+        }
+      ],
+      "rows": [
+        {
+          "product_id": "1",
+          "product_name": "Chai",
+          "supplier_id": "1",
+          "category_id": "1",
+          "quantity_per_unit": "10 boxes x 20 bags",
+          "unit_price": "18.0",
+          "units_in_stock": "39",
+          "units_on_order": "0",
+          "reorder_level": "10",
+          "discontinued": "0"
+        },
+        {
+          "product_id": "2",
+          "product_name": "Chang",
+          "supplier_id": "1",
+          "category_id": "1",
+          "quantity_per_unit": "24 - 12 oz bottles",
+          "unit_price": "19.0",
+          "units_in_stock": "17",
+          "units_on_order": "40",
+          "reorder_level": "25",
+          "discontinued": "0"
+        },
+        {
+          "product_id": "3",
+          "product_name": "Aniseed Syrup",
+          "supplier_id": "1",
+          "category_id": "2",
+          "quantity_per_unit": "12 - 550 ml bottles",
+          "unit_price": "10.0",
+          "units_in_stock": "13",
+          "units_on_order": "70",
+          "reorder_level": "25",
+          "discontinued": "0"
+        },
+        {
+          "product_id": "4",
+          "product_name": "Chef Anton''s Cajun Seasoning",
+          "supplier_id": "2",
+          "category_id": "2",
+          "quantity_per_unit": "48 - 6 oz jars",
+          "unit_price": "22.0",
+          "units_in_stock": "53",
+          "units_on_order": "0",
+          "reorder_level": "0",
+          "discontinued": "0"
+        }
+      ]
+    },
+    {
+      "table": "orders",
+      "columns": [
+        {
+          "name": "order_id",
+          "type": "SMALLINT",
+          "pk": true,
+          "fk": null
+        },
+        {
+          "name": "customer_id",
+          "type": "VARCHAR(5)",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "employee_id",
+          "type": "SMALLINT",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "order_date",
+          "type": "DATE",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "required_date",
+          "type": "DATE",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "shipped_date",
+          "type": "DATE",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "ship_via",
+          "type": "SMALLINT",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "freight",
+          "type": "REAL",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "ship_name",
+          "type": "VARCHAR(40)",
+          "pk": false,
+          "fk": null
+        }
+      ],
+      "rows": [
+        {
+          "order_id": "10248",
+          "customer_id": "VINET",
+          "employee_id": "5",
+          "order_date": "1996-07-04",
+          "required_date": "1996-08-01",
+          "shipped_date": "1996-07-16",
+          "ship_via": "3",
+          "freight": "32.38",
+          "ship_name": "Vins et alcools Chevalier"
+        },
+        {
+          "order_id": "10249",
+          "customer_id": "TOMSP",
+          "employee_id": "6",
+          "order_date": "1996-07-05",
+          "required_date": "1996-08-16",
+          "shipped_date": "1996-07-10",
+          "ship_via": "1",
+          "freight": "11.61",
+          "ship_name": "Toms Spezialitaten"
+        },
+        {
+          "order_id": "10250",
+          "customer_id": "HANAR",
+          "employee_id": "4",
+          "order_date": "1996-07-08",
+          "required_date": "1996-08-05",
+          "shipped_date": "1996-07-12",
+          "ship_via": "2",
+          "freight": "65.83",
+          "ship_name": "Hanari Carnes"
+        }
+      ]
+    },
+    {
+      "table": "order_details",
+      "columns": [
+        {
+          "name": "order_id",
+          "type": "SMALLINT",
+          "pk": false,
+          "fk": "orders.order_id"
+        },
+        {
+          "name": "product_id",
+          "type": "SMALLINT",
+          "pk": false,
+          "fk": "products.product_id"
+        },
+        {
+          "name": "unit_price",
+          "type": "REAL",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "quantity",
+          "type": "SMALLINT",
+          "pk": false,
+          "fk": null
+        },
+        {
+          "name": "discount",
+          "type": "REAL",
+          "pk": false,
+          "fk": null
+        }
+      ],
+      "rows": [
+        {
+          "order_id": "10248",
+          "product_id": "11",
+          "unit_price": "14.0",
+          "quantity": "12",
+          "discount": "0"
+        },
+        {
+          "order_id": "10248",
+          "product_id": "42",
+          "unit_price": "9.8",
+          "quantity": "10",
+          "discount": "0"
+        },
+        {
+          "order_id": "10248",
+          "product_id": "72",
+          "unit_price": "34.8",
+          "quantity": "5",
+          "discount": "0"
+        },
+        {
+          "order_id": "10249",
+          "product_id": "14",
+          "unit_price": "18.6",
+          "quantity": "9",
+          "discount": "0"
+        },
+        {
+          "order_id": "10249",
+          "product_id": "51",
+          "unit_price": "42.4",
+          "quantity": "40",
+          "discount": "0"
+        },
+        {
+          "order_id": "10250",
+          "product_id": "41",
+          "unit_price": "7.7",
+          "quantity": "10",
+          "discount": "0"
+        }
+      ]
+    }
+  ]
+}

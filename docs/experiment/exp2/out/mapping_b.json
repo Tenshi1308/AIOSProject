@@ -1,0 +1,98 @@
+[
+  {
+    "run": 1,
+    "raw": "### Konsep: Product.name\nditemukan: true\nsource: attr_value_text.object_id, attr_value_text.attr_value_text, objects.object_type = \"product\"\nconfidence: sedang\nalasan: Kolom `attr_value_text` memiliki data literal yang berupa nama produk, dan `objects.object_type` menunjukkan bahwa data ini berkaitan dengan produk.\n\n### Konsep: Product.price\nditemukan: true\nsource: attr_value_num.object_id, attr_value_num.attr_value_num, attr_value_num.attribute_id = \"2\" (attribute_code = \"price\")\nconfidence: sedang\nalasan: Kolom `attr_value_num` memiliki data numerik yang berupa harga produk, dan `attribute_id` menunjukkan bahwa ini adalah atribut harga.\n\n### Konsep: Product.stock\nditemukan: true\nsource: attr_value_num.object_id, attr_value_num.attr_value_num, attr_value_num.attribute_id = \"3\" (attribute_code = \"stock\")\nconfidence: sedang\nalasan: Kolom `attr_value_num` memiliki data numerik yang berupa stok produk, dan `attribute_id` menunjukkan bahwa ini adalah atribut stok.",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "attr_value_text.object_id, attr_value_text.attr_value_text, objects.object_type = \"product\"",
+        "confidence": "sedang",
+        "alasan": "Kolom `attr_value_text` memiliki data literal yang berupa nama produk, dan `objects.object_type` menunjukkan bahwa data ini berkaitan dengan produk."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id, attr_value_num.attr_value_num, attr_value_num.attribute_id = \"2\" (attribute_code = \"price\")",
+        "confidence": "sedang",
+        "alasan": "Kolom `attr_value_num` memiliki data numerik yang berupa harga produk, dan `attribute_id` menunjukkan bahwa ini adalah atribut harga."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id, attr_value_num.attr_value_num, attr_value_num.attribute_id = \"3\" (attribute_code = \"stock\")",
+        "confidence": "sedang",
+        "alasan": "Kolom `attr_value_num` memiliki data numerik yang berupa stok produk, dan `attribute_id` menunjukkan bahwa ini adalah atribut stok."
+      }
+    },
+    "usage": {
+      "completion_tokens": 248,
+      "prompt_tokens": 1477,
+      "total_tokens": 1725,
+      "prompt_tokens_details": {
+        "cached_tokens": 1476
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "### Konsep: Product.name\nditemukan: true\nsource: attr_value_text.object_id, attr_value_text.attr_value_text, objects.object_type = \"product\"\nconfidence: sedang\nalasan: Kolom `attr_value_text` memiliki data literal yang berupa nama produk, dan `objects.object_type` menunjukkan bahwa data ini berkaitan dengan produk.\n\n### Konsep: Product.price\nditemukan: true\nsource: attr_value_num.object_id, attr_value_num.attr_value_num, attr_value_num.attribute_id = \"2\" (attribute_code = \"price\")\nconfidence: sedang\nalasan: Kolom `attr_value_num` memiliki data numerik yang berupa harga produk, dan `attribute_id` menunjukkan bahwa ini adalah atribut harga.\n\n### Konsep: Product.stock\nditemukan: true\nsource: attr_value_num.object_id, attr_value_num.attr_value_num, attr_value_num.attribute_id = \"3\" (attribute_code = \"stock\")\nconfidence: sedang\nalasan: Kolom `attr_value_num` memiliki data numerik yang berupa stok produk, dan `attribute_id` menunjukkan bahwa ini adalah atribut stok.",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "attr_value_text.object_id, attr_value_text.attr_value_text, objects.object_type = \"product\"",
+        "confidence": "sedang",
+        "alasan": "Kolom `attr_value_text` memiliki data literal yang berupa nama produk, dan `objects.object_type` menunjukkan bahwa data ini berkaitan dengan produk."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id, attr_value_num.attr_value_num, attr_value_num.attribute_id = \"2\" (attribute_code = \"price\")",
+        "confidence": "sedang",
+        "alasan": "Kolom `attr_value_num` memiliki data numerik yang berupa harga produk, dan `attribute_id` menunjukkan bahwa ini adalah atribut harga."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id, attr_value_num.attr_value_num, attr_value_num.attribute_id = \"3\" (attribute_code = \"stock\")",
+        "confidence": "sedang",
+        "alasan": "Kolom `attr_value_num` memiliki data numerik yang berupa stok produk, dan `attribute_id` menunjukkan bahwa ini adalah atribut stok."
+      }
+    },
+    "usage": {
+      "completion_tokens": 248,
+      "prompt_tokens": 1477,
+      "total_tokens": 1725,
+      "prompt_tokens_details": {
+        "cached_tokens": 1476
+      }
+    }
+  },
+  {
+    "run": 3,
+    "raw": "### Konsep: Product.name\nditemukan: true\nsource: attr_value_text.object_id, attr_value_text.attr_value_text, objects.object_type = \"product\"\nconfidence: sedang\nalasan: Kolom `attr_value_text` memiliki data literal yang berupa nama produk, dan `objects.object_type` menunjukkan bahwa data ini berkaitan dengan produk.\n\n### Konsep: Product.price\nditemukan: true\nsource: attr_value_num.object_id, attr_value_num.attr_value_num, attr_value_num.attribute_id = \"2\" (attribute_code = \"price\")\nconfidence: sedang\nalasan: Kolom `attr_value_num` memiliki data numerik yang berupa harga produk, dan `attribute_id` menunjukkan bahwa ini adalah atribut harga.\n\n### Konsep: Product.stock\nditemukan: true\nsource: attr_value_num.object_id, attr_value_num.attr_value_num, attr_value_num.attribute_id = \"3\" (attribute_code = \"stock\")\nconfidence: sedang\nalasan: Kolom `attr_value_num` memiliki data numerik yang berupa stok produk, dan `attribute_id` menunjukkan bahwa ini adalah atribut stok.",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "attr_value_text.object_id, attr_value_text.attr_value_text, objects.object_type = \"product\"",
+        "confidence": "sedang",
+        "alasan": "Kolom `attr_value_text` memiliki data literal yang berupa nama produk, dan `objects.object_type` menunjukkan bahwa data ini berkaitan dengan produk."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id, attr_value_num.attr_value_num, attr_value_num.attribute_id = \"2\" (attribute_code = \"price\")",
+        "confidence": "sedang",
+        "alasan": "Kolom `attr_value_num` memiliki data numerik yang berupa harga produk, dan `attribute_id` menunjukkan bahwa ini adalah atribut harga."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id, attr_value_num.attr_value_num, attr_value_num.attribute_id = \"3\" (attribute_code = \"stock\")",
+        "confidence": "sedang",
+        "alasan": "Kolom `attr_value_num` memiliki data numerik yang berupa stok produk, dan `attribute_id` menunjukkan bahwa ini adalah atribut stok."
+      }
+    },
+    "usage": {
+      "completion_tokens": 248,
+      "prompt_tokens": 1477,
+      "total_tokens": 1725,
+      "prompt_tokens_details": {
+        "cached_tokens": 1476
+      }
+    }
+  }
+]
