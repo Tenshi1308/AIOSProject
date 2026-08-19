@@ -1,0 +1,21 @@
+Based on the provided SQL schema, the canonical model concepts have been analyzed as follows:
+
+For the concept `Product.name`:
+- **Product.name** ditemukan: `true`
+- **Product.name** source: `products.product_name`
+- **Product.name** confidence: `high`
+- **Product.name** alasan: `Ditemukan dalam kolom product_name pada tabel products, yang merupakan nama produk.`
+
+For the concept `Product.price`:
+- **Product.price** ditemukan: `false`
+- **Product.price** source: `N/A`
+- **Product.price** confidence: `low`
+- **Product.price** alasan: `Tidak ditemukan dalam skema atau sampel data yang diberikan.`
+
+For the concept `Product.stock`:
+- **Product.stock** ditemukan: `false`
+- **Product.stock** source: `N/A`
+- **Product.stock** confidence: `low`
+- **Product.stock** alasan: `Tidak ditemukan dalam skema atau sampel data yang diberikan.`
+
+The concepts `Product.price` and `Product.stock` are not found in the provided schema or sample data.
