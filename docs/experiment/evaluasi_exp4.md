@@ -1,9 +1,10 @@
 # Evaluasi Eksperimen 4 — Analyze Schema pada PostgreSQL Nyata (boundary read-only)
 
 > **Lampiran (setelah spike selesai):**
-> - Opsi 2 — perluasan extractor (schema + view), dan
-> - Opsi A+B — perbandingan 3 format prompt input LLM (anti-overfitting).
-> Lihat kedua "## Lampiran — ..." di akhir.
+> - Opsi 2 — perluasan extractor (schema + view),
+> - Opsi A+B — perbandingan 3 format prompt input LLM (anti-overfitting), dan
+> - Opsi 2 lanjutan — deteksi EAV generik + anotasi (A1 field / A2 hint).
+> Lihat bagian "## Lampiran — ..." di akhir.
 
 Eksperimen lanjutan dari Exp-1/2/3. Tujuan: menguji desain sub-agent Analyze
 Schema **pada database nyata** (PostgreSQL 18 lokal), dengan dua konteks model:
@@ -319,3 +320,91 @@ ADR; tidak ada commit. `format_compare.py` (render 3 format + runner) tersimpan
 di `exp4/` untuk dipakai ulang jika perlu. Lanjutan (mis. menetapkan format
 ringkas sebagai standar input LLM, atau uji skema lebih banyak) menunggu
 keputusan user.
+
+---
+
+## Lampiran — Opsi 2 lanjutan: deteksi EAV generik + anotasi (A1 field / A2 hint)
+
+Keputusan user: menyelesaikan **akar masalah** (mapping 3B gagal menelusuri
+rantai ke kode atribut pada skema EAV) dengan tetap **metadata-only** dan
+**tanpa overfitting**. C6 tetap opsi terakhir, bukan penopang.
+
+### Rancangan
+
+- **Deteksi EAV deterministik** (`extractor_pg.detect_eav`), struktural &
+  generik, bukan hafalan nama:
+  - *Tabel nilai* = PK komposit (>=2 kolom) dan SEMUA kolom PK adalah kolom FK,
+    dengan >=1 kolom bukan PK/FK (kolom nilai).
+  - *Klaster EAV* = >=2 tabel nilai yang mereferensikan 2 parent yang sama.
+  - *Tabel definisi* = parent yang punya kolom varchar non-PK non-FK yang UNIQUE
+    (atau nama mirip kode/nama) → pembeda makna baris.
+  - Output `eav_clusters` + `unique_columns` di schema.json.
+- **Dua bentuk anotasi** diuji (keduanya dibangun dari hasil deteksi, bukan
+  nama hardcoded):
+  - **A1**: objek top-level `"eav": {...}` DI DALAM schema JSON ke LLM.
+  - **A2**: hint kalimat DI PROMPT (di luar JSON), mis. "makna baris ditentukan
+    oleh kolom `definisi_atribut.kode_atribut`".
+- **Skema uji ke-5**: `client_e_db` — EAV berbahasa Indonesia (`objek`,
+  `definisi_atribut`, `nilai_teks/angka/tanggal`), penamaan sangat berbeda dari
+  client_b → bukti deteksi struktural. Ground truth: `kode_atribut` = `nama`
+  (nilai_teks), `harga` (nilai_angka), `stok` (nilai_angka).
+
+### Hasil deteksi (verifikasi kode, tanpa LLM)
+
+| Skema | Klaster EAV terdeteksi? | Tabel definisi / pembeda |
+|---|---|---|
+| client_a (Northwind) | tidak | — |
+| client_b (EAV+JSONB) | ya | `attribute_definitions.attribute_code` |
+| client_c (Indonesia) | tidak | — |
+| client_d (flat) | tidak | — |
+| client_e (EAV Indonesia) | ya | `definisi_atribut.kode_atribut` |
+
+Deteksi menyala tepat di 2 skema EAV (termasuk yang namanya beda total) dan
+tidak salah-positif di 3 skema non-EAV.
+
+### Matriks LLM (temp=0, seed=42, 2 run per sel)
+
+| Sel | Hasil (name/price/stock) | Catatan |
+|---|---|---|
+| client_e F1+A0 (baseline) | 3/3, 3/3 | skema baru, kolom Indonesia |
+| client_e F1+A1 | 3/3, 3/3 | |
+| client_e F1+A2 | 3/3, 3/3 | source kini sertakan `definisi_atribut.kode_atribut` |
+| client_b F1+A1 | 3/3, 3/3 | |
+| client_b F1+A2 | 3/3, 3/3 | source sertakan `attribute_definitions.attribute_code` |
+| **client_b F2+A2 (diagnostik)** | **3/3, 3/3** | F2 tanpa anotasi: price=false 2/2 |
+
+client_a/c/d tidak di-re-run: tanpa klaster EAV, A1/A2 tidak mengubah input
+vs baseline F1 → deterministik identik (documented, bukan asumsi diam-diam).
+
+### Temuan Opsi 2 lanjutan (penting)
+
+1. **Akar masalah terselesaikan — bukti langsung dari sel diagnostik**: format
+   F2 yang **deterministik gagal** `price` (2/2) menjadi **3/3** begitu hint A2
+   ditambahkan. Source yang dipilih model berubah dari "tidak ada kolom price"
+   menjadi rantai `attr_value_num.attribute_id -> attribute_definitions.
+   attribute_code` — model kini **menelusuri ke kode atribut**, persis akar
+   masalah yang dihipotesiskan.
+2. **Deteksi EAV generik dan adaptif**: menyala di client_b (`attribute_code`)
+   dan client_e (`kode_atribut`, nama Indonesia) — tidak menghafal nama
+   tertentu; tetap metadata-only (hanya membaca UNIQUE constraint dari
+   pg_catalog, tanpa baris data).
+3. **A1 dan A2 keduanya aman**: tidak ada skema yang menurun vs baseline;
+   deterministik 2/2. A2 sedikit lebih "menyala" (source menyertakan rantai
+   kode) dan menghindari risiko token-di-dalam-JSON yang mengacaukan 3B
+   (masalah F2) — kandidat utama, tapi A1 juga tidak rusak.
+4. **Tidak ada overfitting yang terbukti**: deteksi diuji lintas 5 skema;
+   anotasi dibangun dari hasil deteksi aktual, bukan menyesuaikan ke client_b.
+
+### Status & keterbatasan
+
+Opsi 2 lanjutan selesai dan dicatat. Tidak ada perubahan arsitektur AIOS; tidak
+ada ADR; tidak ada commit. `extractor_pg.py` (deteksi), `eav_compare.py`
+(anotasi A1/A2 + runner) tersimpan di `exp4/`.
+
+Keterbatasan (dibingkai jujur, bukan klaim final):
+- Deteksi heuristik bisa salah-positif di bentuk skema yang tak diuji; baru
+  terbukti pada 5 skema ini.
+- Anotasi diuji pada 1 model (Qwen2.5-3B); hasil bisa berbeda di model lain
+  (kebijakan override per peran — ADR-004 — terbuka).
+- Penetapan "format ringkas + anotasi" sebagai standar input LLM dan ADR
+  menunggu keputusan user.

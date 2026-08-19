@@ -1,0 +1,66 @@
+[
+  {
+    "run": 1,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"nilai_teks.objek_id, nilai_teks.atribut_id, definisi_atribut.kode_atribut\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Kolom nilai_teks menyimpan nilai teks yang mungkin berupa nama produk, dan atribut_id 'name' ada dalam definisi_atribut.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"nilai_angka.objek_id, nilai_angka.atribut_id, definisi_atribut.kode_atribut\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Kolom nilai_angka menyimpan nilai angka yang mungkin berupa harga produk, dan atribut_id 'price' ada dalam definisi_atribut.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"nilai_angka.objek_id, nilai_angka.atribut_id, definisi_atribut.kode_atribut\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Kolom nilai_angka menyimpan nilai angka yang mungkin berupa stok produk, dan atribut_id 'stock' ada dalam definisi_atribut.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "nilai_teks.objek_id, nilai_teks.atribut_id, definisi_atribut.kode_atribut",
+        "confidence": "sedang",
+        "alasan": "Kolom nilai_teks menyimpan nilai teks yang mungkin berupa nama produk, dan atribut_id 'name' ada dalam definisi_atribut."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "nilai_angka.objek_id, nilai_angka.atribut_id, definisi_atribut.kode_atribut",
+        "confidence": "sedang",
+        "alasan": "Kolom nilai_angka menyimpan nilai angka yang mungkin berupa harga produk, dan atribut_id 'price' ada dalam definisi_atribut."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "nilai_angka.objek_id, nilai_angka.atribut_id, definisi_atribut.kode_atribut",
+        "confidence": "sedang",
+        "alasan": "Kolom nilai_angka menyimpan nilai angka yang mungkin berupa stok produk, dan atribut_id 'stock' ada dalam definisi_atribut."
+      }
+    },
+    "usage": {
+      "completion_tokens": 297,
+      "prompt_tokens": 1184,
+      "total_tokens": 1481,
+      "prompt_tokens_details": {
+        "cached_tokens": 753
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"nilai_teks.objek_id, nilai_teks.atribut_id, definisi_atribut.kode_atribut\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Kolom nilai_teks menyimpan nilai teks yang mungkin berupa nama produk, dan atribut_id 'name' ada dalam definisi_atribut.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"nilai_angka.objek_id, nilai_angka.atribut_id, definisi_atribut.kode_atribut\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Kolom nilai_angka menyimpan nilai angka yang mungkin berupa harga produk, dan atribut_id 'price' ada dalam definisi_atribut.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"nilai_angka.objek_id, nilai_angka.atribut_id, definisi_atribut.kode_atribut\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Kolom nilai_angka menyimpan nilai angka yang mungkin berupa stok produk, dan atribut_id 'stock' ada dalam definisi_atribut.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "nilai_teks.objek_id, nilai_teks.atribut_id, definisi_atribut.kode_atribut",
+        "confidence": "sedang",
+        "alasan": "Kolom nilai_teks menyimpan nilai teks yang mungkin berupa nama produk, dan atribut_id 'name' ada dalam definisi_atribut."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "nilai_angka.objek_id, nilai_angka.atribut_id, definisi_atribut.kode_atribut",
+        "confidence": "sedang",
+        "alasan": "Kolom nilai_angka menyimpan nilai angka yang mungkin berupa harga produk, dan atribut_id 'price' ada dalam definisi_atribut."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "nilai_angka.objek_id, nilai_angka.atribut_id, definisi_atribut.kode_atribut",
+        "confidence": "sedang",
+        "alasan": "Kolom nilai_angka menyimpan nilai angka yang mungkin berupa stok produk, dan atribut_id 'stock' ada dalam definisi_atribut."
+      }
+    },
+    "usage": {
+      "completion_tokens": 297,
+      "prompt_tokens": 1184,
+      "total_tokens": 1481,
+      "prompt_tokens_details": {
+        "cached_tokens": 1183
+      }
+    }
+  }
+]

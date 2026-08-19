@@ -1,0 +1,66 @@
+[
+  {
+    "run": 1,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"attr_value_text.object_id, attr_value_text.attribute_id, attribute_definitions.attribute_code\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Kolom attr_value_text menyimpan nilai atribut yang dapat berupa nama (attribute_code='name').\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Kolom attr_value_num menyimpan nilai atribut yang dapat berupa harga (attribute_code='price').\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Kolom attr_value_num menyimpan nilai atribut yang dapat berupa stok (attribute_code='stock').\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "attr_value_text.object_id, attr_value_text.attribute_id, attribute_definitions.attribute_code",
+        "confidence": "tinggi",
+        "alasan": "Kolom attr_value_text menyimpan nilai atribut yang dapat berupa nama (attribute_code='name')."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code",
+        "confidence": "tinggi",
+        "alasan": "Kolom attr_value_num menyimpan nilai atribut yang dapat berupa harga (attribute_code='price')."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code",
+        "confidence": "tinggi",
+        "alasan": "Kolom attr_value_num menyimpan nilai atribut yang dapat berupa stok (attribute_code='stock')."
+      }
+    },
+    "usage": {
+      "completion_tokens": 240,
+      "prompt_tokens": 1527,
+      "total_tokens": 1767,
+      "prompt_tokens_details": {
+        "cached_tokens": 994
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"attr_value_text.object_id, attr_value_text.attribute_id, attribute_definitions.attribute_code\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Kolom attr_value_text menyimpan nilai atribut yang dapat berupa nama (attribute_code='name').\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Kolom attr_value_num menyimpan nilai atribut yang dapat berupa harga (attribute_code='price').\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Kolom attr_value_num menyimpan nilai atribut yang dapat berupa stok (attribute_code='stock').\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "attr_value_text.object_id, attr_value_text.attribute_id, attribute_definitions.attribute_code",
+        "confidence": "tinggi",
+        "alasan": "Kolom attr_value_text menyimpan nilai atribut yang dapat berupa nama (attribute_code='name')."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code",
+        "confidence": "tinggi",
+        "alasan": "Kolom attr_value_num menyimpan nilai atribut yang dapat berupa harga (attribute_code='price')."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code",
+        "confidence": "tinggi",
+        "alasan": "Kolom attr_value_num menyimpan nilai atribut yang dapat berupa stok (attribute_code='stock')."
+      }
+    },
+    "usage": {
+      "completion_tokens": 240,
+      "prompt_tokens": 1527,
+      "total_tokens": 1767,
+      "prompt_tokens_details": {
+        "cached_tokens": 1526
+      }
+    }
+  }
+]

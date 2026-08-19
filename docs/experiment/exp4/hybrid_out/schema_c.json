@@ -110,5 +110,7 @@
       "from": "public.penjualan.kode_barang",
       "to": "public.barang.kode"
     }
-  ]
+  ],
+  "unique_columns": [],
+  "eav_clusters": []
 }

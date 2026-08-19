@@ -1,0 +1,66 @@
+[
+  {
+    "run": 1,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": \"true\",\n  \"source\": \"attr_value_text.object_id, attr_value_text.attribute_id, attribute_definitions.attribute_code\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Nama produk dapat ditemukan melalui tabel attr_value_text dengan attribute_code 'name' yang terhubung ke tabel attribute_definitions.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": \"true\",\n  \"source\": \"attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Harga produk dapat ditemukan melalui tabel attr_value_num dengan attribute_code 'price' yang terhubung ke tabel attribute_definitions.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": \"true\",\n  \"source\": \"attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Stok produk dapat ditemukan melalui tabel attr_value_num dengan attribute_code 'stock' yang terhubung ke tabel attribute_definitions.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "attr_value_text.object_id, attr_value_text.attribute_id, attribute_definitions.attribute_code",
+        "confidence": "sedang",
+        "alasan": "Nama produk dapat ditemukan melalui tabel attr_value_text dengan attribute_code 'name' yang terhubung ke tabel attribute_definitions."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code",
+        "confidence": "sedang",
+        "alasan": "Harga produk dapat ditemukan melalui tabel attr_value_num dengan attribute_code 'price' yang terhubung ke tabel attribute_definitions."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code",
+        "confidence": "sedang",
+        "alasan": "Stok produk dapat ditemukan melalui tabel attr_value_num dengan attribute_code 'stock' yang terhubung ke tabel attribute_definitions."
+      }
+    },
+    "usage": {
+      "completion_tokens": 259,
+      "prompt_tokens": 1320,
+      "total_tokens": 1579,
+      "prompt_tokens_details": {
+        "cached_tokens": 894
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": \"true\",\n  \"source\": \"attr_value_text.object_id, attr_value_text.attribute_id, attribute_definitions.attribute_code\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Nama produk dapat ditemukan melalui tabel attr_value_text dengan attribute_code 'name' yang terhubung ke tabel attribute_definitions.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": \"true\",\n  \"source\": \"attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Harga produk dapat ditemukan melalui tabel attr_value_num dengan attribute_code 'price' yang terhubung ke tabel attribute_definitions.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": \"true\",\n  \"source\": \"attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Stok produk dapat ditemukan melalui tabel attr_value_num dengan attribute_code 'stock' yang terhubung ke tabel attribute_definitions.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "attr_value_text.object_id, attr_value_text.attribute_id, attribute_definitions.attribute_code",
+        "confidence": "sedang",
+        "alasan": "Nama produk dapat ditemukan melalui tabel attr_value_text dengan attribute_code 'name' yang terhubung ke tabel attribute_definitions."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code",
+        "confidence": "sedang",
+        "alasan": "Harga produk dapat ditemukan melalui tabel attr_value_num dengan attribute_code 'price' yang terhubung ke tabel attribute_definitions."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id, attr_value_num.attribute_id, attribute_definitions.attribute_code",
+        "confidence": "sedang",
+        "alasan": "Stok produk dapat ditemukan melalui tabel attr_value_num dengan attribute_code 'stock' yang terhubung ke tabel attribute_definitions."
+      }
+    },
+    "usage": {
+      "completion_tokens": 259,
+      "prompt_tokens": 1320,
+      "total_tokens": 1579,
+      "prompt_tokens_details": {
+        "cached_tokens": 1319
+      }
+    }
+  }
+]

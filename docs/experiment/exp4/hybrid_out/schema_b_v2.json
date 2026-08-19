@@ -217,5 +217,24 @@
       "from": "public.order_lines.order_id",
       "to": "public.orders.order_id"
     }
+  ],
+  "unique_columns": [
+    "public|attribute_definitions|attribute_code"
+  ],
+  "eav_clusters": [
+    {
+      "value_tables": [
+        "attr_value_date",
+        "attr_value_num",
+        "attr_value_text"
+      ],
+      "parents": [
+        "attribute_definitions",
+        "objects"
+      ],
+      "definitions_table": "attribute_definitions",
+      "discriminator": "attribute_code",
+      "note": "Skema memakai pola EAV: baris di tabel nilai menyimpan satu nilai per atribut; makna baris ditentukan oleh kolom kode di tabel definisi."
+    }
   ]
 }

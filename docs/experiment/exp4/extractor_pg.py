@@ -82,6 +82,116 @@ def list_foreign_keys(dbname):
     return run_psql(dbname, sql)
 
 
+def list_unique_columns(dbname):
+    """Kolom yang termasuk index/constraint UNIQUE NON-PK (untuk deteksi EAV:
+    tabel definisi atribut biasanya punya kolom kode UNIQUE). Output
+    'schema|table|column'."""
+    sql = ("""SELECT n.nspname || '|' || c.relname || '|' || a.attname
+              FROM pg_index i
+              JOIN pg_class c ON c.oid=i.indrelid
+              JOIN pg_namespace n ON n.oid=c.relnamespace
+              JOIN pg_attribute a ON a.attrelid=c.oid AND a.attnum=ANY(i.indkey)
+              WHERE i.indisunique AND NOT i.indisprimary
+                AND n.nspname NOT IN ('pg_catalog','information_schema','pg_toast')
+              ORDER BY n.nspname, c.relname, a.attnum;""")
+    return run_psql(dbname, sql)
+
+
+def detect_eav(data):
+    """Deteksi pola EAV secara STRUKTURAL dan generik (tanpa mengandalkan nama
+    tabel tertentu), dari schema.json hasil ekstraksi.
+
+    Definisi tabel nilai (candidate):
+      - PK komposit (>= 2 kolom) dan SEMUA kolom PK adalah kolom FK;
+      - punya >= 1 kolom yang BUKAN PK dan BUKAN FK (kolom nilai).
+
+    Klaster EAV: >= 2 tabel nilai yang mereferensikan 2 parent yang SAMA.
+    Di antara parent, tabel 'definisi' diidentifikasi sebagai parent yang punya
+    kolom varchar non-PK non-FK yang UNIQUE (atau nama mirip kode/nama), yang
+    menjadi pembeda makna baris nilai.
+
+    Return: list of dict {value_tables, parents, definitions_table,
+    discriminator, note}.
+    """
+    from collections import defaultdict
+
+    def qkey(schema, table):
+        return schema + "." + table
+
+    tables = {qkey(t["schema"], t["table"]): t for t in data["tables"]}
+    unique_cols = defaultdict(set)
+    for u in data.get("unique_columns", []):
+        parts = u.split("|")
+        if len(parts) == 3:
+            unique_cols[qkey(parts[0], parts[1])].add(parts[2])
+
+    fk_from_cols = defaultdict(list)
+    fk_out = defaultdict(list)
+    for f in data["foreign_keys"]:
+        fs = f["from"].split(".")
+        ts = f["to"].split(".")
+        if len(fs) == 3 and len(ts) == 3:
+            src = qkey(fs[0], fs[1])
+            dst = qkey(ts[0], ts[1])
+            fk_from_cols[src].append(fs[2])
+            fk_out[src].append((fs[2], dst))
+
+    value_tables = []
+    for key, t in tables.items():
+        pk = set(t["primary_key"])
+        fks = set(fk_from_cols.get(key, []))
+        if len(pk) < 2 or not pk.issubset(fks):
+            continue
+        value_cols = [c["name"] for c in t["columns"]
+                      if c["name"] not in pk and c["name"] not in fks]
+        if not value_cols:
+            continue
+        parents = sorted({dst for _, dst in fk_out.get(key, [])})
+        value_tables.append({"key": key, "table": t["table"],
+                             "value_columns": value_cols, "parents": parents})
+
+    groups = defaultdict(list)
+    for vt in value_tables:
+        groups[tuple(vt["parents"])].append(vt)
+
+    code_like = ("code", "kode", "nama", "name", "label", "type", "domain")
+    clusters = []
+    for parents, vts in groups.items():
+        if len(vts) < 2 or len(parents) != 2:
+            continue
+        def_table = None
+        def_col = None
+        for pkey in parents:
+            pt = tables.get(pkey)
+            if not pt:
+                continue
+            for col in pt["columns"]:
+                if col["name"] in pt["primary_key"]:
+                    continue
+                is_str = (col["type"].startswith("character varying")
+                          or col["type"] == "text")
+                is_unique = col["name"] in unique_cols.get(pkey, set())
+                if is_str and (is_unique
+                               or any(s in col["name"].lower() for s in code_like)):
+                    def_table = pt["table"]
+                    def_col = col["name"]
+                    break
+            if def_table:
+                break
+        clusters.append({
+            "value_tables": [vt["table"] for vt in vts],
+            "parents": [tables[p]["table"] for p in parents],
+            "definitions_table": def_table,
+            "discriminator": def_col,
+            "note": ("Skema memakai pola EAV: baris di tabel nilai menyimpan "
+                     "satu nilai per atribut; makna baris ditentukan oleh "
+                     "kolom kode di tabel definisi." if def_table else
+                     "Pola EAV terdeteksi tetapi tabel definisi/pembeda makna "
+                     "tidak teridentifikasi."),
+        })
+    return clusters
+
+
 def extract(dbname):
     tables = list_tables(dbname)
     result = {"tables": []}
@@ -105,6 +215,8 @@ def extract(dbname):
         parts = ln.split(" -> ")
         fks.append({"from": parts[0], "to": parts[1]})
     result["foreign_keys"] = fks
+    result["unique_columns"] = list_unique_columns(dbname)
+    result["eav_clusters"] = detect_eav(result)
     return result
 
 
@@ -121,3 +233,7 @@ if __name__ == "__main__":
     print("FK:")
     for f in data["foreign_keys"]:
         print(f"  {f['from']} -> {f['to']}")
+    print("EAV clusters:")
+    for c in data["eav_clusters"]:
+        print(f"  value_tables={c['value_tables']} parents={c['parents']} "
+              f"definitions={c['definitions_table']}.{c['discriminator']}")

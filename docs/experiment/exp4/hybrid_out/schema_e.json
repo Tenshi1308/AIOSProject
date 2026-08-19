@@ -1,0 +1,177 @@
+{
+  "tables": [
+    {
+      "schema": "public",
+      "table": "definisi_atribut",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "atribut_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "kode_atribut",
+          "type": "character varying(40)",
+          "nullable": false
+        },
+        {
+          "name": "domain_atribut",
+          "type": "character varying(10)",
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "atribut_id"
+      ]
+    },
+    {
+      "schema": "public",
+      "table": "nilai_angka",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "objek_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "atribut_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "nilai_angka",
+          "type": "numeric(15,2)",
+          "nullable": true
+        }
+      ],
+      "primary_key": [
+        "objek_id",
+        "atribut_id"
+      ]
+    },
+    {
+      "schema": "public",
+      "table": "nilai_tanggal",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "objek_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "atribut_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "nilai_tanggal",
+          "type": "date",
+          "nullable": true
+        }
+      ],
+      "primary_key": [
+        "objek_id",
+        "atribut_id"
+      ]
+    },
+    {
+      "schema": "public",
+      "table": "nilai_teks",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "objek_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "atribut_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "nilai_teks",
+          "type": "character varying(255)",
+          "nullable": true
+        }
+      ],
+      "primary_key": [
+        "objek_id",
+        "atribut_id"
+      ]
+    },
+    {
+      "schema": "public",
+      "table": "objek",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "objek_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "tipe_objek",
+          "type": "character varying(30)",
+          "nullable": false
+        },
+        {
+          "name": "catatan",
+          "type": "jsonb",
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "objek_id"
+      ]
+    }
+  ],
+  "foreign_keys": [
+    {
+      "from": "public.nilai_angka.atribut_id",
+      "to": "public.definisi_atribut.atribut_id"
+    },
+    {
+      "from": "public.nilai_angka.objek_id",
+      "to": "public.objek.objek_id"
+    },
+    {
+      "from": "public.nilai_tanggal.atribut_id",
+      "to": "public.definisi_atribut.atribut_id"
+    },
+    {
+      "from": "public.nilai_tanggal.objek_id",
+      "to": "public.objek.objek_id"
+    },
+    {
+      "from": "public.nilai_teks.atribut_id",
+      "to": "public.definisi_atribut.atribut_id"
+    },
+    {
+      "from": "public.nilai_teks.objek_id",
+      "to": "public.objek.objek_id"
+    }
+  ],
+  "unique_columns": [
+    "public|definisi_atribut|kode_atribut"
+  ],
+  "eav_clusters": [
+    {
+      "value_tables": [
+        "nilai_angka",
+        "nilai_tanggal",
+        "nilai_teks"
+      ],
+      "parents": [
+        "definisi_atribut",
+        "objek"
+      ],
+      "definitions_table": "definisi_atribut",
+      "discriminator": "kode_atribut",
+      "note": "Skema memakai pola EAV: baris di tabel nilai menyimpan satu nilai per atribut; makna baris ditentukan oleh kolom kode di tabel definisi."
+    }
+  ]
+}

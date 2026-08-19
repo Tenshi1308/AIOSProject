@@ -31,5 +31,7 @@
       ]
     }
   ],
-  "foreign_keys": []
+  "foreign_keys": [],
+  "unique_columns": [],
+  "eav_clusters": []
 }

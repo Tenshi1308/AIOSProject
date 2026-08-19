@@ -1,0 +1,66 @@
+[
+  {
+    "run": 1,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"nilai_teks.objek_id\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Nama produk tersedia dalam kolom nilai_teks dengan objek_id yang terkait dengan objek.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"nilai_angka.objek_id\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga produk tersedia dalam kolom nilai_angka dengan objek_id yang terkait dengan objek.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"nilai_angka.objek_id\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Stok produk tersedia dalam kolom nilai_angka dengan objek_id yang terkait dengan objek.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "nilai_teks.objek_id",
+        "confidence": "tinggi",
+        "alasan": "Nama produk tersedia dalam kolom nilai_teks dengan objek_id yang terkait dengan objek."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "nilai_angka.objek_id",
+        "confidence": "tinggi",
+        "alasan": "Harga produk tersedia dalam kolom nilai_angka dengan objek_id yang terkait dengan objek."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "nilai_angka.objek_id",
+        "confidence": "tinggi",
+        "alasan": "Stok produk tersedia dalam kolom nilai_angka dengan objek_id yang terkait dengan objek."
+      }
+    },
+    "usage": {
+      "completion_tokens": 208,
+      "prompt_tokens": 1059,
+      "total_tokens": 1267,
+      "prompt_tokens_details": {
+        "cached_tokens": 177
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"nilai_teks.objek_id\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Nama produk tersedia dalam kolom nilai_teks dengan objek_id yang terkait dengan objek.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"nilai_angka.objek_id\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga produk tersedia dalam kolom nilai_angka dengan objek_id yang terkait dengan objek.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"nilai_angka.objek_id\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Stok produk tersedia dalam kolom nilai_angka dengan objek_id yang terkait dengan objek.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "nilai_teks.objek_id",
+        "confidence": "tinggi",
+        "alasan": "Nama produk tersedia dalam kolom nilai_teks dengan objek_id yang terkait dengan objek."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "nilai_angka.objek_id",
+        "confidence": "tinggi",
+        "alasan": "Harga produk tersedia dalam kolom nilai_angka dengan objek_id yang terkait dengan objek."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "nilai_angka.objek_id",
+        "confidence": "tinggi",
+        "alasan": "Stok produk tersedia dalam kolom nilai_angka dengan objek_id yang terkait dengan objek."
+      }
+    },
+    "usage": {
+      "completion_tokens": 208,
+      "prompt_tokens": 1059,
+      "total_tokens": 1267,
+      "prompt_tokens_details": {
+        "cached_tokens": 1058
+      }
+    }
+  }
+]

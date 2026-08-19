@@ -302,5 +302,7 @@
       "from": "public.products.supplier_id",
       "to": "public.suppliers.supplier_id"
     }
-  ]
+  ],
+  "unique_columns": [],
+  "eav_clusters": []
 }

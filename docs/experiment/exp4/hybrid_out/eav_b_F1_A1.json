@@ -1,0 +1,66 @@
+[
+  {
+    "run": 1,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"attr_value_text.object_id\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Nama produk dapat ditemukan melalui atribut text, meskipun tidak ada kolom literal bernama 'name'.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"attr_value_num.object_id\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga produk dapat ditemukan melalui atribut numerik, dengan tipe numeric yang tepat.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"attr_value_num.object_id\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Stok produk dapat ditemukan melalui atribut numerik, dengan tipe numeric yang tepat.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "attr_value_text.object_id",
+        "confidence": "sedang",
+        "alasan": "Nama produk dapat ditemukan melalui atribut text, meskipun tidak ada kolom literal bernama 'name'."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id",
+        "confidence": "tinggi",
+        "alasan": "Harga produk dapat ditemukan melalui atribut numerik, dengan tipe numeric yang tepat."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id",
+        "confidence": "tinggi",
+        "alasan": "Stok produk dapat ditemukan melalui atribut numerik, dengan tipe numeric yang tepat."
+      }
+    },
+    "usage": {
+      "completion_tokens": 210,
+      "prompt_tokens": 1249,
+      "total_tokens": 1459,
+      "prompt_tokens_details": {
+        "cached_tokens": 894
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"attr_value_text.object_id\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Nama produk dapat ditemukan melalui atribut text, meskipun tidak ada kolom literal bernama 'name'.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"attr_value_num.object_id\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga produk dapat ditemukan melalui atribut numerik, dengan tipe numeric yang tepat.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"attr_value_num.object_id\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Stok produk dapat ditemukan melalui atribut numerik, dengan tipe numeric yang tepat.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "attr_value_text.object_id",
+        "confidence": "sedang",
+        "alasan": "Nama produk dapat ditemukan melalui atribut text, meskipun tidak ada kolom literal bernama 'name'."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id",
+        "confidence": "tinggi",
+        "alasan": "Harga produk dapat ditemukan melalui atribut numerik, dengan tipe numeric yang tepat."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "attr_value_num.object_id",
+        "confidence": "tinggi",
+        "alasan": "Stok produk dapat ditemukan melalui atribut numerik, dengan tipe numeric yang tepat."
+      }
+    },
+    "usage": {
+      "completion_tokens": 210,
+      "prompt_tokens": 1249,
+      "total_tokens": 1459,
+      "prompt_tokens_details": {
+        "cached_tokens": 1248
+      }
+    }
+  }
+]
