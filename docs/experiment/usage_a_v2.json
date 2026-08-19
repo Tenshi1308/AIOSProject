@@ -1,0 +1,18 @@
+{
+  "estimated_cost_usd": 0.0,
+  "cost_status": "unknown",
+  "cost_source": "none",
+  "input_tokens": 642,
+  "output_tokens": 85,
+  "cache_read_tokens": 20098,
+  "cache_write_tokens": 0,
+  "reasoning_tokens": 0,
+  "total_tokens": 20825,
+  "api_calls": 4,
+  "model": "Qwen2.5-3B-Instruct-Q4_K_M",
+  "provider": "custom",
+  "session_id": "20260818_222239_32ce4e",
+  "completed": true,
+  "failed": false,
+  "service_tier": null
+}
