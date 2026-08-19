@@ -1,0 +1,66 @@
+[
+  {
+    "run": 1,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"products.product_name\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Nama produk tersedia dalam tabel products dengan nama kolom 'product_name'.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"products.unit_price\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga produk tersedia dalam tabel products dengan nama kolom 'unit_price'.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"products.units_in_stock\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Stok produk tersedia dalam tabel products dengan nama kolom 'units_in_stock'.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "products.product_name",
+        "confidence": "tinggi",
+        "alasan": "Nama produk tersedia dalam tabel products dengan nama kolom 'product_name'."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "products.unit_price",
+        "confidence": "tinggi",
+        "alasan": "Harga produk tersedia dalam tabel products dengan nama kolom 'unit_price'."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "products.units_in_stock",
+        "confidence": "tinggi",
+        "alasan": "Stok produk tersedia dalam tabel products dengan nama kolom 'units_in_stock'."
+      }
+    },
+    "usage": {
+      "completion_tokens": 183,
+      "prompt_tokens": 1360,
+      "total_tokens": 1543,
+      "prompt_tokens_details": {
+        "cached_tokens": 4
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"products.product_name\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Nama produk tersedia dalam kolom 'product_name' dari tabel 'products'.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"products.unit_price\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga produk tersedia dalam kolom 'unit_price' dari tabel 'products'.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"products.units_in_stock\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Stok produk tersedia dalam kolom 'units_in_stock' dari tabel 'products'.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "products.product_name",
+        "confidence": "tinggi",
+        "alasan": "Nama produk tersedia dalam kolom 'product_name' dari tabel 'products'."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "products.unit_price",
+        "confidence": "tinggi",
+        "alasan": "Harga produk tersedia dalam kolom 'unit_price' dari tabel 'products'."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "products.units_in_stock",
+        "confidence": "tinggi",
+        "alasan": "Stok produk tersedia dalam kolom 'units_in_stock' dari tabel 'products'."
+      }
+    },
+    "usage": {
+      "completion_tokens": 186,
+      "prompt_tokens": 1360,
+      "total_tokens": 1546,
+      "prompt_tokens_details": {
+        "cached_tokens": 1359
+      }
+    }
+  }
+]

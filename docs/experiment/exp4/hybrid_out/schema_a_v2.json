@@ -1,0 +1,306 @@
+{
+  "tables": [
+    {
+      "schema": "app_schema",
+      "table": "warehouse",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "warehouse_id",
+          "type": "smallint",
+          "nullable": false
+        },
+        {
+          "name": "warehouse_name",
+          "type": "character varying(40)",
+          "nullable": false
+        },
+        {
+          "name": "city",
+          "type": "character varying(15)",
+          "nullable": true
+        }
+      ],
+      "primary_key": [
+        "warehouse_id"
+      ]
+    },
+    {
+      "schema": "public",
+      "table": "categories",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "category_id",
+          "type": "smallint",
+          "nullable": false
+        },
+        {
+          "name": "category_name",
+          "type": "character varying(15)",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": true
+        }
+      ],
+      "primary_key": [
+        "category_id"
+      ]
+    },
+    {
+      "schema": "public",
+      "table": "order_details",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "order_id",
+          "type": "smallint",
+          "nullable": false
+        },
+        {
+          "name": "product_id",
+          "type": "smallint",
+          "nullable": false
+        },
+        {
+          "name": "unit_price",
+          "type": "real",
+          "nullable": true
+        },
+        {
+          "name": "quantity",
+          "type": "smallint",
+          "nullable": true
+        },
+        {
+          "name": "discount",
+          "type": "real",
+          "nullable": true
+        }
+      ],
+      "primary_key": [
+        "order_id",
+        "product_id"
+      ]
+    },
+    {
+      "schema": "public",
+      "table": "orders",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "order_id",
+          "type": "smallint",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "character varying(5)",
+          "nullable": true
+        },
+        {
+          "name": "employee_id",
+          "type": "smallint",
+          "nullable": true
+        },
+        {
+          "name": "order_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "required_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "shipped_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "ship_via",
+          "type": "smallint",
+          "nullable": true
+        },
+        {
+          "name": "freight",
+          "type": "real",
+          "nullable": true
+        },
+        {
+          "name": "ship_name",
+          "type": "character varying(40)",
+          "nullable": true
+        }
+      ],
+      "primary_key": [
+        "order_id"
+      ]
+    },
+    {
+      "schema": "public",
+      "table": "product_catalog",
+      "kind": "v",
+      "columns": [
+        {
+          "name": "product_id",
+          "type": "smallint",
+          "nullable": true
+        },
+        {
+          "name": "product_name",
+          "type": "character varying(40)",
+          "nullable": true
+        },
+        {
+          "name": "unit_price",
+          "type": "real",
+          "nullable": true
+        },
+        {
+          "name": "units_in_stock",
+          "type": "smallint",
+          "nullable": true
+        }
+      ],
+      "primary_key": []
+    },
+    {
+      "schema": "public",
+      "table": "products",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "product_id",
+          "type": "smallint",
+          "nullable": false
+        },
+        {
+          "name": "product_name",
+          "type": "character varying(40)",
+          "nullable": false
+        },
+        {
+          "name": "supplier_id",
+          "type": "smallint",
+          "nullable": true
+        },
+        {
+          "name": "category_id",
+          "type": "smallint",
+          "nullable": true
+        },
+        {
+          "name": "quantity_per_unit",
+          "type": "character varying(20)",
+          "nullable": true
+        },
+        {
+          "name": "unit_price",
+          "type": "real",
+          "nullable": true
+        },
+        {
+          "name": "units_in_stock",
+          "type": "smallint",
+          "nullable": true
+        },
+        {
+          "name": "units_on_order",
+          "type": "smallint",
+          "nullable": true
+        },
+        {
+          "name": "reorder_level",
+          "type": "smallint",
+          "nullable": true
+        },
+        {
+          "name": "discontinued",
+          "type": "smallint",
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "product_id"
+      ]
+    },
+    {
+      "schema": "public",
+      "table": "suppliers",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "supplier_id",
+          "type": "smallint",
+          "nullable": false
+        },
+        {
+          "name": "company_name",
+          "type": "character varying(40)",
+          "nullable": false
+        },
+        {
+          "name": "contact_name",
+          "type": "character varying(30)",
+          "nullable": true
+        },
+        {
+          "name": "contact_title",
+          "type": "character varying(30)",
+          "nullable": true
+        },
+        {
+          "name": "address",
+          "type": "character varying(60)",
+          "nullable": true
+        },
+        {
+          "name": "city",
+          "type": "character varying(15)",
+          "nullable": true
+        },
+        {
+          "name": "postal_code",
+          "type": "character varying(10)",
+          "nullable": true
+        },
+        {
+          "name": "country",
+          "type": "character varying(15)",
+          "nullable": true
+        },
+        {
+          "name": "phone",
+          "type": "character varying(24)",
+          "nullable": true
+        }
+      ],
+      "primary_key": [
+        "supplier_id"
+      ]
+    }
+  ],
+  "foreign_keys": [
+    {
+      "from": "public.order_details.order_id",
+      "to": "public.orders.order_id"
+    },
+    {
+      "from": "public.order_details.product_id",
+      "to": "public.products.product_id"
+    },
+    {
+      "from": "public.products.category_id",
+      "to": "public.categories.category_id"
+    },
+    {
+      "from": "public.products.supplier_id",
+      "to": "public.suppliers.supplier_id"
+    }
+  ]
+}

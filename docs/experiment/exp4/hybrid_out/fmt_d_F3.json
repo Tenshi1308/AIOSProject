@@ -1,0 +1,66 @@
+[
+  {
+    "run": 1,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"tbl_a.nama_barang\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Nama barang adalah kolom yang ditemukan dalam skema dan memiliki tipe data string, yang sesuai dengan konsep canonical.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"tbl_a.harga\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga adalah kolom yang ditemukan dalam skema dan memiliki tipe data numeric, yang sesuai dengan konsep canonical.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"tbl_a.qty_stok\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Qty stok adalah kolom yang ditemukan dalam skema dan memiliki tipe data integer, yang sesuai dengan konsep canonical.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "tbl_a.nama_barang",
+        "confidence": "tinggi",
+        "alasan": "Nama barang adalah kolom yang ditemukan dalam skema dan memiliki tipe data string, yang sesuai dengan konsep canonical."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "tbl_a.harga",
+        "confidence": "tinggi",
+        "alasan": "Harga adalah kolom yang ditemukan dalam skema dan memiliki tipe data numeric, yang sesuai dengan konsep canonical."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "tbl_a.qty_stok",
+        "confidence": "tinggi",
+        "alasan": "Qty stok adalah kolom yang ditemukan dalam skema dan memiliki tipe data integer, yang sesuai dengan konsep canonical."
+      }
+    },
+    "usage": {
+      "completion_tokens": 217,
+      "prompt_tokens": 584,
+      "total_tokens": 801,
+      "prompt_tokens_details": {
+        "cached_tokens": 583
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"tbl_a.nama_barang\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Nama barang adalah kolom yang ditemukan dalam skema dan memiliki tipe data string, yang sesuai dengan konsep canonical.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"tbl_a.harga\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga adalah kolom yang ditemukan dalam skema dan memiliki tipe data numeric, yang sesuai dengan konsep canonical.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"tbl_a.qty_stok\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Qty stok adalah kolom yang ditemukan dalam skema dan memiliki tipe data integer, yang sesuai dengan konsep canonical.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "tbl_a.nama_barang",
+        "confidence": "tinggi",
+        "alasan": "Nama barang adalah kolom yang ditemukan dalam skema dan memiliki tipe data string, yang sesuai dengan konsep canonical."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "tbl_a.harga",
+        "confidence": "tinggi",
+        "alasan": "Harga adalah kolom yang ditemukan dalam skema dan memiliki tipe data numeric, yang sesuai dengan konsep canonical."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "tbl_a.qty_stok",
+        "confidence": "tinggi",
+        "alasan": "Qty stok adalah kolom yang ditemukan dalam skema dan memiliki tipe data integer, yang sesuai dengan konsep canonical."
+      }
+    },
+    "usage": {
+      "completion_tokens": 217,
+      "prompt_tokens": 584,
+      "total_tokens": 801,
+      "prompt_tokens_details": {
+        "cached_tokens": 583
+      }
+    }
+  }
+]

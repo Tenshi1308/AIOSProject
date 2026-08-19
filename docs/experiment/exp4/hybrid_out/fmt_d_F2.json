@@ -1,0 +1,66 @@
+[
+  {
+    "run": 1,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"tbl_a.nama_barang\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Nama barang adalah kolom yang langsung menyimpan nama produk.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"tbl_a.harga\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga adalah kolom yang langsung menyimpan harga produk.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"tbl_a.qty_stok\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Qty_stok adalah kolom yang langsung menyimpan stok produk.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "tbl_a.nama_barang",
+        "confidence": "tinggi",
+        "alasan": "Nama barang adalah kolom yang langsung menyimpan nama produk."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "tbl_a.harga",
+        "confidence": "tinggi",
+        "alasan": "Harga adalah kolom yang langsung menyimpan harga produk."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "tbl_a.qty_stok",
+        "confidence": "tinggi",
+        "alasan": "Qty_stok adalah kolom yang langsung menyimpan stok produk."
+      }
+    },
+    "usage": {
+      "completion_tokens": 176,
+      "prompt_tokens": 596,
+      "total_tokens": 772,
+      "prompt_tokens_details": {
+        "cached_tokens": 174
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"tbl_a.nama_barang\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Nama barang adalah kolom yang langsung menyimpan nama produk.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"tbl_a.harga\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga adalah kolom yang langsung menyimpan harga produk.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"tbl_a.qty_stok\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Qty_stok adalah kolom yang langsung menyimpan stok produk.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "tbl_a.nama_barang",
+        "confidence": "tinggi",
+        "alasan": "Nama barang adalah kolom yang langsung menyimpan nama produk."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "tbl_a.harga",
+        "confidence": "tinggi",
+        "alasan": "Harga adalah kolom yang langsung menyimpan harga produk."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "tbl_a.qty_stok",
+        "confidence": "tinggi",
+        "alasan": "Qty_stok adalah kolom yang langsung menyimpan stok produk."
+      }
+    },
+    "usage": {
+      "completion_tokens": 176,
+      "prompt_tokens": 596,
+      "total_tokens": 772,
+      "prompt_tokens_details": {
+        "cached_tokens": 595
+      }
+    }
+  }
+]

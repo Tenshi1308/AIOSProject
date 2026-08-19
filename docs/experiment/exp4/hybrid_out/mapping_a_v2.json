@@ -1,0 +1,66 @@
+[
+  {
+    "run": 1,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"public.product_catalog.product_name\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Nama produk tersedia dalam tabel public.product_catalog.product_name\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"public.product_catalog.unit_price\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga produk tersedia dalam tabel public.product_catalog.unit_price\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"public.product_catalog.units_in_stock\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Stok produk tersedia dalam tabel public.product_catalog.units_in_stock\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "public.product_catalog.product_name",
+        "confidence": "tinggi",
+        "alasan": "Nama produk tersedia dalam tabel public.product_catalog.product_name"
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "public.product_catalog.unit_price",
+        "confidence": "tinggi",
+        "alasan": "Harga produk tersedia dalam tabel public.product_catalog.unit_price"
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "public.product_catalog.units_in_stock",
+        "confidence": "tinggi",
+        "alasan": "Stok produk tersedia dalam tabel public.product_catalog.units_in_stock"
+      }
+    },
+    "usage": {
+      "completion_tokens": 177,
+      "prompt_tokens": 1628,
+      "total_tokens": 1805,
+      "prompt_tokens_details": {
+        "cached_tokens": 174
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"public.product_catalog.product_name\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Nama produk tersedia dalam tabel public.product_catalog.product_name\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"public.product_catalog.unit_price\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga produk tersedia dalam tabel public.product_catalog.unit_price\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"public.product_catalog.units_in_stock\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Stok produk tersedia dalam tabel public.product_catalog.units_in_stock\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "public.product_catalog.product_name",
+        "confidence": "tinggi",
+        "alasan": "Nama produk tersedia dalam tabel public.product_catalog.product_name"
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "public.product_catalog.unit_price",
+        "confidence": "tinggi",
+        "alasan": "Harga produk tersedia dalam tabel public.product_catalog.unit_price"
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "public.product_catalog.units_in_stock",
+        "confidence": "tinggi",
+        "alasan": "Stok produk tersedia dalam tabel public.product_catalog.units_in_stock"
+      }
+    },
+    "usage": {
+      "completion_tokens": 177,
+      "prompt_tokens": 1628,
+      "total_tokens": 1805,
+      "prompt_tokens_details": {
+        "cached_tokens": 1627
+      }
+    }
+  }
+]

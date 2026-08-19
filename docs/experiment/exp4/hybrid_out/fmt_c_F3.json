@@ -1,0 +1,66 @@
+[
+  {
+    "run": 1,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"barang.nama\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Nama produk terdapat dalam tabel 'barang' dengan nama kolom 'nama'.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"barang.harga_jual\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga jual produk terdapat dalam tabel 'barang' dengan nama kolom 'harga_jual'.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"barang.stok_tersedia\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Stok produk terdapat dalam tabel 'barang' dengan nama kolom 'stok_tersedia'.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "barang.nama",
+        "confidence": "tinggi",
+        "alasan": "Nama produk terdapat dalam tabel 'barang' dengan nama kolom 'nama'."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "barang.harga_jual",
+        "confidence": "tinggi",
+        "alasan": "Harga jual produk terdapat dalam tabel 'barang' dengan nama kolom 'harga_jual'."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "barang.stok_tersedia",
+        "confidence": "tinggi",
+        "alasan": "Stok produk terdapat dalam tabel 'barang' dengan nama kolom 'stok_tersedia'."
+      }
+    },
+    "usage": {
+      "completion_tokens": 199,
+      "prompt_tokens": 868,
+      "total_tokens": 1067,
+      "prompt_tokens_details": {
+        "cached_tokens": 867
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"barang.nama\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Nama produk terdapat dalam tabel 'barang' dengan nama kolom 'nama'.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"barang.harga_jual\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga jual produk terdapat dalam tabel 'barang' dengan nama kolom 'harga_jual'.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"barang.stok_tersedia\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Stok produk terdapat dalam tabel 'barang' dengan nama kolom 'stok_tersedia'.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "barang.nama",
+        "confidence": "tinggi",
+        "alasan": "Nama produk terdapat dalam tabel 'barang' dengan nama kolom 'nama'."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "barang.harga_jual",
+        "confidence": "tinggi",
+        "alasan": "Harga jual produk terdapat dalam tabel 'barang' dengan nama kolom 'harga_jual'."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "barang.stok_tersedia",
+        "confidence": "tinggi",
+        "alasan": "Stok produk terdapat dalam tabel 'barang' dengan nama kolom 'stok_tersedia'."
+      }
+    },
+    "usage": {
+      "completion_tokens": 199,
+      "prompt_tokens": 868,
+      "total_tokens": 1067,
+      "prompt_tokens_details": {
+        "cached_tokens": 867
+      }
+    }
+  }
+]

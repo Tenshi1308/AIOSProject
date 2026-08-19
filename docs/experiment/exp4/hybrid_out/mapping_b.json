@@ -1,0 +1,98 @@
+[
+  {
+    "run": 1,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": \"true\",\n  \"source\": \"objects.object_id -> objects.meta -> attr_value_text.attribute_id -> attr_value_text.attr_value_text\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Nama produk dapat ditemukan melalui object_id -> meta -> atribut text -> nilai text\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": \"true\",\n  \"source\": \"objects.object_id -> objects.meta -> attr_value_num.attribute_id -> attr_value_num.attr_value_num\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Harga produk dapat ditemukan melalui object_id -> meta -> atribut numerik -> nilai numerik\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": \"true\",\n  \"source\": \"objects.object_id -> objects.meta -> attr_value_num.attribute_id -> attr_value_num.attr_value_num\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Stok produk dapat ditemukan melalui object_id -> meta -> atribut numerik -> nilai numerik\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "objects.object_id -> objects.meta -> attr_value_text.attribute_id -> attr_value_text.attr_value_text",
+        "confidence": "sedang",
+        "alasan": "Nama produk dapat ditemukan melalui object_id -> meta -> atribut text -> nilai text"
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "objects.object_id -> objects.meta -> attr_value_num.attribute_id -> attr_value_num.attr_value_num",
+        "confidence": "sedang",
+        "alasan": "Harga produk dapat ditemukan melalui object_id -> meta -> atribut numerik -> nilai numerik"
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "objects.object_id -> objects.meta -> attr_value_num.attribute_id -> attr_value_num.attr_value_num",
+        "confidence": "sedang",
+        "alasan": "Stok produk dapat ditemukan melalui object_id -> meta -> atribut numerik -> nilai numerik"
+      }
+    },
+    "usage": {
+      "completion_tokens": 251,
+      "prompt_tokens": 1200,
+      "total_tokens": 1451,
+      "prompt_tokens_details": {
+        "cached_tokens": 177
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": \"true\",\n  \"source\": \"objects.object_id -> objects.meta -> attr_value_text.attribute_id -> attr_value_text.attr_value_text\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Nama produk dapat ditemukan melalui object_id -> meta -> atribut text -> nilai text\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": \"true\",\n  \"source\": \"objects.object_id -> objects.meta -> attr_value_num.attribute_id -> attr_value_num.attr_value_num\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Harga produk dapat ditemukan melalui object_id -> meta -> atribut numerik -> nilai numerik\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": \"true\",\n  \"source\": \"objects.object_id -> objects.meta -> attr_value_num.attribute_id -> attr_value_num.attr_value_num\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Stok produk dapat ditemukan melalui object_id -> meta -> atribut numerik -> nilai numerik\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "objects.object_id -> objects.meta -> attr_value_text.attribute_id -> attr_value_text.attr_value_text",
+        "confidence": "sedang",
+        "alasan": "Nama produk dapat ditemukan melalui object_id -> meta -> atribut text -> nilai text"
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "objects.object_id -> objects.meta -> attr_value_num.attribute_id -> attr_value_num.attr_value_num",
+        "confidence": "sedang",
+        "alasan": "Harga produk dapat ditemukan melalui object_id -> meta -> atribut numerik -> nilai numerik"
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "objects.object_id -> objects.meta -> attr_value_num.attribute_id -> attr_value_num.attr_value_num",
+        "confidence": "sedang",
+        "alasan": "Stok produk dapat ditemukan melalui object_id -> meta -> atribut numerik -> nilai numerik"
+      }
+    },
+    "usage": {
+      "completion_tokens": 251,
+      "prompt_tokens": 1200,
+      "total_tokens": 1451,
+      "prompt_tokens_details": {
+        "cached_tokens": 1199
+      }
+    }
+  },
+  {
+    "run": 3,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": \"true\",\n  \"source\": \"objects.object_id -> objects.meta -> attr_value_text.attribute_id -> attr_value_text.attr_value_text\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Nama produk dapat ditemukan melalui object_id -> meta -> atribut text -> nilai text\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": \"true\",\n  \"source\": \"objects.object_id -> objects.meta -> attr_value_num.attribute_id -> attr_value_num.attr_value_num\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Harga produk dapat ditemukan melalui object_id -> meta -> atribut numerik -> nilai numerik\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": \"true\",\n  \"source\": \"objects.object_id -> objects.meta -> attr_value_num.attribute_id -> attr_value_num.attr_value_num\",\n  \"confidence\": \"sedang\",\n  \"alasan\": \"Stok produk dapat ditemukan melalui object_id -> meta -> atribut numerik -> nilai numerik\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "objects.object_id -> objects.meta -> attr_value_text.attribute_id -> attr_value_text.attr_value_text",
+        "confidence": "sedang",
+        "alasan": "Nama produk dapat ditemukan melalui object_id -> meta -> atribut text -> nilai text"
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "objects.object_id -> objects.meta -> attr_value_num.attribute_id -> attr_value_num.attr_value_num",
+        "confidence": "sedang",
+        "alasan": "Harga produk dapat ditemukan melalui object_id -> meta -> atribut numerik -> nilai numerik"
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "objects.object_id -> objects.meta -> attr_value_num.attribute_id -> attr_value_num.attr_value_num",
+        "confidence": "sedang",
+        "alasan": "Stok produk dapat ditemukan melalui object_id -> meta -> atribut numerik -> nilai numerik"
+      }
+    },
+    "usage": {
+      "completion_tokens": 251,
+      "prompt_tokens": 1200,
+      "total_tokens": 1451,
+      "prompt_tokens_details": {
+        "cached_tokens": 1199
+      }
+    }
+  }
+]

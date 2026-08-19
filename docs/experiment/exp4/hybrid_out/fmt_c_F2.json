@@ -1,0 +1,66 @@
+[
+  {
+    "run": 1,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"public.barang.nama\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Nama produk terdapat dalam kolom 'nama' dari tabel 'barang', yang merupakan nama tabel yang cocok dengan konsep canonical.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"public.barang.harga_jual\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga jual produk terdapat dalam kolom 'harga_jual' dari tabel 'barang', yang merupakan nama tabel yang cocok dengan konsep canonical.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"public.barang.stok_tersedia\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Stok produk terdapat dalam kolom 'stok_tersedia' dari tabel 'barang', yang merupakan nama tabel yang cocok dengan konsep canonical.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "public.barang.nama",
+        "confidence": "tinggi",
+        "alasan": "Nama produk terdapat dalam kolom 'nama' dari tabel 'barang', yang merupakan nama tabel yang cocok dengan konsep canonical."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "public.barang.harga_jual",
+        "confidence": "tinggi",
+        "alasan": "Harga jual produk terdapat dalam kolom 'harga_jual' dari tabel 'barang', yang merupakan nama tabel yang cocok dengan konsep canonical."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "public.barang.stok_tersedia",
+        "confidence": "tinggi",
+        "alasan": "Stok produk terdapat dalam kolom 'stok_tersedia' dari tabel 'barang', yang merupakan nama tabel yang cocok dengan konsep canonical."
+      }
+    },
+    "usage": {
+      "completion_tokens": 235,
+      "prompt_tokens": 912,
+      "total_tokens": 1147,
+      "prompt_tokens_details": {
+        "cached_tokens": 174
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "```json\n{\n  \"konsep\": \"Product.name\",\n  \"ditemukan\": true,\n  \"source\": \"public.barang.nama\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Nama produk terdapat dalam kolom 'nama' dari tabel 'barang', yang merupakan nama tabel yang cocok dengan konsep canonical.\"\n}\n{\n  \"konsep\": \"Product.price\",\n  \"ditemukan\": true,\n  \"source\": \"public.barang.harga_jual\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Harga jual produk terdapat dalam kolom 'harga_jual' dari tabel 'barang', yang merupakan nama tabel yang cocok dengan konsep canonical.\"\n}\n{\n  \"konsep\": \"Product.stock\",\n  \"ditemukan\": true,\n  \"source\": \"public.barang.stok_tersedia\",\n  \"confidence\": \"tinggi\",\n  \"alasan\": \"Stok produk terdapat dalam kolom 'stok_tersedia' dari tabel 'barang', yang merupakan nama tabel yang cocok dengan konsep canonical.\"\n}\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "public.barang.nama",
+        "confidence": "tinggi",
+        "alasan": "Nama produk terdapat dalam kolom 'nama' dari tabel 'barang', yang merupakan nama tabel yang cocok dengan konsep canonical."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "public.barang.harga_jual",
+        "confidence": "tinggi",
+        "alasan": "Harga jual produk terdapat dalam kolom 'harga_jual' dari tabel 'barang', yang merupakan nama tabel yang cocok dengan konsep canonical."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "public.barang.stok_tersedia",
+        "confidence": "tinggi",
+        "alasan": "Stok produk terdapat dalam kolom 'stok_tersedia' dari tabel 'barang', yang merupakan nama tabel yang cocok dengan konsep canonical."
+      }
+    },
+    "usage": {
+      "completion_tokens": 235,
+      "prompt_tokens": 912,
+      "total_tokens": 1147,
+      "prompt_tokens_details": {
+        "cached_tokens": 911
+      }
+    }
+  }
+]

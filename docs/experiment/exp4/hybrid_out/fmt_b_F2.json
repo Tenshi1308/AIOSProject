@@ -1,0 +1,66 @@
+[
+  {
+    "run": 1,
+    "raw": "```plaintext\nkonsep: Product.name\nditemukan: true\nsource: public.attr_value_text.object_id, public.attr_value_text.attr_value_text\nconfidence: sedang\nalasan: Kolom `attr_value_text` memiliki tipe `character varying(255)`, yang dapat berisi nama produk.\n\nkonsep: Product.price\nditemukan: false\nsource: tidak ada\nconfidence: rendah\nalasan: Tidak ada kolom literal bernama `price` atau representasi yang jelas dari harga produk.\n\nkonsep: Product.stock\nditemukan: true\nsource: public.attr_value_num.object_id, public.attr_value_num.attr_value_num\nconfidence: sedang\nalasan: Kolom `attr_value_num` memiliki tipe `numeric(15,2)`, yang dapat berisi stok produk.\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "public.attr_value_text.object_id, public.attr_value_text.attr_value_text",
+        "confidence": "sedang",
+        "alasan": "Kolom `attr_value_text` memiliki tipe `character varying(255)`, yang dapat berisi nama produk."
+      },
+      "Product.price": {
+        "ditemukan": "false",
+        "source": "tidak ada",
+        "confidence": "rendah",
+        "alasan": "Tidak ada kolom literal bernama `price` atau representasi yang jelas dari harga produk."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "public.attr_value_num.object_id, public.attr_value_num.attr_value_num",
+        "confidence": "sedang",
+        "alasan": "Kolom `attr_value_num` memiliki tipe `numeric(15,2)`, yang dapat berisi stok produk."
+      }
+    },
+    "usage": {
+      "completion_tokens": 178,
+      "prompt_tokens": 1300,
+      "total_tokens": 1478,
+      "prompt_tokens_details": {
+        "cached_tokens": 1299
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "```plaintext\nkonsep: Product.name\nditemukan: true\nsource: public.attr_value_text.object_id, public.attr_value_text.attr_value_text\nconfidence: sedang\nalasan: Kolom `attr_value_text` memiliki tipe `character varying(255)`, yang dapat berisi nama produk.\n\nkonsep: Product.price\nditemukan: false\nsource: tidak ada\nconfidence: rendah\nalasan: Tidak ada kolom literal bernama `price` atau representasi yang jelas dari harga produk.\n\nkonsep: Product.stock\nditemukan: true\nsource: public.attr_value_num.object_id, public.attr_value_num.attr_value_num\nconfidence: sedang\nalasan: Kolom `attr_value_num` memiliki tipe `numeric(15,2)`, yang dapat berisi stok produk.\n```",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "public.attr_value_text.object_id, public.attr_value_text.attr_value_text",
+        "confidence": "sedang",
+        "alasan": "Kolom `attr_value_text` memiliki tipe `character varying(255)`, yang dapat berisi nama produk."
+      },
+      "Product.price": {
+        "ditemukan": "false",
+        "source": "tidak ada",
+        "confidence": "rendah",
+        "alasan": "Tidak ada kolom literal bernama `price` atau representasi yang jelas dari harga produk."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "public.attr_value_num.object_id, public.attr_value_num.attr_value_num",
+        "confidence": "sedang",
+        "alasan": "Kolom `attr_value_num` memiliki tipe `numeric(15,2)`, yang dapat berisi stok produk."
+      }
+    },
+    "usage": {
+      "completion_tokens": 178,
+      "prompt_tokens": 1300,
+      "total_tokens": 1478,
+      "prompt_tokens_details": {
+        "cached_tokens": 1299
+      }
+    }
+  }
+]

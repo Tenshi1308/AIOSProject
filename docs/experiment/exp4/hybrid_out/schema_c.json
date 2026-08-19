@@ -1,0 +1,114 @@
+{
+  "tables": [
+    {
+      "schema": "public",
+      "table": "barang",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "kode",
+          "type": "character varying(20)",
+          "nullable": false
+        },
+        {
+          "name": "nama",
+          "type": "character varying(100)",
+          "nullable": false
+        },
+        {
+          "name": "harga_jual",
+          "type": "numeric(15,2)",
+          "nullable": false
+        },
+        {
+          "name": "stok_tersedia",
+          "type": "integer",
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "kode"
+      ]
+    },
+    {
+      "schema": "public",
+      "table": "detail_penjualan",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "penjualan_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "kode_barang",
+          "type": "character varying(20)",
+          "nullable": false
+        },
+        {
+          "name": "kuantitas",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "harga_satuan",
+          "type": "numeric(15,2)",
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "penjualan_id",
+        "kode_barang"
+      ]
+    },
+    {
+      "schema": "public",
+      "table": "penjualan",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "penjualan_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "kode_barang",
+          "type": "character varying(20)",
+          "nullable": true
+        },
+        {
+          "name": "tanggal",
+          "type": "date",
+          "nullable": false
+        },
+        {
+          "name": "jumlah",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "total",
+          "type": "numeric(15,2)",
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "penjualan_id"
+      ]
+    }
+  ],
+  "foreign_keys": [
+    {
+      "from": "public.detail_penjualan.kode_barang",
+      "to": "public.barang.kode"
+    },
+    {
+      "from": "public.detail_penjualan.penjualan_id",
+      "to": "public.penjualan.penjualan_id"
+    },
+    {
+      "from": "public.penjualan.kode_barang",
+      "to": "public.barang.kode"
+    }
+  ]
+}

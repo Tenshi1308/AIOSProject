@@ -1,0 +1,35 @@
+{
+  "tables": [
+    {
+      "schema": "public",
+      "table": "tbl_a",
+      "kind": "r",
+      "columns": [
+        {
+          "name": "rec_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "nama_barang",
+          "type": "character varying(100)",
+          "nullable": false
+        },
+        {
+          "name": "harga",
+          "type": "numeric(15,2)",
+          "nullable": false
+        },
+        {
+          "name": "qty_stok",
+          "type": "integer",
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "rec_id"
+      ]
+    }
+  ],
+  "foreign_keys": []
+}

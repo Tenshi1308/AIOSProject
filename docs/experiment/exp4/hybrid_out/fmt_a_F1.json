@@ -1,0 +1,66 @@
+[
+  {
+    "run": 1,
+    "raw": "### Konsep: Product.name\nditemukan: true\nsource: products.product_name\nconfidence: sedang\nalasan: Kolom `product_name` ada di tabel `products` dan memiliki tipe `character varying(40)`, yang mirip dengan string.\n\n### Konsep: Product.price\nditemukan: true\nsource: products.unit_price\nconfidence: tinggi\nalasan: Kolom `unit_price` ada di tabel `products` dan memiliki tipe `real`, yang mirip dengan number.\n\n### Konsep: Product.stock\nditemukan: true\nsource: products.units_in_stock\nconfidence: tinggi\nalasan: Kolom `units_in_stock` ada di tabel `products` dan memiliki tipe `smallint`, yang mirip dengan number.",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "products.product_name",
+        "confidence": "sedang",
+        "alasan": "Kolom `product_name` ada di tabel `products` dan memiliki tipe `character varying(40)`, yang mirip dengan string."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "products.unit_price",
+        "confidence": "tinggi",
+        "alasan": "Kolom `unit_price` ada di tabel `products` dan memiliki tipe `real`, yang mirip dengan number."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "products.units_in_stock",
+        "confidence": "tinggi",
+        "alasan": "Kolom `units_in_stock` ada di tabel `products` dan memiliki tipe `smallint`, yang mirip dengan number."
+      }
+    },
+    "usage": {
+      "completion_tokens": 165,
+      "prompt_tokens": 1535,
+      "total_tokens": 1700,
+      "prompt_tokens_details": {
+        "cached_tokens": 174
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "### Konsep: Product.name\nditemukan: true\nsource: products.product_name\nconfidence: sedang\nalasan: Kolom `product_name` ada di tabel `products` dan memiliki tipe `character varying(40)`, yang mirip dengan string.\n\n### Konsep: Product.price\nditemukan: true\nsource: products.unit_price\nconfidence: tinggi\nalasan: Kolom `unit_price` ada di tabel `products` dan memiliki tipe `real`, yang mirip dengan number.\n\n### Konsep: Product.stock\nditemukan: true\nsource: products.units_in_stock\nconfidence: tinggi\nalasan: Kolom `units_in_stock` ada di tabel `products` dan memiliki tipe `smallint`, yang mirip dengan number.",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "products.product_name",
+        "confidence": "sedang",
+        "alasan": "Kolom `product_name` ada di tabel `products` dan memiliki tipe `character varying(40)`, yang mirip dengan string."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "products.unit_price",
+        "confidence": "tinggi",
+        "alasan": "Kolom `unit_price` ada di tabel `products` dan memiliki tipe `real`, yang mirip dengan number."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "products.units_in_stock",
+        "confidence": "tinggi",
+        "alasan": "Kolom `units_in_stock` ada di tabel `products` dan memiliki tipe `smallint`, yang mirip dengan number."
+      }
+    },
+    "usage": {
+      "completion_tokens": 165,
+      "prompt_tokens": 1535,
+      "total_tokens": 1700,
+      "prompt_tokens_details": {
+        "cached_tokens": 1534
+      }
+    }
+  }
+]

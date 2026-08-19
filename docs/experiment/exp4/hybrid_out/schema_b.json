@@ -1,0 +1,207 @@
+{
+  "tables": [
+    {
+      "table": "attr_value_date",
+      "columns": [
+        {
+          "name": "object_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "attribute_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "attr_value_date",
+          "type": "date",
+          "nullable": true
+        }
+      ],
+      "primary_key": [
+        "object_id",
+        "attribute_id"
+      ]
+    },
+    {
+      "table": "attr_value_num",
+      "columns": [
+        {
+          "name": "object_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "attribute_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "attr_value_num",
+          "type": "numeric(15,2)",
+          "nullable": true
+        }
+      ],
+      "primary_key": [
+        "object_id",
+        "attribute_id"
+      ]
+    },
+    {
+      "table": "attr_value_text",
+      "columns": [
+        {
+          "name": "object_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "attribute_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "attr_value_text",
+          "type": "character varying(255)",
+          "nullable": true
+        }
+      ],
+      "primary_key": [
+        "object_id",
+        "attribute_id"
+      ]
+    },
+    {
+      "table": "attribute_definitions",
+      "columns": [
+        {
+          "name": "attribute_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "attribute_code",
+          "type": "character varying(40)",
+          "nullable": false
+        },
+        {
+          "name": "attribute_domain",
+          "type": "character varying(10)",
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "attribute_id"
+      ]
+    },
+    {
+      "table": "objects",
+      "columns": [
+        {
+          "name": "object_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "object_type",
+          "type": "character varying(30)",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "nullable": false
+        },
+        {
+          "name": "meta",
+          "type": "jsonb",
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "object_id"
+      ]
+    },
+    {
+      "table": "order_lines",
+      "columns": [
+        {
+          "name": "line_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "order_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "object_id",
+          "type": "integer",
+          "nullable": true
+        },
+        {
+          "name": "qty_json",
+          "type": "jsonb",
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "line_id"
+      ]
+    },
+    {
+      "table": "orders",
+      "columns": [
+        {
+          "name": "order_id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "order_json",
+          "type": "jsonb",
+          "nullable": false
+        }
+      ],
+      "primary_key": [
+        "order_id"
+      ]
+    }
+  ],
+  "foreign_keys": [
+    {
+      "from": "attr_value_date.attribute_id",
+      "to": "attribute_definitions.attribute_id"
+    },
+    {
+      "from": "attr_value_date.object_id",
+      "to": "objects.object_id"
+    },
+    {
+      "from": "attr_value_num.attribute_id",
+      "to": "attribute_definitions.attribute_id"
+    },
+    {
+      "from": "attr_value_num.object_id",
+      "to": "objects.object_id"
+    },
+    {
+      "from": "attr_value_text.attribute_id",
+      "to": "attribute_definitions.attribute_id"
+    },
+    {
+      "from": "attr_value_text.object_id",
+      "to": "objects.object_id"
+    },
+    {
+      "from": "order_lines.object_id",
+      "to": "objects.object_id"
+    },
+    {
+      "from": "order_lines.order_id",
+      "to": "orders.order_id"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+[
+  {
+    "run": 1,
+    "raw": "### Konsep: Product.name\nditemukan: true\nsource: products.product_name\nconfidence: tinggi\nalasan: Kolom product_name dalam tabel products memiliki nama yang tepat dan tipe data character varying(40), yang cocok untuk nama produk.\n\n### Konsep: Product.price\nditemukan: true\nsource: products.unit_price\nconfidence: tinggi\nalasan: Kolom unit_price dalam tabel products memiliki tipe data real, yang cocok untuk harga produk.\n\n### Konsep: Product.stock\nditemukan: true\nsource: products.units_in_stock\nconfidence: tinggi\nalasan: Kolom units_in_stock dalam tabel products memiliki tipe data smallint, yang cocok untuk stok produk.",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "products.product_name",
+        "confidence": "tinggi",
+        "alasan": "Kolom product_name dalam tabel products memiliki nama yang tepat dan tipe data character varying(40), yang cocok untuk nama produk."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "products.unit_price",
+        "confidence": "tinggi",
+        "alasan": "Kolom unit_price dalam tabel products memiliki tipe data real, yang cocok untuk harga produk."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "products.units_in_stock",
+        "confidence": "tinggi",
+        "alasan": "Kolom units_in_stock dalam tabel products memiliki tipe data smallint, yang cocok untuk stok produk."
+      }
+    },
+    "usage": {
+      "completion_tokens": 155,
+      "prompt_tokens": 1543,
+      "total_tokens": 1698,
+      "prompt_tokens_details": {
+        "cached_tokens": 1164
+      }
+    }
+  },
+  {
+    "run": 2,
+    "raw": "### Konsep: Product.name\nditemukan: true\nsource: products.product_name\nconfidence: tinggi\nalasan: Kolom product_name dalam tabel products memiliki nama yang tepat dan tipe data character varying(40), yang cocok untuk nama produk.\n\n### Konsep: Product.price\nditemukan: true\nsource: products.unit_price\nconfidence: tinggi\nalasan: Kolom unit_price dalam tabel products memiliki tipe data real, yang cocok untuk harga produk.\n\n### Konsep: Product.stock\nditemukan: true\nsource: products.units_in_stock\nconfidence: tinggi\nalasan: Kolom units_in_stock dalam tabel products memiliki tipe data smallint, yang cocok untuk stok produk.",
+    "parsed": {
+      "Product.name": {
+        "ditemukan": "true",
+        "source": "products.product_name",
+        "confidence": "tinggi",
+        "alasan": "Kolom product_name dalam tabel products memiliki nama yang tepat dan tipe data character varying(40), yang cocok untuk nama produk."
+      },
+      "Product.price": {
+        "ditemukan": "true",
+        "source": "products.unit_price",
+        "confidence": "tinggi",
+        "alasan": "Kolom unit_price dalam tabel products memiliki tipe data real, yang cocok untuk harga produk."
+      },
+      "Product.stock": {
+        "ditemukan": "true",
+        "source": "products.units_in_stock",
+        "confidence": "tinggi",
+        "alasan": "Kolom units_in_stock dalam tabel products memiliki tipe data smallint, yang cocok untuk stok produk."
+      }
+    },
+    "usage": {
+      "completion_tokens": 155,
+      "prompt_tokens": 1543,
+      "total_tokens": 1698,
+      "prompt_tokens_details": {
+        "cached_tokens": 1542
+      }
+    }
+  }
+]
