@@ -1,3 +1,13 @@
 # AIOS local experiment artifacts (Hermes + llama.cpp)
 # Model weights and binaries are large and must not be committed.
 ai/
+
+# Python virtual environments (e.g. docs/experiment/*/.venv)
+.venv/
+
+# Python bytecode cache
+__pycache__/
+*.pyc
+
+# Large experiment datasets (kept locally, not committed)
+docs/experiment/*/data/

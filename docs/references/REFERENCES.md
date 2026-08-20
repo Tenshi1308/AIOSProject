@@ -30,6 +30,9 @@ referenced from ADRs in `docs/decisions/`.
 | REF-020 | Frappe Installation — System Requirements & Installation Steps | Frappe (Frappe Technologies) | 2026 | Official documentation | https://docs.frappe.io/framework/user/en/installation | Yes |
 | REF-021 | llama.cpp — LLM inference in C/C++ | ggml-org (Georgi Gerganov et al.) | 2026 | Official GitHub repository | https://github.com/ggml-org/llama.cpp | Yes |
 | REF-022 | Qwen2.5-3B-Instruct — Model Card | Alibaba Cloud (Qwen team) | 2024 | Official model card (Hugging Face) | https://huggingface.co/Qwen/Qwen2.5-3B-Instruct | Yes |
+| REF-023 | LangChain Agents — create_agent & tool-calling loop | LangChain (LangChain Inc.) | 2026 | Official documentation | https://docs.langchain.com/oss/python/langchain/agents | Yes |
+| REF-024 | LangChain subagents / planning & delegation | LangChain (LangChain Inc.) | 2026 | Official documentation | https://docs.langchain.com/oss/python/langchain/agents#planning-and-delegation | Yes |
+| REF-025 | Qwen2.5-7B-Instruct — Model Card | Alibaba Cloud (Qwen team) | 2024 | Official model card (Hugging Face) | https://huggingface.co/Qwen/Qwen2.5-7B-Instruct | Yes |
 
 ## Verification Notes
 
@@ -40,6 +43,9 @@ referenced from ADRs in `docs/decisions/`.
 - REF-018, REF-019, REF-020: Verified directly at the listed URLs on 2026-08-20 (docs.frappe.io framework installation page and github.com/frappe/bench). REF-020 confirms Frappe v14/v15 requirements: MariaDB 10.6.6+, Python 3.10+, NodeJS 18+, Redis/Valkey 6, Yarn 1.12+, pip 20+.
 - REF-021: Verified directly at the listed URL on 2026-08-20 (github.com/ggml-org/llama.cpp). README documents the OpenAI-compatible API server (`llama-server`), CPU-only inference, and 4-bit (Q4_K_M) quantization support.
 - REF-022: Verified directly at the listed URL on 2026-08-20 (huggingface.co/Qwen/Qwen2.5-3B-Instruct). Official model card: 3.09B params, causal LM, context 32K/generation 8K; GGUF variants (including q4_K_M) available at Qwen/Qwen2.5-3B-Instruct-GGUF.
+- REF-023: Verified directly at the listed URL on 2026-08-20 (docs.langchain.com agents). Documents `create_agent(model, tools, system_prompt)` as a configurable harness with a tool-calling loop; `agent.invoke({"messages": [...]})`.
+- REF-024: Verified directly at the listed URL on 2026-08-20 (docs.langchain.com agents, "Planning and delegation"). Documents delegation to subagents that run in isolated contexts.
+- REF-025: Verified directly at the listed URL on 2026-08-20 (huggingface.co/Qwen/Qwen2.5-7B-Instruct). Official model card: 7.61B params, causal LM, context 131K/generation 8K, multilingual 29+ languages including Indonesian; Apache 2.0.
 - REF-005, REF-006, REF-007, REF-008, REF-009, REF-010, REF-011, REF-012, REF-013, REF-014, REF-015: Verified directly on the publisher/arXiv pages.
 
 ## Not Registered (kept out per AGENTS.md section 8)
