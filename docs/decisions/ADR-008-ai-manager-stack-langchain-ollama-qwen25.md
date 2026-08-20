@@ -67,6 +67,27 @@ Full conversation history dikirim tiap turn. Interface CLI REPL.
 Implementasi: `docs/experiment/exp5/` (`load_data.py`, `aggregator.py`,
 `subagents_finance.py`, `primary.py`, `chat.py`, `requirements.txt`).
 
+### Tambahan (2026-08-20): Review Deterministik Output Sub-Agent
+
+Untuk mencegah hasil sub-agent yang tidak menjawab/tidak ada data lolos
+begitu saja ke user, ditambahkan mekanisme **review deterministik** pada
+hasil sub-agent sebelum dikompilasi oleh AI Manager:
+
+- Setiap sub-agent mengembalikan **output terstruktur** (`SubAgentAnswer`
+  Pydantic: `summary`, `answered`, `confidence`, `data_sources`) via
+  `response_format` (REF-023), dengan fallback aman bila model tidak
+  menghasilkan structured_response yang valid.
+- Fungsi `_review_answer` di `primary.py` menilai hasil secara
+  **deterministik**: menolak jika `answered=False`, `summary` kosong, atau
+  berisi penanda tidak ada data/error (mis. "tidak ditemukan", "error").
+- Jika ditolak, sub-agent **dipanggil ulang** dengan query diperbaiki
+  (maks 2×); hanya hasil yang lolos review yang dikirim ke AI Manager
+  untuk dirangkum.
+- Keputusan ini mengikuti prinsip LangChain bahwa kebijakan seperti ini
+  sebaiknya **ditegakkan deterministik di kode, bukan lewat prompt**
+  (REF-023, bagian guardrails), dan peran orkestrator mengawasi/memverifikasi
+  hasil sebelum kompilasi (REF-006).
+
 ## Rationale
 
 - `create_agent` (LangChain) menyediakan loop tool-calling yang stabil dan
@@ -90,6 +111,10 @@ Implementasi: `docs/experiment/exp5/` (`load_data.py`, `aggregator.py`,
   sapaan langsung, anti-fabrication (prediksi Bitcoin dijawab jujur),
   multi-turn (konteks AAPL dibawa ke pertanyaan berikutnya), Bahasa Indonesia
   murni setelah prompt diperkuat.
+- Validasi review deterministik: kasus error (perusahaan tidak ada)
+  ditolak oleh `_review_answer` (berbasis isi `summary`), walau model
+  kadang salah mengisi `answered=True`; AI Manager lalu menjawab jujur.
+  Ini membenarkan review berbasis isi, bukan hanya field `answered`.
 - REF-016: Ollama Documentation (runtime) — sudah ada di registry.
 - REF-023: LangChain Agents — official docs (`create_agent`, tool-calling loop).
 - REF-024: LangChain subagents / planning & delegation — official docs.
@@ -133,3 +158,6 @@ Qwen2.5-7B (REF-025) diverifikasi langsung di sumbernya.
   terapkan caching TTL.
 - Jika tool-calling 7B tidak konsisten → evaluasi ulang prompt/arsitektur
   (mis. pindah ke Option B atau middleware sub-agent LangChain).
+- Jika model terbukti terlalu sering tidak konsisten pada `answered` di
+  structured output → perkuat heuristik `_review_answer` atau pertimbangkan
+  output `confidence` sebagai ambang penerimaan.

@@ -43,10 +43,13 @@ Aturan:
    sesuai satu per satu lalu gabungkan hasilnya.
 3. Untuk sapaan, ucapan terima kasih, atau pertanyaan umum di luar data,
    jawab langsung tanpa memanggil tool.
-4. Setelah menerima hasil sub-agent, rangkum jawabannya untuk user dalam
-   Bahasa Indonesia yang ramah, ringkas, dan mudah dibaca.
-5. Jika hasil sub-agent kosong atau error, sampaikan dengan jujur dan
-   tawarkan bantuan lain.
+4. Hasil sub-agent yang kamu terima SUDAH melalui review deterministik
+   (ditolak dan dipanggil ulang bila tidak menjawab). Jika kamu menerima
+   teks yang menandakan sub-agent gagal (mis. "tidak berhasil menjawab"),
+   sampaikan dengan jujur ke user dan tawarkan bantuan lain. Jika tidak,
+   rangkum jawabannya untuk user dalam Bahasa Indonesia yang ramah,
+   ringkas, dan mudah dibaca.
+5. Jangan mengarang atau menambah angka yang tidak ada pada hasil sub-agent.
 6. Selalu jawab 100% dalam Bahasa Indonesia. JANGAN mencampur dengan
    bahasa lain (Inggris, Mandarin, dll). Gunakan kata/kalimat Indonesia
    yang natural. Jangan terlalu formal seperti customer service; gunakan
@@ -54,15 +57,68 @@ Aturan:
 """
 
 
-def _make_subagent_tool(name: str):
-    """Membangun tool delegasi untuk satu sub-agent."""
+def _review_answer(answer, query: str) -> tuple[bool, str]:
+    """Review deterministik hasil sub-agent.
+
+    Menolak (return False) jika sub-agent tidak menjawab dengan data:
+    `answered=False`, atau isi `summary` kosong/menandakan error/tidak ada
+    data. Mengembalikan (ok, alasan).
+    """
+    if answer is None:
+        return False, "tidak ada hasil dari sub-agent"
+    if not getattr(answer, "answered", False):
+        return False, "sub-agent tidak dapat menjawab (tidak ada data/error)"
+
+    summary = getattr(answer, "summary", "") or ""
+    lower = summary.lower().strip()
+    if not lower:
+        return False, "jawaban sub-agent kosong"
+
+    # Tanda umum bahwa hasil tidak mengandung data nyata.
+    if any(marker in lower for marker in ("error", "tidak ditemukan", "tidak ada data", "tidak dikenal")):
+        return False, "jawaban sub-agent menandakan tidak ada data yang valid"
+
+    return True, ""
+
+
+def _make_subagent_tool(name: str, max_retries: int = 2):
+    """Membangun tool delegasi untuk satu sub-agent.
+
+    Memanggil sub-agent, lalu melakukan review deterministik. Jika hasil
+    ditolak, sub-agent dipanggil ulang dengan perbaikan (maks `max_retries`).
+    Hanya hasil yang lolos review yang dikembalikan ke AI Manager sebagai
+    string; jika tetap gagal, dikembalikan pesan jujur yang jelas.
+    """
+    desc = SUB_AGENT_META[name]["description"]
 
     @tool(name)
     def subagent_tool(query: str) -> str:
         """Delegasikan pertanyaan data ke sub-agent spesialis."""
-        return run_subagent(name, query)
+        q = (query or "").strip()
+        if not q:
+            return "Pertanyaan untuk sub-agent kosong."
 
-    subagent_tool.description = SUB_AGENT_META[name]["description"]
+        last_summary = ""
+        for attempt in range(max_retries + 1):
+            answer = run_subagent(name, q)
+            ok, reason = _review_answer(answer, q)
+            if ok:
+                return f"[Sub-agent {name} menjawab]\n{answer.summary}"
+
+            last_summary = answer.summary if answer else ""
+            # Perbaiki query untuk percobaan berikutnya.
+            q = (
+                f"{q} (Sebelumnya tidak terjawab: {reason}. "
+                f"Coba lagi dan pastikan menjawab dengan data yang tersedia.)"
+            )
+
+        return (
+            f"Sub-agent {name} tidak berhasil menjawab setelah beberapa "
+            f"percobaan. {last_summary or 'Tidak ada data yang dapat diberikan.'} "
+            "Sampaikan ini dengan jujur ke user dan tawarkan bantuan lain."
+        )
+
+    subagent_tool.description = desc
     return subagent_tool
 
 

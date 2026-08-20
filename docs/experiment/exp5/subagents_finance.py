@@ -1,4 +1,4 @@
-"""Sub-agent spesialis cabang Finance.
+﻿"""Sub-agent spesialis cabang Finance.
 
 Setiap sub-agent adalah create_agent independen dengan system prompt
 dan tools sendiri. Semua tools menghitung data dari dataset (read-only,
@@ -9,10 +9,30 @@ anti-fabrication). Sub-agent dipanggil (di-invoke) oleh AI Manager
 from langchain.agents import create_agent
 from langchain.tools import tool
 from langchain_ollama import ChatOllama
+from pydantic import BaseModel, Field
 
 import aggregator
 
 MODEL_NAME = "qwen2.5:latest"
+
+
+class SubAgentAnswer(BaseModel):
+    """Struktur output sub-agent untuk mendukung review deterministik oleh
+    AI Manager. `answered=False` menandakan sub-agent tidak dapat menjawab
+    (tidak ada data, perusahaan tidak ditemukan, atau error)."""
+
+    summary: str = Field(description="Jawaban ringkas sub-agent dalam Bahasa Indonesia")
+    answered: bool = Field(
+        description="True jika berhasil menjawab dengan data; False jika tidak ada data/error"
+    )
+    confidence: str = Field(
+        default="medium",
+        description="Tingkat keyakinan: high, medium, atau low",
+    )
+    data_sources: list[str] = Field(
+        default_factory=list,
+        description="Nama tool/sumber data yang dipakai sub-agent",
+    )
 
 
 def _make_model():
@@ -106,6 +126,7 @@ def _build_subagent(name: str, system_prompt: str, tools):
         model=_make_model(),
         tools=tools,
         system_prompt=system_prompt,
+        response_format=SubAgentAnswer,
         name=name,
     )
 
@@ -125,7 +146,7 @@ JANGAN PERNAH mengarang atau menebak angka — semua angka harus berasal
 dari hasil tools.
 Jika perusahaan tidak ditemukan, sampaikan dengan jujur dan tawarkan
 perusahaan yang tersedia.
-Jawab 100%% dalam Bahasa Indonesia murni (tanpa campur bahasa lain), ringkas dan jelas.""",
+Jawab 100%% dalam Bahasa Indonesia murni (tanpa campur bahasa lain), ringkas dan jelas. Isi field answered=True jika berhasil menjawab dengan data, dan answered=False jika tidak ada data, perusahaan tidak ditemukan, atau terjadi error.""",
     _tools_finance_staff(),
 )
 
@@ -137,7 +158,7 @@ Tugasmu: menganalisis dan membandingkan kinerja antar perusahaan
 
 Gunakan tools untuk mengambil data. JANGAN PERNAH mengarang angka.
 Jika data tidak tersedia, sampaikan dengan jujur.
-Jawab 100%% dalam Bahasa Indonesia murni (tanpa campur bahasa lain), ringkas, dengan angka jelas.""",
+Jawab 100%% dalam Bahasa Indonesia murni (tanpa campur bahasa lain), ringkas, dengan angka jelas. Isi field answered=True jika berhasil menjawab dengan data, dan answered=False jika tidak ada data atau error.""",
     _tools_financial_analyst(),
 )
 
@@ -148,7 +169,7 @@ Tugasmu: menyediakan ringkasan statistik dataset per periode (bulan/tahun),
 seperti rata-rata harga, rata-rata volume, dan perusahaan terbaik/terburuk.
 
 Gunakan tools untuk mengambil data. JANGAN PERNAH mengarang angka.
-Jawab 100%% dalam Bahasa Indonesia murni (tanpa campur bahasa lain), ringkas dan jelas.""",
+Jawab 100%% dalam Bahasa Indonesia murni (tanpa campur bahasa lain), ringkas dan jelas. Isi field answered=True jika berhasil menjawab dengan data, dan answered=False jika tidak ada data, perusahaan tidak ditemukan, atau terjadi error.""",
     _tools_budgeting_staff(),
 )
 
@@ -159,7 +180,7 @@ Tugasmu: menyediakan informasi likuiditas dan volume transaksi
 perusahaan (total volume, perusahaan dengan volume terbesar).
 
 Gunakan tools untuk mengambil data. JANGAN PERNAH mengarang angka.
-Jawab 100%% dalam Bahasa Indonesia murni (tanpa campur bahasa lain), ringkas dan jelas.""",
+Jawab 100%% dalam Bahasa Indonesia murni (tanpa campur bahasa lain), ringkas dan jelas. Isi field answered=True jika berhasil menjawab dengan data, dan answered=False jika tidak ada data, perusahaan tidak ditemukan, atau terjadi error.""",
     _tools_treasurer(),
 )
 
@@ -171,7 +192,7 @@ jumlah perusahaan, rata-rata close/volume, perusahaan terbaik/terburuk,
 dan peringkat volume/harga.
 
 Gunakan tools untuk mengambil data. JANGAN PERNAH mengarang angka.
-Jawab 100%% dalam Bahasa Indonesia murni (tanpa campur bahasa lain), ringkas, padat, dan mudah dibaca.""",
+Jawab 100%% dalam Bahasa Indonesia murni (tanpa campur bahasa lain), ringkas, padat, dan mudah dibaca. Isi field answered=True jika berhasil menjawab dengan data, dan answered=False jika tidak ada data atau error.""",
     _tools_cfo(),
 )
 
@@ -184,13 +205,35 @@ SUB_AGENTS = {
 }
 
 
-def run_subagent(name: str, query: str) -> str:
-    """Menjalankan sub-agent dengan satu pesan user dan mengembalikan jawaban."""
+def run_subagent(name: str, query: str) -> SubAgentAnswer:
+    """Menjalankan sub-agent dengan satu pesan user.
+
+    Mengembalikan objek `SubAgentAnswer` (structured_response) sehingga AI
+    Manager bisa mereview hasil secara deterministik (answered, isi summary).
+    Jika model tidak mengembalikan structured_response yang valid, dihasilkan
+    `SubAgentAnswer(answered=False, ...)` sebagai fallback yang aman.
+    """
     agent = SUB_AGENTS.get(name)
     if agent is None:
-        return f"Sub-agent '{name}' tidak dikenal."
-    result = agent.invoke({"messages": [{"role": "user", "content": query}]})
-    return result["messages"][-1].content
+        return SubAgentAnswer(
+            summary=f"Sub-agent '{name}' tidak dikenal.",
+            answered=False,
+            confidence="low",
+        )
+    try:
+        result = agent.invoke({"messages": [{"role": "user", "content": query}]})
+        structured = result.get("structured_response")
+        if isinstance(structured, SubAgentAnswer):
+            return structured
+        # Fallback: model tidak memberi structured_response valid.
+        text = result["messages"][-1].content
+        return SubAgentAnswer(summary=text, answered=True, confidence="low")
+    except Exception as exc:  # noqa: BLE001
+        return SubAgentAnswer(
+            summary=f"Sub-agent gagal diproses: {exc}",
+            answered=False,
+            confidence="low",
+        )
 
 
 # Metadata untuk AI Manager (deskripsi delegasi)
