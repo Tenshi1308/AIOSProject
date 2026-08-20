@@ -81,8 +81,8 @@ tersedia pada database client.
    sistem client dengan cara yang sama.
 2. **Ketergantungan pada struktur** — analisis data hanya bisa dilakukan jika
    programmer memahami dan menulis query spesifik per *client*.
-3. **Privasi / lokalitas** — kebutuhan AI yang berjalan lokal (kandidat:
-   Ollama) tanpa *cloud LLM*.
+3. **Privasi / lokalitas** — kebutuhan AI yang berjalan lokal (kandidat utama:
+   llama.cpp + Qwen2.5-3B-Instruct; lihat `ADR-006`) tanpa *cloud LLM*.
 4. **Mahalnya adopsi AI** — setiap *client* harus membangun solusi AI terpisah.
 
 ---
@@ -119,7 +119,8 @@ Prototype dianggap berhasil jika kriteria acceptance pada `REQUIREMENTS.md`
 
 1. Menguasai *AI orchestration*: AI Manager, plugin registry, worker system,
    dan tool system.
-2. Menerapkan integrasi *local LLM* (kandidat runtime: Ollama; final **TBD**).
+2. Menerapkan integrasi *local LLM* (kandidat runtime: llama.cpp +
+   Qwen2.5-3B-Instruct; final **TBD**, lihat `ADR-006`).
 3. Mempraktikkan pola arsitektur adaptif untuk *database* heterogen
    (*schema analyzer* + *canonical model*).
 4. Menghasilkan *prototype*, laporan, dan demo yang memenuhi penilaian mentor,
@@ -163,7 +164,8 @@ Prototype dianggap berhasil jika kriteria acceptance pada `REQUIREMENTS.md`
 ## 6. Cakupan (In-Scope)
 
 1. Arsitektur inti AIOS: AI Manager, Plugin Manager, Worker System, Tool System.
-2. Integrasi *local LLM* (kandidat runtime: Ollama; final **TBD**) untuk semua
+2. Integrasi *local LLM* (kandidat runtime: llama.cpp + Qwen2.5-3B-Instruct;
+   final **TBD**, lihat `ADR-006`) untuk semua
    peran.
 3. *Database Adapter* + *Schema Extraction* + AI Schema Analyzer (pemahaman
    semantik skema).
@@ -187,7 +189,8 @@ Prototype dianggap berhasil jika kriteria acceptance pada `REQUIREMENTS.md`
 ### 7.1 Batasan Teknis
 
 - Durasi: 18 minggu (10 Agustus – 12 Desember 2026).
-- Berjalan **lokal** (kandidat: Ollama), tanpa *cloud LLM* kecuali ada alasan
+- Berjalan **lokal** (kandidat utama: llama.cpp + Qwen2.5-3B-Instruct; lihat
+  `ADR-006`), tanpa *cloud LLM* kecuali ada alasan
   teknis jelas.
 - Hardware: AMD Ryzen 5 5600G, 16 GB RAM, tanpa GPU dedicated (CPU-only).
   Model harus kecil dan ringan.
@@ -264,7 +267,7 @@ dan Memory Agent. Dokumen ini tidak menduplikasinya.
 |---|---|---|
 | NFR-01 | *Modularity* | Komponen (AI Manager, Plugin, Worker, Tool, Adapter) terpisah dan dapat diganti |
 | NFR-02 | *Client adaptability* | Tidak ada asumsi *hardcoded* tentang nama tabel/kolom client |
-| NFR-03 | *Local-first* | Berjalan dengan Local LLM (kandidat: Ollama); pada prototype di server Ekasa |
+| NFR-03 | *Local-first* | Berjalan dengan Local LLM (kandidat utama: llama.cpp + Qwen2.5-3B-Instruct, lihat `ADR-006`); pada prototype di server Ekasa |
 | NFR-04 | *Security & data privacy* | Worker tidak *direct-access* database; akses lewat *canonical model*; isolasi antar tenant |
 | NFR-05 | *Performance* | Ringan; model dibatasi ukuran agar muat di 16 GB RAM CPU-only |
 | NFR-06 | *Maintainability* | Kode sederhana, terdokumentasi, tidak *over-engineered* |
@@ -362,7 +365,7 @@ flowchart LR
 |---|---|---|
 | Backend | Python (Frappe Framework v15) | Sesuai `ADR-005` (men-supersede `ADR-002` FastAPI) |
 | Frontend | Vue (JavaScript/TypeScript) | Portal client & developer; struktur terpisah dari backend |
-| *Local LLM* | Ollama (kandidat), final **TBD** | Runtime final belum diputuskan (`ADR-004`; `REQUIREMENTS.md` LLM-05: **TBD**); model harus kecil/ringan untuk CPU-only |
+| *Local LLM* | llama.cpp (llama-server) + Qwen2.5-3B-Instruct (kandidat), final **TBD** | Kandidat terbukti dari Eksperimen 1–4 (C2: ekstraksi deterministik + LLM mapping, metadata-only) — `ADR-006`; final belum diputuskan (`ADR-004`; `REQUIREMENTS.md` LLM-05: **TBD**); Ollama alternatif; model kecil/ringan untuk CPU-only |
 | *Database Adapter* | SQLite, PostgreSQL, MariaDB/MySQL | Untuk **Client Database**: prototype memakai **multi-engine** (SQLite, PostgreSQL, MariaDB/MySQL) untuk klien simulasi sesuai `ADR-003` revisi 2026-08-20 & DS-01/AC-13; semua via interface adapter konsisten |
 | *AIOS Internal Database* | MariaDB (via Frappe Framework v15) | Sesuai `ADR-005` & revisi `ADR-003`: MariaDB yang dikelola Frappe, diakses via DocTypes/ORM; local/self-hosted, tanpa serverless/cloud; SQLite tidak dipakai untuk IDB (`REQUIREMENTS.md` IDB-13, IDB-28 s.d. IDB-30) |
 | *Dataset sample* | Beberapa struktur client yang sengaja berbeda | Memvalidasi adaptability (nama tabel/kolom, relasi, representasi berbeda) |
@@ -395,7 +398,8 @@ Prototype dinyatakan **selesai** jika kriteria acceptance pada `REQUIREMENTS.md`
    Memory Agent).
 4. AIOS berhasil bekerja pada beberapa struktur database client yang berbeda.
 5. Ekasa Developer dapat memantau pemakaian token per perusahaan.
-6. Semua berjalan **lokal** melalui Local LLM runtime (kandidat: Ollama).
+6. Semua berjalan **lokal** melalui Local LLM runtime (kandidat utama:
+   llama.cpp + Qwen2.5-3B-Instruct; lihat `ADR-006`).
 7. Dokumentasi (analisis, requirements, use case, laporan, diagram) lengkap.
 8. Presentasi demo final dapat dijalankan dengan lancar.
 

@@ -122,7 +122,7 @@ Local AI architecture:
 
 AI Manager / Workers / AI Schema Analyzer
   ↓
-Local LLM runtime (candidate: Ollama)
+Local LLM runtime (candidate: llama.cpp + Qwen2.5-3B-Instruct; see ADR-006)
   ↓
 Local LLM
 
@@ -774,9 +774,11 @@ both.
 
 ## Local AI
 
-The prototype uses a local LLM runtime. The specific runtime is still an
-open decision (candidate: Ollama; final decision TBD at Local LLM
-integration). In the SaaS deployment, the runtime runs on the Ekasa server,
+The prototype uses a local LLM runtime. The leading candidate — proven by
+Experiments 1–4 — is llama.cpp (llama-server, OpenAI-compatible) running
+Qwen2.5-3B-Instruct-Q4_K_M on CPU (see ADR-006); Ollama remains a fallback
+alternative. The final decision on runtime and model is still TBD at Local LLM
+integration. In the SaaS deployment, the runtime runs on the Ekasa server,
 which means company data flows to the Ekasa server. This is an accepted
 trade-off for the prototype; a future phase may offer per-company LLM
 deployment options.
@@ -841,7 +843,8 @@ A successful prototype should demonstrate:
 2. User can select a specific AI capability.
 3. AI Manager can manage the selected worker.
 4. Worker can execute domain-specific tasks.
-5. AIOS can use a local LLM through a local runtime (candidate: Ollama).
+5. AIOS can use a local LLM through a local runtime (candidate: llama.cpp +
+   Qwen2.5-3B-Instruct; see ADR-006).
 6. AIOS can connect to a client database through an adapter.
 7. AI can analyze a client's database schema.
 8. Different database structures can be mapped to a canonical model.

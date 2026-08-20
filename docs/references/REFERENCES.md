@@ -28,13 +28,18 @@ referenced from ADRs in `docs/decisions/`.
 | REF-018 | Frappe Framework Documentation | Frappe (Frappe Technologies) | 2026 | Official documentation | https://docs.frappe.io/framework | Yes |
 | REF-019 | Frappe Bench — CLI to manage multi-tenant deployments for Frappe apps | Frappe (Frappe Technologies) | 2026 | Official GitHub repository | https://github.com/frappe/bench | Yes |
 | REF-020 | Frappe Installation — System Requirements & Installation Steps | Frappe (Frappe Technologies) | 2026 | Official documentation | https://docs.frappe.io/framework/user/en/installation | Yes |
+| REF-021 | llama.cpp — LLM inference in C/C++ | ggml-org (Georgi Gerganov et al.) | 2026 | Official GitHub repository | https://github.com/ggml-org/llama.cpp | Yes |
+| REF-022 | Qwen2.5-3B-Instruct — Model Card | Alibaba Cloud (Qwen team) | 2024 | Official model card (Hugging Face) | https://huggingface.co/Qwen/Qwen2.5-3B-Instruct | Yes |
 
 ## Verification Notes
 
 - REF-001: Whitepaper page notes it is "for historical reference only" (August 2020). Still cited because the isolation concepts (silo/pool/bridge models, tenant context) remain the canonical reference for SaaS tenant isolation.
 - REF-002: Verified via DOI and multiple independent citations; the original SpringerOpen page blocks automated access, so the metadata was cross-checked through citing works (Ochei, Bass, Petrovski, Journal of Cloud Computing 7(1), 2018).
 - REF-003, REF-004, REF-016, REF-017: Official documentation verified directly at the listed URLs.
+- REF-016 (Ollama) tetap terdaftar sebagai kandidat alternatif LLM runtime (lihat ADR-006).
 - REF-018, REF-019, REF-020: Verified directly at the listed URLs on 2026-08-20 (docs.frappe.io framework installation page and github.com/frappe/bench). REF-020 confirms Frappe v14/v15 requirements: MariaDB 10.6.6+, Python 3.10+, NodeJS 18+, Redis/Valkey 6, Yarn 1.12+, pip 20+.
+- REF-021: Verified directly at the listed URL on 2026-08-20 (github.com/ggml-org/llama.cpp). README documents the OpenAI-compatible API server (`llama-server`), CPU-only inference, and 4-bit (Q4_K_M) quantization support.
+- REF-022: Verified directly at the listed URL on 2026-08-20 (huggingface.co/Qwen/Qwen2.5-3B-Instruct). Official model card: 3.09B params, causal LM, context 32K/generation 8K; GGUF variants (including q4_K_M) available at Qwen/Qwen2.5-3B-Instruct-GGUF.
 - REF-005, REF-006, REF-007, REF-008, REF-009, REF-010, REF-011, REF-012, REF-013, REF-014, REF-015: Verified directly on the publisher/arXiv pages.
 
 ## Not Registered (kept out per AGENTS.md section 8)

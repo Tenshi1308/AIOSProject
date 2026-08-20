@@ -6,7 +6,8 @@
 
 ## Context
 
-AIOS memakai Local LLM (runtime lokal, kandidat utama: Ollama, final **TBD**)
+AIOS memakai Local LLM (runtime lokal, kandidat utama: llama.cpp +
+Qwen2.5-3B-Instruct, lihat ADR-006; final **TBD**)
 untuk AI Manager, Workers, dan AI Schema Analyzer. Prinsip Cost Efficient
 menuntut biaya operasi minimal: satu model lokal bersama untuk semua
 cabang/worker, model kecil, dan hindari komputasi mahal berulang. Namun setiap
@@ -21,7 +22,8 @@ peran di AIOS?
 
 ## Constraints
 
-- Prototype memakai Local LLM runtime (kandidat: Ollama) di server Ekasa; data
+- Prototype memakai Local LLM runtime (kandidat: llama.cpp + Qwen2.5-3B-Instruct,
+  lihat ADR-006; Ollama alternatif) di server Ekasa; data
   perusahaan mengalir ke server Ekasa (trade-off yang sudah diterima untuk
   prototype). Runtime spesifik belum diputuskan — lihat "Reconsideration
   Conditions".
@@ -89,7 +91,11 @@ dinamis otomatis (Option D) tidak dipakai di prototype.
 - REF-014: LLMATCH — Wang et al. (2025)
 - REF-015: Bootstrapping Self-Improvement of Language Model Programs for
   Zero-Shot Schema Matching (Matchmaker) — Seedat & Van Der Schaar (2025)
-- REF-016: Ollama Documentation (kandidat runtime)
+- REF-016: Ollama Documentation (kandidat alternatif runtime)
+- REF-021: llama.cpp — LLM inference in C/C++ (kandidat utama runtime; lihat
+  ADR-006)
+- REF-022: Qwen2.5-3B-Instruct — model card (kandidat utama model; lihat
+  ADR-006)
 
 ## Trade-offs
 
@@ -109,7 +115,8 @@ dinamis otomatis (Option D) tidak dipakai di prototype.
 - REQUIREMENTS.md LLM-05 akan diperbarui sesuai kebijakan ini.
 - Prototype tidak menerapkan dynamic routing; evaluasi ulang jika terbukti
   dibutuhkan setelah prototype.
-- Keputusan runtime spesifik (kandidat: Ollama) dilakukan terpisah saat fase
+- Keputusan runtime spesifik (kandidat: llama.cpp + Qwen2.5-3B-Instruct, lihat
+  ADR-006; Ollama alternatif) dilakukan terpisah saat fase
   Local LLM integration, dan dapat dicatat sebagai ADR tersendiri.
 
 ## Confidence
@@ -127,10 +134,12 @@ final (TBD) belum diverifikasi secara empiris di lingkungan prototype ini.
 - Jika biaya hardware turun sehingga model lebih besar terjangkau, default
   dapat dinaikkan.
 - Keputusan model final direvisi setelah benchmark di setup lingkungan.
-- Keputusan runtime spesifik (misal memilih Ollama secara final) ditinjau saat
+- Keputusan runtime spesifik (kandidat: llama.cpp + Qwen2.5-3B-Instruct, lihat
+  ADR-006; Ollama sebagai alternatif) ditinjau saat
   fase Local LLM integration — dokumen ini tidak mengunci runtime.
 
 > **Re-affirm 2026-08-20 (ADR-005):** Keputusan backend Frappe Framework v15
-> tidak mengubah kebijakan ini. Runtime LLM final (kandidat: Ollama) tetap
+> tidak mengubah kebijakan ini. Runtime LLM final (kandidat: llama.cpp +
+> Qwen2.5-3B-Instruct, lihat ADR-006; Ollama alternatif) tetap
 > **TBD** dan diputuskan pada fase Local LLM integration (Fase 8). ADR-005
 > tidak mengunci runtime LLM.
