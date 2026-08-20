@@ -87,6 +87,13 @@ Database yang sama. Domain terpisah TIDAK berarti database terpisah.
   akses data dan metadata.
 - Pengembang Ekasa hanya melihat metrik penggunaan (token), bukan data bisnis
   atau percakapan klien.
+- **Re-affirm 2026-08-20 (ADR-005):** Dengan backend Frappe Framework v15,
+  kedua portal dipetakan ke **satu site** (`aios.localhost`) + penentuan
+  portal dari domain (Host header: `client.aios.localhost` → Client,
+  `developer.aios.localhost` → Ekasa Developer), diverifikasi server-side.
+  Tidak memakai multi-site Frappe agar kedua portal tetap berbagi satu
+  backend dan satu AIOS Internal Database (konsisten dengan keputusan ini).
+  Detail implementasi di Fase 4.
 
 ## Confidence
 

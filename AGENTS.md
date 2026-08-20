@@ -621,16 +621,17 @@ requirements.
 Do not store client business records in the Internal Database merely
 to simplify worker implementation.
 
-The technology of the Internal Database is an open decision (TBD), not a
-closed choice:
+The technology of the Internal Database is decided (see ADR-005 and the
+revised ADR-003):
 
-- The Internal Database MUST run local / self-hosted, in-process with AIOS.
-  No serverless or cloud-managed database service is required for it.
-- PostgreSQL (self-hosted) is the primary candidate under evaluation.
-- SQLite remains a valid alternative / candidate, but must not be treated
-  as the final decision.
-- The final engine decision is made based on evaluation / PoC results, not
-  in advance.
+- The Internal Database engine is **MariaDB, managed by Frappe Framework v15**
+  (accessed through Frappe DocTypes/ORM as the data-access boundary).
+- The Internal Database MUST run local / self-hosted. No serverless or
+  cloud-managed database service is required for it.
+- The engine is not a per-feature choice: it was decided based on the backend
+  framework decision (ADR-005), not deferred to a future PoC.
+- SQLite is NOT used for the Internal Database. SQLite is only used as one of
+  the simulated Client Database engines (see ADR-003 revision 2026-08-20).
 - Independent of the engine chosen, the Internal Database is used only for
   AIOS metadata, configuration, mapping, and state. It never replaces the
   Client Database as the source of truth for client business data.
@@ -898,6 +899,14 @@ requirements are established.
 
 ## 1. Core Working Principles
 
+- At the start of every session, read and analyze the following documents
+  before making any plan or change:
+  - AGENTS.md
+  - REQUIREMENTS.md
+  - docs/analisis-kebutuhan.md
+  - docs/use-case-description.md
+  - all ADRs in docs/decisions/
+  If any document is missing, state this and proceed with what is available.
 - Work in phases. Complete one phase first, report the result, and wait
   for explicit approval before starting the next phase.
 - Each phase must be approved before execution.

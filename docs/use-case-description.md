@@ -518,8 +518,9 @@ Proses berikut berjalan internal oleh sistem dan mendukung use case di atas:
   melalui opsi "buat database baru" (provisioning Ekasa) berperan sebagai
   Client Database, BUKAN bagian dari IDB, walau di-host di server Ekasa. IDB
   adalah persistent storage milik AIOS yang wajib berjalan local / self-hosted
-  (tanpa serverless / cloud-managed database service); engine-nya masih **TBD**
-  (kandidat utama PostgreSQL self-hosted, SQLite kandidat alternatif), dan
+  (tanpa serverless / cloud-managed database service); engine-nya **MariaDB
+  yang dikelola Frappe Framework v15**, diakses melalui DocTypes/ORM Frappe
+  sebagai data-access boundary (keputusan `ADR-005`; revisi `ADR-003`), dan
   dirancang database-agnostic (IDB-13, IDB-28 s.d. IDB-30).
 - **Caching query berulang** (keputusan sementara) — query identik berulang
   direncanakan memanfaatkan cache ber-TTL pendek per (tenant, bidang, hash

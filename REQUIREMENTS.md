@@ -421,6 +421,11 @@ worker mana yang sedang dikonsultasikan.
   berbeda, termasuk perbedaan nama tabel, nama kolom, tipe kolom, relasi,
   organisasi tabel, konvensi penamaan, representasi data, engine database
   (**TBD**: engine spesifik), dan makna semantik field.
+  - Keputusan terkait (ADR-003 revisi 2026-08-20): untuk klien simulasi
+    prototype dipakai beberapa engine (SQLite, PostgreSQL, MariaDB/MySQL)
+    sesuai AC-13 ("different database engines where practical"). Teks TBD ini
+    sendiri tetap dibiarkan TBD karena merujuk engine riil milik client yang
+    memang bebas/bervariasi.
 - **DS-02** — AIOS tidak boleh mengasumsikan adaptasi database hanya sebatas
   memetakan nama kolom yang berbeda.
 - **DS-03** — Schema Extraction harus mengekstrak metadata skema dari database
@@ -597,11 +602,15 @@ IDB berfungsi sebagai persistent storage AIOS untuk 4 kategori:
   melakukan re-analysis, atau memperbarui mapping yang terdampak.
 - **IDB-12** — Skema IDB harus diturunkan dari kebutuhan fungsional aktual;
   tidak boleh membuat tabel/entitas yang tidak perlu.
-- **IDB-13** — Implementasi teknis IDB (engine, ERD, tabel, migration): **TBD**.
-  Engine IDB harus berjalan local / self-hosted (tanpa serverless / cloud-managed
-  database service). Kandidat utama: PostgreSQL (self-hosted); SQLite tetap kandidat
-  alternatif, bukan keputusan final. Keputusan final ditentukan dari hasil evaluasi /
-  PoC, bukan di awal (lihat `docs/decisions/ADR-003`).
+- **IDB-13** — Implementasi teknis IDB (engine, ERD, tabel, migration): **MariaDB
+  yang dikelola Frappe Framework v15**, diakses melalui lapisan DocTypes/ORM
+  Frappe sebagai data-access boundary (lihat `docs/decisions/ADR-005`). IDB
+  wajib berjalan local / self-hosted (tanpa serverless / cloud-managed database
+  service). Engine IDB dapat diganti hanya bersama pergantian mekanisme Frappe;
+  boundary DocTypes/ORM menjaga database-agnosticity pada level arsitektur
+  (IDB-28 s.d. IDB-30). SQLite tidak digunakan untuk IDB; SQLite hanya dipakai
+  sebagai salah satu engine database klien simulasi (lihat ADR-003 revisi
+  2026-08-20).
 
 ### 13.3 Data Boundary
 

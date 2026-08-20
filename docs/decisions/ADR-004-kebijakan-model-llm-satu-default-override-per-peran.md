@@ -129,3 +129,8 @@ final (TBD) belum diverifikasi secara empiris di lingkungan prototype ini.
 - Keputusan model final direvisi setelah benchmark di setup lingkungan.
 - Keputusan runtime spesifik (misal memilih Ollama secara final) ditinjau saat
   fase Local LLM integration — dokumen ini tidak mengunci runtime.
+
+> **Re-affirm 2026-08-20 (ADR-005):** Keputusan backend Frappe Framework v15
+> tidak mengubah kebijakan ini. Runtime LLM final (kandidat: Ollama) tetap
+> **TBD** dan diputuskan pada fase Local LLM integration (Fase 8). ADR-005
+> tidak mengunci runtime LLM.

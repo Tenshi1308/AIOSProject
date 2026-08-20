@@ -329,12 +329,14 @@ Pemisahan domain portal (Client vs Ekasa Developer) **tidak** mengubah desain
 database: AIOS Internal Database tetap satu (multi-tenant) dan dipakai bersama
 oleh kedua portal.
 
-Teknologi engine IDB masih **open decision (TBD)**: IDB wajib berjalan local /
-self-hosted (bukan serverless / cloud-managed database service), **PostgreSQL
-(self-hosted) adalah kandidat utama** yang dievaluasi, dan **SQLite tetap kandidat
-alternatif — bukan keputusan final**. Keputusan final dibuat berdasarkan hasil
-evaluasi/PoC, dan IDB dirancang database-agnostic sehingga engine dapat diganti
-tanpa mengubah arsitektur (`REQUIREMENTS.md` IDB-13, IDB-28 s.d. IDB-30).
+Teknologi engine IDB **ditetapkan** berdasarkan keputusan backend (lihat
+`ADR-005` dan revisi `ADR-003`): IDB menggunakan **MariaDB yang dikelola Frappe
+Framework v15** (diakses melalui DocTypes/ORM Frappe sebagai data-access
+boundary). IDB wajib berjalan local / self-hosted (bukan serverless /
+cloud-managed database service). SQLite **tidak** dipakai untuk IDB; SQLite
+hanya dipakai sebagai salah satu engine database klien simulasi. IDB dirancang
+database-agnostic sehingga perpindahan engine hanya terjadi bersama pergantian
+mekanisme Frappe (`REQUIREMENTS.md` IDB-13, IDB-28 s.d. IDB-30).
 
 ### 12.4 Local AI
 
@@ -358,11 +360,11 @@ flowchart LR
 
 | Komponen | Pilihan | Catatan |
 |---|---|---|
-| Backend | Python (FastAPI) | Sesuai `ADR-002` |
+| Backend | Python (Frappe Framework v15) | Sesuai `ADR-005` (men-supersede `ADR-002` FastAPI) |
 | Frontend | Vue (JavaScript/TypeScript) | Portal client & developer; struktur terpisah dari backend |
 | *Local LLM* | Ollama (kandidat), final **TBD** | Runtime final belum diputuskan (`ADR-004`; `REQUIREMENTS.md` LLM-05: **TBD**); model harus kecil/ringan untuk CPU-only |
-| *Database Adapter* | SQLite, PostgreSQL, MySQL | Untuk **Client Database**: prototype memakai **SQLite** untuk klien simulasi (`ADR-003`); PostgreSQL/MySQL via adapter nanti |
-| *AIOS Internal Database* | PostgreSQL (self-hosted), SQLite | Engine **TBD**: PostgreSQL kandidat utama (self-hosted), SQLite kandidat alternatif; local/self-hosted, tanpa serverless/cloud (`ADR-003`; `REQUIREMENTS.md` IDB-13, IDB-28 s.d. IDB-30) |
+| *Database Adapter* | SQLite, PostgreSQL, MariaDB/MySQL | Untuk **Client Database**: prototype memakai **multi-engine** (SQLite, PostgreSQL, MariaDB/MySQL) untuk klien simulasi sesuai `ADR-003` revisi 2026-08-20 & DS-01/AC-13; semua via interface adapter konsisten |
+| *AIOS Internal Database* | MariaDB (via Frappe Framework v15) | Sesuai `ADR-005` & revisi `ADR-003`: MariaDB yang dikelola Frappe, diakses via DocTypes/ORM; local/self-hosted, tanpa serverless/cloud; SQLite tidak dipakai untuk IDB (`REQUIREMENTS.md` IDB-13, IDB-28 s.d. IDB-30) |
 | *Dataset sample* | Beberapa struktur client yang sengaja berbeda | Memvalidasi adaptability (nama tabel/kolom, relasi, representasi berbeda) |
 | *Embedding / vector store* | – | Untuk RAG, yang di-defer pada prototype |
 

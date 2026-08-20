@@ -1,8 +1,10 @@
 # ADR-002: Framework Backend FastAPI
 
 - **Decision ID:** ADR-002
-- **Status:** Accepted
+- **Status:** Superseded by ADR-005
 - **Date:** 2026-08-18
+- **Superseded by:** ADR-005 (Framework Backend Frappe Framework v15) —
+  2026-08-20
 
 ## Context
 
@@ -80,6 +82,10 @@ High. Keputusan ini didukung oleh dokumentasi resmi FastAPI (REF-003) dan
 kesesuaian langsung dengan kebutuhan teknis prototype (Ollama, adapter,
 modularitas). Tidak ada konflik dengan sumber resmi lain yang menyarankan
 framework berbeda untuk kasus serupa.
+
+> **Status:** Keputusan ini **Superseded** oleh ADR-005 (2026-08-20). AIOS
+> backend kini memakai Frappe Framework v15. ADR ini dipertahankan sebagai
+> catatan historis keputusan awal dan alasan penggantian.
 
 ## Reconsideration Conditions
 
